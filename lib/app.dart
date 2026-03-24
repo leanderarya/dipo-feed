@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'features/cek_kandungan_nutrisi/cek_kandungan_nutrisi_screen.dart';
+import 'features/home/home_screen.dart';
 
 class DipoFeedApp extends StatelessWidget {
   const DipoFeedApp({super.key});
@@ -14,7 +14,7 @@ class DipoFeedApp extends StatelessWidget {
         colorSchemeSeed: Colors.green,
         useMaterial3: true,
       ),
-      home: const CekKandunganNutrisiScreen(),
+      home: const HomeScreen(),
     );
   }
 }

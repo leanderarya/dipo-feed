@@ -2,11 +2,17 @@ import 'package:flutter/material.dart';
 
 import '../../data/models/bahan_pakan.dart';
 import '../../data/models/campuran_pakan_item.dart';
+import '../../data/models/hasil_pakan_terpilih.dart';
 import '../../data/sources/bahan_pakan_local_source.dart';
 import 'logic/perhitungan_nutrisi.dart';
 
 class CekKandunganNutrisiScreen extends StatefulWidget {
-  const CekKandunganNutrisiScreen({super.key});
+  final bool modePilihUntukEvaluasi;
+
+  const CekKandunganNutrisiScreen({
+    super.key,
+    this.modePilihUntukEvaluasi = false,
+  });
 
   @override
   State<CekKandunganNutrisiScreen> createState() =>
@@ -120,6 +126,27 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
       _campuran[index].hargaPerKg = harga < 0 ? 0 : harga;
     });
   }
+  
+  void _gunakanUntukEvaluasi(HasilPerhitunganNutrisi hasil) {
+    if (hasil.totalBerat <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Total campuran pakan harus lebih dari 0 kg.'),
+        ),
+      );
+      return;
+    }
+
+    final payload = HasilPakanTerpilih(
+      totalBeratKg: hasil.totalBerat,
+      bkPersen: hasil.bk,
+      proteinPersen: hasil.protein,
+      tdnPersen: hasil.tdn,
+      me: hasil.me,
+    );
+
+    Navigator.pop(context, payload);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -136,6 +163,19 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
         label: const Text('Tambah'),
       ),
       body: SafeArea(child: _buildBody(hasil)),
+      bottomNavigationBar: widget.modePilihUntukEvaluasi
+          ? SafeArea(
+              minimum: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              child: FilledButton.icon(
+                onPressed: () {
+                  final hasil = PerhitunganNutrisi.hitungSemua(_campuran);
+                  _gunakanUntukEvaluasi(hasil);
+                },
+                icon: const Icon(Icons.check_circle_outline),
+                label: const Text('Gunakan untuk Evaluasi'),
+              ),
+            )
+          : null,
     );
   }
 
