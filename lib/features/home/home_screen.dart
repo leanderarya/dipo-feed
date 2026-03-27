@@ -121,7 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           width: 44,
                           height: 44,
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.18),
+                            color: Colors.white.withValues(alpha: 0.18),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
@@ -159,7 +159,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(6),
-                        color: Colors.black.withOpacity(0.08),
+                        color: Colors.black.withValues(alpha: 0.08),
                       ),
                     ),
                   ),
@@ -309,7 +309,7 @@ class _MenuCard extends StatelessWidget {
                     Text(
                       subtitle,
                       style: TextStyle(
-                        color: textColor.withOpacity(0.75),
+                        color: textColor.withValues(alpha: 0.75),
                         fontSize: 13,
                       ),
                     ),
@@ -320,7 +320,7 @@ class _MenuCard extends StatelessWidget {
               Icon(
                 Icons.chevron_right,
                 size: 30,
-                color: textColor.withOpacity(0.6),
+                color: textColor.withValues(alpha: 0.6),
               ),
             ],
           ),
