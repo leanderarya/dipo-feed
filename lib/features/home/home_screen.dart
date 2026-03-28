@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../cek_kandungan_nutrisi/cek_kandungan_nutrisi_screen.dart';
 import '../cek_kecukupan_pakan/cek_kecukupan_pakan_screen.dart';
-// import '../formulasi_ransum/formulasi_ransum_screen.dart';
+import '../formulasi_ransum/formulasi_ransum_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -47,17 +47,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _bukaFormulasi() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Fitur formulasi ransum belum dibuat.')),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const FormulasiRansumScreen(),
+      ),
     );
-
-    // Nanti ganti jadi ini kalau fitur 3 sudah jadi:
-    // Navigator.push(
-    //   context,
-    //   MaterialPageRoute(
-    //     builder: (_) => const FormulasiRansumScreen(),
-    //   ),
-    // );
   }
 
   @override
