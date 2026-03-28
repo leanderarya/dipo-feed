@@ -237,64 +237,72 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
         title: const Text('Buat Formulasi Pakan'),
         centerTitle: true,
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _tambahBahan,
+        backgroundColor: const Color(0xFF457042), // Matching the theme green
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.add),
+        label: const Text('Tambah Bahan'),
+      ),
       body: SafeArea(
         child: _isLoadingBahan
             ? const Center(child: CircularProgressIndicator())
-            : ListView(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-                children: [
-                  _buildHeaderInfo(),
-                  const SizedBox(height: 16),
-                  
-                  // 1. Data Sapi Form
-                  _buildSectionTitle('1. Profil Sapi'),
-                  _buildCardDataSapi(),
-                  const SizedBox(height: 20),
-                  
-                  // 2. Data Bahan Pakan
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildSectionTitle('2. Susun Ransum (Campur Pakan)'),
-                      TextButton.icon(
-                        onPressed: _tambahBahan,
-                        icon: const Icon(Icons.add),
-                        label: const Text('Tambah Bahan'),
-                      )
-                    ],
-                  ),
-                  if (_campuran.isEmpty)
-                    _buildEmptyBahanState()
-                  else
-                    ...List.generate(
-                      _campuran.length,
-                      (index) => _buildKartuBahan(index, _campuran[index]),
-                    ),
-                  
-                  const SizedBox(height: 16),
-
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      style: FilledButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            : SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 80), // Added padding for FAB
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildHeaderInfo(),
+                    const SizedBox(height: 20),
+                    
+                    // 1. Data Sapi Form
+                    _buildSectionTitle('1. Profil Sapi'),
+                    _buildCardDataSapi(),
+                    const SizedBox(height: 24),
+                    
+                    // 2. Data Bahan Pakan
+                    _buildSectionTitle('2. Susun Ransum (Campur Pakan)'),
+                    const SizedBox(height: 8),
+                    if (_campuran.isEmpty)
+                      _buildEmptyBahanState()
+                    else
+                      ...List.generate(
+                        _campuran.length,
+                        (index) => _buildKartuBahan(index, _campuran[index]),
                       ),
-                      onPressed: _hitungFormulasi,
-                      child: const Text('Simulasikan Formulasi', style: TextStyle(fontSize: 16)),
+                    
+                    const SizedBox(height: 24),
+
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: FilledButton(
+                        style: FilledButton.styleFrom(
+                          backgroundColor: const Color(0xFF457042),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          elevation: 2,
+                        ),
+                        onPressed: _hitungFormulasi,
+                        child: const Text(
+                          'Simulasikan Formulasi', 
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                      ),
                     ),
-                  ),
 
-                  const SizedBox(height: 24),
+                    const SizedBox(height: 32),
 
-                  // 3. Hasil Formulasi
-                  if (_hasilFormulasi != null) ...[
-                    _buildSectionTitle('3. Hasil Simulasi Ransum'),
-                    _buildKartuHasilKesimpulan(),
-                    const SizedBox(height: 16),
-                    _buildKartuHasilNutrisi(),
+                    // 3. Hasil Formulasi
+                    if (_hasilFormulasi != null) ...[
+                      _buildSectionTitle('3. Hasil Simulasi Ransum'),
+                      const SizedBox(height: 8),
+                      _buildKartuHasilKesimpulan(),
+                      const SizedBox(height: 16),
+                      _buildKartuHasilNutrisi(),
+                    ],
                   ],
-                ],
+                ),
               ),
       ),
     );
@@ -336,78 +344,116 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
 
   Widget _buildCardDataSapi() {
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 0,
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Colors.grey.shade200),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildNumberField(
-                controller: _beratBadanController,
-                label: 'Berat badan',
-                suffix: 'kg',
-              ),
-              const SizedBox(height: 12),
-              _buildNumberField(
-                controller: _produksiSusuController,
-                label: 'Produksi susu',
-                suffix: 'liter/hari',
-              ),
-              const SizedBox(height: 12),
-              _buildNumberField(
-                controller: _lemakSusuController,
-                label: 'Lemak susu (e.g. 3.5)',
-                suffix: '%',
-              ),
-              const SizedBox(height: 12),
-              _buildNumberField(
-                controller: _paritasController,
-                label: 'Periode Laktasi (Paritas)',
-                suffix: 'kali',
-                isInteger: true,
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<TahapLaktasi>(
-                initialValue: _tahapLaktasi,
-                decoration: const InputDecoration(
-                  labelText: 'Tahap laktasi',
-                  border: OutlineInputBorder(),
-                ),
-                items: TahapLaktasi.values.map((tahap) {
-                  return DropdownMenuItem(
-                    value: tahap,
-                    child: Text(_labelTahapLaktasi(tahap)),
-                  );
-                }).toList(),
-                onChanged: (v) => setState(() => _tahapLaktasi = v!),
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<StatusKebuntingan>(
-                initialValue: _statusKebuntingan,
-                decoration: const InputDecoration(
-                  labelText: 'Status kebuntingan',
-                  border: OutlineInputBorder(),
-                ),
-                items: StatusKebuntingan.values.map((status) {
-                  return DropdownMenuItem(
-                    value: status,
-                    child: Text(_labelStatusKebuntingan(status)),
-                  );
-                }).toList(),
-                onChanged: (v) => setState(() => _statusKebuntingan = v!),
-              ),
-              if (_statusKebuntingan == StatusKebuntingan.bunting) ...[
-                const SizedBox(height: 12),
-                _buildNumberField(
-                  controller: _bulanBuntingController,
-                  label: 'Bulan bunting',
-                  suffix: 'bulan',
-                  isInteger: true,
-                ),
-              ],
-            ],
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final width = constraints.maxWidth;
+              // If width is enough, show 2 columns, otherwise 1
+              final cardWidth = width > 400 ? (width - 12) / 2 : width;
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    children: [
+                      SizedBox(
+                        width: cardWidth,
+                        child: _buildNumberField(
+                          controller: _beratBadanController,
+                          label: 'Berat badan',
+                          suffix: 'kg',
+                        ),
+                      ),
+                      SizedBox(
+                        width: cardWidth,
+                        child: _buildNumberField(
+                          controller: _produksiSusuController,
+                          label: 'Produksi susu',
+                          suffix: 'lt/hr',
+                        ),
+                      ),
+                      SizedBox(
+                        width: cardWidth,
+                        child: _buildNumberField(
+                          controller: _lemakSusuController,
+                          label: 'Lemak susu',
+                          suffix: '%',
+                        ),
+                      ),
+                      SizedBox(
+                        width: cardWidth,
+                        child: _buildNumberField(
+                          controller: _paritasController,
+                          label: 'Laktasi (Paritas)',
+                          suffix: 'ke',
+                          isInteger: true,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<TahapLaktasi>(
+                    value: _tahapLaktasi,
+                    isExpanded: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Tahap laktasi',
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    ),
+                    items: TahapLaktasi.values.map((tahap) {
+                      return DropdownMenuItem(
+                        value: tahap,
+                        child: Text(
+                          _labelTahapLaktasi(tahap),
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (v) => setState(() => _tahapLaktasi = v!),
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<StatusKebuntingan>(
+                    value: _statusKebuntingan,
+                    isExpanded: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Status kebuntingan',
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    ),
+                    items: StatusKebuntingan.values.map((status) {
+                      return DropdownMenuItem(
+                        value: status,
+                        child: Text(
+                          _labelStatusKebuntingan(status),
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (v) => setState(() => _statusKebuntingan = v!),
+                  ),
+                  if (_statusKebuntingan == StatusKebuntingan.bunting) ...[
+                    const SizedBox(height: 12),
+                    _buildNumberField(
+                      controller: _bulanBuntingController,
+                      label: 'Bulan bunting',
+                      suffix: 'bulan',
+                      isInteger: true,
+                    ),
+                  ],
+                ],
+              );
+            },
           ),
         ),
       ),
@@ -453,17 +499,22 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
   Widget _buildKartuBahan(int index, CampuranPakanItem item) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      elevation: 1,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 0,
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Colors.grey.shade200),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: DropdownButtonFormField<BahanPakan>(
-                    initialValue: item.bahan,
+                    value: item.bahan,
                     isExpanded: true,
                     decoration: const InputDecoration(
                       labelText: 'Pilih Bahan',
@@ -473,7 +524,11 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
                     items: _semuaBahan.map((bahan) {
                       return DropdownMenuItem<BahanPakan>(
                         value: bahan,
-                        child: Text(bahan.nama, overflow: TextOverflow.ellipsis),
+                        child: Text(
+                          bahan.nama, 
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 14),
+                        ),
                       );
                     }).toList(),
                     onChanged: (value) {
@@ -482,38 +537,76 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                IconButton(
-                  tooltip: 'Hapus',
-                  onPressed: () => _hapusBahan(index),
-                  icon: const Icon(Icons.delete_outline, color: Colors.grey),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    key: ValueKey('jumlah_form_$index'),
-                    initialValue: item.jumlahKg == 0 ? '' : item.jumlahKg.toStringAsFixed(2),
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(
-                      labelText: 'Banyak (As-fed)',
-                      suffixText: 'kg',
-                      border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    ),
-                    onChanged: (value) => _ubahJumlahKg(index, value),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: IconButton(
+                    tooltip: 'Hapus',
+                    onPressed: () => _hapusBahan(index),
+                    icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
                   ),
                 ),
               ],
             ),
+            const SizedBox(height: 12),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                return Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: TextFormField(
+                        key: ValueKey('jumlah_form_$index'),
+                        initialValue: item.jumlahKg == 0 ? '' : item.jumlahKg.toStringAsFixed(2),
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        decoration: const InputDecoration(
+                          labelText: 'Banyak (As-fed)',
+                          suffixText: 'kg',
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                        ),
+                        onChanged: (value) => _ubahJumlahKg(index, value),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      flex: 1,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Kadar BK',
+                            style: TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            '${item.bahan.bk}%',
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
             const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Kategori: ${item.bahan.kategori.toUpperCase()} | BK: ${item.bahan.bk}%',
-                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, size: 12, color: Colors.grey.shade600),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Kategori: ${item.bahan.kategori.toUpperCase()}',
+                    style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                  ),
+                ],
               ),
             ),
           ],
