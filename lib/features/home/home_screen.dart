@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../cek_kandungan_nutrisi/cek_kandungan_nutrisi_screen.dart';
 import '../cek_kecukupan_pakan/cek_kecukupan_pakan_screen.dart';
-// import '../formulasi_ransum/formulasi_ransum_screen.dart';
+import '../formulasi_ransum/formulasi_ransum_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -47,17 +47,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _bukaFormulasi() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Fitur formulasi ransum belum dibuat.')),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const FormulasiRansumScreen(),
+      ),
     );
-
-    // Nanti ganti jadi ini kalau fitur 3 sudah jadi:
-    // Navigator.push(
-    //   context,
-    //   MaterialPageRoute(
-    //     builder: (_) => const FormulasiRansumScreen(),
-    //   ),
-    // );
   }
 
   @override
@@ -121,7 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           width: 44,
                           height: 44,
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.18),
+                            color: Colors.white.withValues(alpha: 0.18),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
@@ -159,7 +154,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(6),
-                        color: Colors.black.withOpacity(0.08),
+                        color: Colors.black.withValues(alpha: 0.08),
                       ),
                     ),
                   ),
@@ -309,7 +304,7 @@ class _MenuCard extends StatelessWidget {
                     Text(
                       subtitle,
                       style: TextStyle(
-                        color: textColor.withOpacity(0.75),
+                        color: textColor.withValues(alpha: 0.75),
                         fontSize: 13,
                       ),
                     ),
@@ -320,7 +315,7 @@ class _MenuCard extends StatelessWidget {
               Icon(
                 Icons.chevron_right,
                 size: 30,
-                color: textColor.withOpacity(0.6),
+                color: textColor.withValues(alpha: 0.6),
               ),
             ],
           ),

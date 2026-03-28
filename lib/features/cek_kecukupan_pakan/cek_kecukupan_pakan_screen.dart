@@ -469,40 +469,6 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
     );
   }
 
-  DataRow _buildEvaluasiRow(
-    String komponen,
-    DetailEvaluasiNutrisi detail,
-    String satuan,
-  ) {
-    final color = _warnaStatus(detail.status);
-
-    String formatNilai(double nilai) {
-      final angka = nilai.toStringAsFixed(2);
-      return satuan.isEmpty ? angka : '$angka $satuan';
-    }
-
-    String formatSelisih(double nilai) {
-      final prefix = nilai > 0 ? '+' : '';
-      final angka = '$prefix${nilai.toStringAsFixed(2)}';
-      return satuan.isEmpty ? angka : '$angka $satuan';
-    }
-
-    return DataRow(
-      cells: [
-        DataCell(Text(komponen)),
-        DataCell(Text(formatNilai(detail.pemberian))),
-        DataCell(Text(formatNilai(detail.kebutuhan))),
-        DataCell(Text(formatSelisih(detail.selisih))),
-        DataCell(
-          Text(
-            detail.status,
-            style: TextStyle(color: color, fontWeight: FontWeight.bold),
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildItemHasil(String label, double value) {
     return Row(
       children: [
