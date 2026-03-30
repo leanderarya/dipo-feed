@@ -199,7 +199,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 14),
                   _MenuCard(
                     title: 'Cek Kandungan Nutrisi Pakan',
-                    subtitle: 'Analisis kandungan nutrisi pakan',
+                    subtitle: 'Hitung kandungan nutrisi pakan',
                     icon: Icons.search,
                     iconBg: const Color(0xFFF4E7C5),
                     iconColor: const Color(0xFF9C6B00),
@@ -209,8 +209,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 14),
                   _MenuCard(
-                    title: 'Buat Formulasi Pakan',
-                    subtitle: 'Rancang formulasi pakan sapi',
+                    title: 'Buat Formulasi Ransum',
+                    subtitle: 'Rancang formulasi ransum sapi',
                     icon: Icons.restaurant_menu,
                     iconBg: const Color(0xFFEADBC8),
                     iconColor: const Color(0xFF8D5B2A),

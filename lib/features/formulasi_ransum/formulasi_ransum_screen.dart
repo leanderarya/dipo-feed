@@ -234,7 +234,7 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Buat Formulasi Pakan'),
+        title: const Text('Buat Formulasi Ransum'),
         centerTitle: true,
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -261,6 +261,16 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
                     _buildCardDataSapi(),
                     const SizedBox(height: 24),
                     
+                    // Hasil Formulasi (Moved here)
+                    if (_hasilFormulasi != null) ...[
+                      _buildSectionTitle('Hasil Kebutuhan & Simulasi'),
+                      const SizedBox(height: 8),
+                      _buildKartuHasilKesimpulan(),
+                      const SizedBox(height: 16),
+                      _buildKartuHasilNutrisi(),
+                      const SizedBox(height: 24),
+                    ],
+                    
                     // 2. Data Bahan Pakan
                     _buildSectionTitle('2. Susun Ransum (Campur Pakan)'),
                     const SizedBox(height: 8),
@@ -285,7 +295,7 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
                         ),
                         onPressed: _hitungFormulasi,
                         child: const Text(
-                          'Simulasikan Formulasi', 
+                          'Hitung Ransum', 
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                       ),
@@ -293,14 +303,7 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
 
                     const SizedBox(height: 32),
 
-                    // 3. Hasil Formulasi
-                    if (_hasilFormulasi != null) ...[
-                      _buildSectionTitle('3. Hasil Simulasi Ransum'),
-                      const SizedBox(height: 8),
-                      _buildKartuHasilKesimpulan(),
-                      const SizedBox(height: 16),
-                      _buildKartuHasilNutrisi(),
-                    ],
+                    // Hasil moved up
                   ],
                 ),
               ),
@@ -380,7 +383,8 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
                         child: _buildNumberField(
                           controller: _produksiSusuController,
                           label: 'Produksi susu',
-                          suffix: 'lt/hr',
+                          suffix: 'liter/ekor/hari',
+                          helperText: 'Rata-rata produksi harian',
                         ),
                       ),
                       SizedBox(
@@ -395,8 +399,9 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
                         width: cardWidth,
                         child: _buildNumberField(
                           controller: _paritasController,
-                          label: 'Laktasi (Paritas)',
+                          label: 'Periode Laktasi',
                           suffix: 'ke',
+                          helperText: 'Jumlah masa laktasi',
                           isInteger: true,
                         ),
                       ),
@@ -407,7 +412,7 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
                     value: _tahapLaktasi,
                     isExpanded: true,
                     decoration: const InputDecoration(
-                      labelText: 'Tahap laktasi',
+                      labelText: 'Bulan Laktasi (mm-yyyy)',
                       border: OutlineInputBorder(),
                       contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                     ),
@@ -464,14 +469,24 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
     required TextEditingController controller,
     required String label,
     required String suffix,
+    String helperText = '',
     bool isInteger = false,
   }) {
     return TextFormField(
       controller: controller,
       keyboardType: TextInputType.numberWithOptions(decimal: !isInteger),
+      onChanged: (value) {
+        if (!isInteger && value.contains('.')) {
+          controller.text = value.replaceAll('.', ',');
+          controller.selection = TextSelection.fromPosition(
+            TextPosition(offset: controller.text.length),
+          );
+        }
+      },
       decoration: InputDecoration(
         labelText: label,
         suffixText: suffix,
+        helperText: helperText, 
         border: const OutlineInputBorder(),
       ),
       validator: (v) => v!.isEmpty ? 'Wajib diisi' : null,

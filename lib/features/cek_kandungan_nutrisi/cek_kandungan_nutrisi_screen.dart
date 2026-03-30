@@ -313,13 +313,21 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
+              onChanged: (value) {
+                if (value.contains('.')) {
+                  // This is tricky with initialValue/onChanged combo if not using controller
+                  // But for now let's just use the same logic
+                  _ubahJumlahKg(index, value.replaceAll('.', ','));
+                } else {
+                  _ubahJumlahKg(index, value);
+                }
+              },
               decoration: const InputDecoration(
                 labelText: 'Jumlah',
                 suffixText: 'kg',
                 border: OutlineInputBorder(),
                 hintText: 'Contoh: 10',
               ),
-              onChanged: (value) => _ubahJumlahKg(index, value),
             ),
             const SizedBox(height: 12),
             TextFormField(
@@ -330,13 +338,19 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
+              onChanged: (value) {
+                if (value.contains('.')) {
+                  _ubahHargaPerKg(index, value.replaceAll('.', ','));
+                } else {
+                  _ubahHargaPerKg(index, value);
+                }
+              },
               decoration: const InputDecoration(
                 labelText: 'Harga per kg',
                 prefixText: 'Rp ',
                 border: OutlineInputBorder(),
                 hintText: 'Contoh: 3500',
               ),
-              onChanged: (value) => _ubahHargaPerKg(index, value),
             ),
             const SizedBox(height: 12),
             Wrap(
@@ -383,12 +397,12 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Hasil Analisis',
+              'Hasil Perhitungan',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             const Text(
-              'Dari hasil analisis di atas, dapat diketahui bahwa pakan yang Anda berikan kepada sapi perah mengandung:',
+              'Dari hasil perhitungan di atas, dapat diketahui bahwa pakan yang Anda berikan kepada sapi perah mengandung:',
               style: TextStyle(height: 1.5),
             ),
             const SizedBox(height: 16),

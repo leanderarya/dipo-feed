@@ -212,7 +212,8 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
               _buildNumberField(
                 controller: _produksiSusuController,
                 label: 'Produksi susu',
-                suffix: 'liter/hari',
+                suffix: 'liter/ekor/hari',
+                helperText: 'Rata-rata produksi harian',
               ),
               const SizedBox(height: 12),
 
@@ -225,8 +226,9 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
 
               _buildNumberField(
                 controller: _paritasController,
-                label: 'Paritas',
-                suffix: 'kali',
+                label: 'Periode Laktasi',
+                suffix: 'ke',
+                helperText: 'Jumlah masa laktasi',
                 isInteger: true,
               ),
               const SizedBox(height: 12),
@@ -234,7 +236,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
               DropdownButtonFormField<TahapLaktasi>(
                 initialValue: _tahapLaktasi,
                 decoration: const InputDecoration(
-                  labelText: 'Tahap laktasi',
+                  labelText: 'Bulan Laktasi (mm-yyyy)',
                   border: OutlineInputBorder(),
                 ),
                 items: TahapLaktasi.values.map((tahap) {
@@ -315,14 +317,24 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
     required TextEditingController controller,
     required String label,
     required String suffix,
+    String helperText = '',
     bool isInteger = false,
   }) {
     return TextFormField(
       controller: controller,
       keyboardType: TextInputType.numberWithOptions(decimal: !isInteger),
+      onChanged: (value) {
+        if (!isInteger && value.contains('.')) {
+          controller.text = value.replaceAll('.', ',');
+          controller.selection = TextSelection.fromPosition(
+            TextPosition(offset: controller.text.length),
+          );
+        }
+      },
       decoration: InputDecoration(
         labelText: label,
         suffixText: suffix,
+        helperText: helperText,
         border: const OutlineInputBorder(),
       ),
       validator: (v) => v!.isEmpty ? 'Wajib diisi' : null,
