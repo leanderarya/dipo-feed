@@ -4,7 +4,7 @@ import '../../data/models/bahan_pakan.dart';
 import '../../data/models/campuran_pakan_item.dart';
 import '../../data/models/hasil_kecukupan_pakan.dart';
 import '../../data/models/profil_sapi.dart';
-import '../../data/sources/bahan_pakan_local_source.dart';
+import '../../data/sources/bahan_pakan_repository.dart';
 import 'logic/hasil_formulasi.dart';
 import 'logic/perhitungan_formulasi.dart';
 
@@ -29,7 +29,7 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
   StatusKebuntingan _statusKebuntingan = StatusKebuntingan.tidakBunting;
 
   // Bahan Pakan State
-  final BahanPakanLocalSource _localSource = BahanPakanLocalSource();
+  final BahanPakanRepository _repository = BahanPakanRepository();
   List<BahanPakan> _semuaBahan = [];
   final List<CampuranPakanItem> _campuran = [];
   bool _isLoadingBahan = true;
@@ -54,9 +54,9 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
 
   Future<void> _muatBahanPakan() async {
     try {
-      final data = await _localSource.ambilSemuaBahanPakan();
+      await _repository.initialize();
       setState(() {
-        _semuaBahan = data;
+        _semuaBahan = _repository.data;
         _isLoadingBahan = false;
       });
     } catch (e) {
@@ -199,6 +199,76 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
       default:
         return Colors.black87;
     }
+  }
+
+  void _showBahanDetail(BahanPakan bahan) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        titlePadding: EdgeInsets.zero,
+        title: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade600,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.info_outline, color: Colors.white),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      bahan.nama,
+                      style: const TextStyle(color: Colors.white, fontSize: 18),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildDetailNutrienRow('Kategori', bahan.kategori),
+              _buildDetailNutrienRow('Bahan Kering (BK)', '${bahan.bk}%'),
+              _buildDetailNutrienRow('Protein Kasar (PK)', '${bahan.protein}%'),
+              _buildDetailNutrienRow('TDN', '${bahan.tdn}%'),
+              _buildDetailNutrienRow('Energi (ME)', '${bahan.me} Mcal'),
+              _buildDetailNutrienRow('Lemak', '${bahan.lemak}%'),
+              _buildDetailNutrienRow('Serat', '${bahan.serat}%'),
+              _buildDetailNutrienRow('Abu', '${bahan.abu}%'),
+              _buildDetailNutrienRow('BETN', '${bahan.betn}%'),
+              const Divider(),
+              _buildDetailNutrienRow('Harga Standar', 'Rp ${bahan.hargaDefault}/kg'),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Tutup'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailNutrienRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: TextStyle(color: Colors.grey.shade600)),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
+        ],
+      ),
+    );
   }
 
   // == Logika Perhitungan Utama ==
@@ -575,6 +645,18 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
                     onChanged: (value) {
                       if (value != null) _ubahBahan(index, value);
                     },
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: IconButton(
+                    tooltip: 'Detail Nutrisi',
+                    onPressed: () => _showBahanDetail(item.bahan),
+                    icon: const Icon(Icons.info_outline, color: Colors.blueAccent, size: 20),
                   ),
                 ),
                 const SizedBox(width: 8),
