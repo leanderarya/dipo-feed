@@ -23,7 +23,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
   final TextEditingController _paritasController = TextEditingController();
   final TextEditingController _bulanBuntingController = TextEditingController();
 
-  TahapLaktasi _tahapLaktasi = TahapLaktasi.awalLaktasiMinggu0sampai4;
+  TahapLaktasi _tahapLaktasi = TahapLaktasi.laktasiAwal;
   StatusKebuntingan _statusKebuntingan = StatusKebuntingan.tidakBunting;
 
   KebutuhanNutrisiSapi? _hasilKebutuhan;
@@ -104,16 +104,16 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
   // LABEL ENUM
   String _labelTahapLaktasi(TahapLaktasi tahap) {
     switch (tahap) {
+      case TahapLaktasi.laktasiAwal:
+        return 'Laktasi Awal';
+      case TahapLaktasi.laktasiTengah:
+        return 'Laktasi Tengah';
+      case TahapLaktasi.laktasiAkhir:
+        return 'Laktasi Akhir';
       case TahapLaktasi.keringKandang:
-        return 'Kering kandang';
-      case TahapLaktasi.awalLaktasiMinggu0sampai4:
-        return 'Awal laktasi 0-4 minggu';
-      case TahapLaktasi.awalLaktasiMinggu4sampai16:
-        return 'Awal laktasi 4-16 minggu';
-      case TahapLaktasi.tengahLaktasiMinggu16sampai30:
-        return 'Tengah laktasi 16-30 minggu';
-      case TahapLaktasi.akhirLaktasiMinggu30sampai44:
-        return 'Akhir laktasi 30-44 minggu';
+        return 'Kering Kandang';
+      case TahapLaktasi.dara:
+        return 'Dara (Heifer)';
     }
   }
 

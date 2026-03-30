@@ -5,16 +5,43 @@ import '../../../data/models/profil_sapi.dart';
 class PerhitunganKecukupanPakan {
   static double hitungPersenBkBerdasarkanTahap(TahapLaktasi tahap) {
     switch (tahap) {
+      case TahapLaktasi.laktasiAwal:
+        return 4.0;
+      case TahapLaktasi.laktasiTengah:
+        return 3.5;
+      case TahapLaktasi.laktasiAkhir:
+        return 3.0;
       case TahapLaktasi.keringKandang:
         return 2.0;
-      case TahapLaktasi.awalLaktasiMinggu0sampai4:
-        return 3.0;
-      case TahapLaktasi.awalLaktasiMinggu4sampai16:
-        return 4.0;
-      case TahapLaktasi.tengahLaktasiMinggu16sampai30:
-        return 3.5;
-      case TahapLaktasi.akhirLaktasiMinggu30sampai44:
-        return 3.0;
+      case TahapLaktasi.dara:
+        return 2.0;
+    }
+  }
+
+  static double getPersentaseProteinStandar(TahapLaktasi tahap) {
+    switch (tahap) {
+      case TahapLaktasi.laktasiAwal:
+        return 0.18; // 18% dari BK
+      case TahapLaktasi.laktasiTengah:
+        return 0.16; // 16% dari BK
+      case TahapLaktasi.laktasiAkhir:
+        return 0.14; // 14% dari BK
+      case TahapLaktasi.keringKandang:
+        return 0.16; // 16% dari BK
+      case TahapLaktasi.dara:
+        return 0.15; // 15% dari BK
+    }
+  }
+
+  static double getPersentaseTdnStandar(TahapLaktasi tahap) {
+    switch (tahap) {
+      case TahapLaktasi.laktasiAwal:
+      case TahapLaktasi.laktasiTengah:
+      case TahapLaktasi.laktasiAkhir:
+      case TahapLaktasi.keringKandang:
+        return 0.68; // min 68% dari BK
+      case TahapLaktasi.dara:
+        return 0.70; // min 70% dari BK
     }
   }
 
@@ -52,11 +79,11 @@ class PerhitunganKecukupanPakan {
   }
 
   static double hitungKebutuhanProtein(ProfilSapi sapi) {
-    return hitungKebutuhanBkKg(sapi) * 0.12;
+    return hitungKebutuhanBkKg(sapi) * getPersentaseProteinStandar(sapi.tahapLaktasi);
   }
 
   static double hitungKebutuhanTdn(ProfilSapi sapi) {
-    return hitungKebutuhanBkKg(sapi) * 0.65;
+    return hitungKebutuhanBkKg(sapi) * getPersentaseTdnStandar(sapi.tahapLaktasi);
   }
 
   static KebutuhanNutrisiSapi hitungKebutuhan(ProfilSapi sapi) {

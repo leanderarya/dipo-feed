@@ -1,11 +1,11 @@
 enum StatusKebuntingan { tidakBunting, bunting }
 
 enum TahapLaktasi {
+  laktasiAwal,
+  laktasiTengah,
+  laktasiAkhir,
   keringKandang,
-  awalLaktasiMinggu0sampai4,
-  awalLaktasiMinggu4sampai16,
-  tengahLaktasiMinggu16sampai30,
-  akhirLaktasiMinggu30sampai44,
+  dara,
 }
 
 class ProfilSapi {

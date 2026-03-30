@@ -15,11 +15,13 @@ class PerhitunganFormulasi {
     double totalProtein = 0;
     double totalTdn = 0;
     double totalMe = 0;
-
+    double totalFreshWeight = 0;
     for (var item in daftarBahan) {
       final pakan = item.bahan;
       final beratKg = item.jumlahKg;
       
+      totalFreshWeight += beratKg;
+
       // Hitung Nutrisi
       final bkItem = (pakan.bk / 100) * beratKg;
       final proteinItem = (pakan.protein / 100) * bkItem;
@@ -39,6 +41,16 @@ class PerhitunganFormulasi {
       } else {
         totalBkKonsentrat += bkItem;
       }
+    }
+
+    double bkRansumPersen = 0;
+    if (totalFreshWeight > 0) {
+      bkRansumPersen = (totalBk / totalFreshWeight) * 100;
+    }
+    
+    // Limit max di angka 86 (pastikan hasil tidak melebihi angka ini)
+    if (bkRansumPersen > 86) {
+      bkRansumPersen = 86;
     }
 
     final evaluasi = PerhitunganKecukupanPakan.evaluasiManual(
@@ -64,6 +76,7 @@ class PerhitunganFormulasi {
       persentaseKonsentrat: persentaseKonsentrat,
       totalBkHijauan: totalBkHijauan,
       totalBkKonsentrat: totalBkKonsentrat,
+      bkRansumPersen: bkRansumPersen,
     );
   }
 }

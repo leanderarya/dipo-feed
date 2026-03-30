@@ -8,6 +8,7 @@ class HasilFormulasi {
   final double persentaseKonsentrat;
   final double totalBkHijauan;
   final double totalBkKonsentrat;
+  final double bkRansumPersen;
 
   const HasilFormulasi({
     required this.daftarBahan,
@@ -16,5 +17,6 @@ class HasilFormulasi {
     required this.persentaseKonsentrat,
     required this.totalBkHijauan,
     required this.totalBkKonsentrat,
+    required this.bkRansumPersen,
   });
 }

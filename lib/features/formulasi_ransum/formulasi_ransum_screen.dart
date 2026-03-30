@@ -25,7 +25,7 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
   final TextEditingController _paritasController = TextEditingController();
   final TextEditingController _bulanBuntingController = TextEditingController();
 
-  TahapLaktasi _tahapLaktasi = TahapLaktasi.awalLaktasiMinggu0sampai4;
+  TahapLaktasi _tahapLaktasi = TahapLaktasi.laktasiAwal;
   StatusKebuntingan _statusKebuntingan = StatusKebuntingan.tidakBunting;
 
   // Bahan Pakan State
@@ -111,6 +111,22 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
     });
   }
 
+  Widget _buildItemHasil(String label, double value, {String satuan = ''}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
+          Text(
+            '${value.toStringAsFixed(2)}${satuan.isNotEmpty ? ' $satuan' : ''}',
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _ubahBahan(int index, BahanPakan bahanBaru) {
     final sudahDipakai = _campuran.asMap().entries.any((entry) {
       return entry.key != index && entry.value.bahan.id == bahanBaru.id;
@@ -152,16 +168,16 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
   // == Helper Enum Display ==
   String _labelTahapLaktasi(TahapLaktasi tahap) {
     switch (tahap) {
+      case TahapLaktasi.laktasiAwal:
+        return 'Laktasi Awal';
+      case TahapLaktasi.laktasiTengah:
+        return 'Laktasi Tengah';
+      case TahapLaktasi.laktasiAkhir:
+        return 'Laktasi Akhir';
       case TahapLaktasi.keringKandang:
-        return 'Kering kandang';
-      case TahapLaktasi.awalLaktasiMinggu0sampai4:
-        return 'Awal laktasi 0-4 minggu';
-      case TahapLaktasi.awalLaktasiMinggu4sampai16:
-        return 'Awal laktasi 4-16 minggu';
-      case TahapLaktasi.tengahLaktasiMinggu16sampai30:
-        return 'Tengah laktasi 16-30 minggu';
-      case TahapLaktasi.akhirLaktasiMinggu30sampai44:
-        return 'Akhir laktasi 30-44 minggu';
+        return 'Kering Kandang';
+      case TahapLaktasi.dara:
+        return 'Dara (Heifer)';
     }
   }
 
@@ -265,6 +281,16 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
                     if (_hasilFormulasi != null) ...[
                       _buildSectionTitle('Hasil Kebutuhan & Simulasi'),
                       const SizedBox(height: 8),
+                      _buildItemHasil('Bahan Kering (BK)',
+                        _hasilFormulasi!.evaluasi.bk.pemberian,
+                        satuan: 'kg'),
+                      _buildItemHasil('BK Ransum', _hasilFormulasi!.bkRansumPersen,
+                        satuan: '%'),
+                      _buildItemHasil('Protein Kasar (PK)',
+                        _hasilFormulasi!.evaluasi.protein.pemberian,
+                        satuan: 'kg'),
+                      _buildItemHasil('TDN', _hasilFormulasi!.evaluasi.tdn.pemberian,
+                        satuan: 'kg'),
                       _buildKartuHasilKesimpulan(),
                       const SizedBox(height: 16),
                       _buildKartuHasilNutrisi(),
