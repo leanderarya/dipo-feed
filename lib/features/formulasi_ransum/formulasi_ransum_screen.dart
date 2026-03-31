@@ -4,7 +4,7 @@ import '../../data/models/bahan_pakan.dart';
 import '../../data/models/campuran_pakan_item.dart';
 import '../../data/models/hasil_kecukupan_pakan.dart';
 import '../../data/models/profil_sapi.dart';
-import '../../data/sources/bahan_pakan_local_source.dart';
+import '../../data/sources/bahan_pakan_repository.dart';
 import 'logic/hasil_formulasi.dart';
 import 'logic/perhitungan_formulasi.dart';
 
@@ -25,11 +25,11 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
   final TextEditingController _paritasController = TextEditingController();
   final TextEditingController _bulanBuntingController = TextEditingController();
 
-  TahapLaktasi _tahapLaktasi = TahapLaktasi.awalLaktasiMinggu0sampai4;
+  TahapLaktasi _tahapLaktasi = TahapLaktasi.laktasiAwal;
   StatusKebuntingan _statusKebuntingan = StatusKebuntingan.tidakBunting;
 
   // Bahan Pakan State
-  final BahanPakanLocalSource _localSource = BahanPakanLocalSource();
+  final BahanPakanRepository _repository = BahanPakanRepository();
   List<BahanPakan> _semuaBahan = [];
   final List<CampuranPakanItem> _campuran = [];
   bool _isLoadingBahan = true;
@@ -54,9 +54,9 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
 
   Future<void> _muatBahanPakan() async {
     try {
-      final data = await _localSource.ambilSemuaBahanPakan();
+      await _repository.initialize();
       setState(() {
-        _semuaBahan = data;
+        _semuaBahan = _repository.data;
         _isLoadingBahan = false;
       });
     } catch (e) {
@@ -111,6 +111,22 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
     });
   }
 
+  Widget _buildItemHasil(String label, double value, {String satuan = ''}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
+          Text(
+            '${value.toStringAsFixed(2)}${satuan.isNotEmpty ? ' $satuan' : ''}',
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _ubahBahan(int index, BahanPakan bahanBaru) {
     final sudahDipakai = _campuran.asMap().entries.any((entry) {
       return entry.key != index && entry.value.bahan.id == bahanBaru.id;
@@ -152,16 +168,16 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
   // == Helper Enum Display ==
   String _labelTahapLaktasi(TahapLaktasi tahap) {
     switch (tahap) {
+      case TahapLaktasi.laktasiAwal:
+        return 'Laktasi Awal';
+      case TahapLaktasi.laktasiTengah:
+        return 'Laktasi Tengah';
+      case TahapLaktasi.laktasiAkhir:
+        return 'Laktasi Akhir';
       case TahapLaktasi.keringKandang:
-        return 'Kering kandang';
-      case TahapLaktasi.awalLaktasiMinggu0sampai4:
-        return 'Awal laktasi 0-4 minggu';
-      case TahapLaktasi.awalLaktasiMinggu4sampai16:
-        return 'Awal laktasi 4-16 minggu';
-      case TahapLaktasi.tengahLaktasiMinggu16sampai30:
-        return 'Tengah laktasi 16-30 minggu';
-      case TahapLaktasi.akhirLaktasiMinggu30sampai44:
-        return 'Akhir laktasi 30-44 minggu';
+        return 'Kering Kandang';
+      case TahapLaktasi.dara:
+        return 'Dara (Heifer)';
     }
   }
 
@@ -183,6 +199,76 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
       default:
         return Colors.black87;
     }
+  }
+
+  void _showBahanDetail(BahanPakan bahan) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        titlePadding: EdgeInsets.zero,
+        title: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade600,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.info_outline, color: Colors.white),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      bahan.nama,
+                      style: const TextStyle(color: Colors.white, fontSize: 18),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildDetailNutrienRow('Kategori', bahan.kategori),
+              _buildDetailNutrienRow('Bahan Kering (BK)', '${bahan.bk}%'),
+              _buildDetailNutrienRow('Protein Kasar (PK)', '${bahan.protein}%'),
+              _buildDetailNutrienRow('TDN', '${bahan.tdn}%'),
+              _buildDetailNutrienRow('Energi (ME)', '${bahan.me} Mcal'),
+              _buildDetailNutrienRow('Lemak', '${bahan.lemak}%'),
+              _buildDetailNutrienRow('Serat', '${bahan.serat}%'),
+              _buildDetailNutrienRow('Abu', '${bahan.abu}%'),
+              _buildDetailNutrienRow('BETN', '${bahan.betn}%'),
+              const Divider(),
+              _buildDetailNutrienRow('Harga Standar', 'Rp ${bahan.hargaDefault}/kg'),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Tutup'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailNutrienRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: TextStyle(color: Colors.grey.shade600)),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
+        ],
+      ),
+    );
   }
 
   // == Logika Perhitungan Utama ==
@@ -234,7 +320,7 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Buat Formulasi Pakan'),
+        title: const Text('Buat Formulasi Ransum'),
         centerTitle: true,
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -261,6 +347,26 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
                     _buildCardDataSapi(),
                     const SizedBox(height: 24),
                     
+                    // Hasil Formulasi (Moved here)
+                    if (_hasilFormulasi != null) ...[
+                      _buildSectionTitle('Hasil Kebutuhan & Simulasi'),
+                      const SizedBox(height: 8),
+                      _buildItemHasil('Bahan Kering (BK)',
+                        _hasilFormulasi!.evaluasi.bk.pemberian,
+                        satuan: 'kg'),
+                      _buildItemHasil('BK Ransum', _hasilFormulasi!.bkRansumPersen,
+                        satuan: '%'),
+                      _buildItemHasil('Protein Kasar (PK)',
+                        _hasilFormulasi!.evaluasi.protein.pemberian,
+                        satuan: 'kg'),
+                      _buildItemHasil('TDN', _hasilFormulasi!.evaluasi.tdn.pemberian,
+                        satuan: 'kg'),
+                      _buildKartuHasilKesimpulan(),
+                      const SizedBox(height: 16),
+                      _buildKartuHasilNutrisi(),
+                      const SizedBox(height: 24),
+                    ],
+                    
                     // 2. Data Bahan Pakan
                     _buildSectionTitle('2. Susun Ransum (Campur Pakan)'),
                     const SizedBox(height: 8),
@@ -285,7 +391,7 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
                         ),
                         onPressed: _hitungFormulasi,
                         child: const Text(
-                          'Simulasikan Formulasi', 
+                          'Hitung Ransum', 
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                       ),
@@ -293,14 +399,7 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
 
                     const SizedBox(height: 32),
 
-                    // 3. Hasil Formulasi
-                    if (_hasilFormulasi != null) ...[
-                      _buildSectionTitle('3. Hasil Simulasi Ransum'),
-                      const SizedBox(height: 8),
-                      _buildKartuHasilKesimpulan(),
-                      const SizedBox(height: 16),
-                      _buildKartuHasilNutrisi(),
-                    ],
+                    // Hasil moved up
                   ],
                 ),
               ),
@@ -380,7 +479,8 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
                         child: _buildNumberField(
                           controller: _produksiSusuController,
                           label: 'Produksi susu',
-                          suffix: 'lt/hr',
+                          suffix: 'liter/ekor/hari',
+                          helperText: 'Rata-rata produksi harian',
                         ),
                       ),
                       SizedBox(
@@ -395,8 +495,9 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
                         width: cardWidth,
                         child: _buildNumberField(
                           controller: _paritasController,
-                          label: 'Laktasi (Paritas)',
+                          label: 'Periode Laktasi',
                           suffix: 'ke',
+                          helperText: 'Jumlah masa laktasi',
                           isInteger: true,
                         ),
                       ),
@@ -404,10 +505,10 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<TahapLaktasi>(
-                    value: _tahapLaktasi,
+                    initialValue: _tahapLaktasi,
                     isExpanded: true,
                     decoration: const InputDecoration(
-                      labelText: 'Tahap laktasi',
+                      labelText: 'Bulan Laktasi (mm-yyyy)',
                       border: OutlineInputBorder(),
                       contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                     ),
@@ -424,7 +525,7 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<StatusKebuntingan>(
-                    value: _statusKebuntingan,
+                    initialValue: _statusKebuntingan,
                     isExpanded: true,
                     decoration: const InputDecoration(
                       labelText: 'Status kebuntingan',
@@ -464,14 +565,24 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
     required TextEditingController controller,
     required String label,
     required String suffix,
+    String helperText = '',
     bool isInteger = false,
   }) {
     return TextFormField(
       controller: controller,
       keyboardType: TextInputType.numberWithOptions(decimal: !isInteger),
+      onChanged: (value) {
+        if (!isInteger && value.contains('.')) {
+          controller.text = value.replaceAll('.', ',');
+          controller.selection = TextSelection.fromPosition(
+            TextPosition(offset: controller.text.length),
+          );
+        }
+      },
       decoration: InputDecoration(
         labelText: label,
         suffixText: suffix,
+        helperText: helperText, 
         border: const OutlineInputBorder(),
       ),
       validator: (v) => v!.isEmpty ? 'Wajib diisi' : null,
@@ -514,7 +625,7 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
               children: [
                 Expanded(
                   child: DropdownButtonFormField<BahanPakan>(
-                    value: item.bahan,
+                    initialValue: item.bahan,
                     isExpanded: true,
                     decoration: const InputDecoration(
                       labelText: 'Pilih Bahan',
@@ -534,6 +645,18 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
                     onChanged: (value) {
                       if (value != null) _ubahBahan(index, value);
                     },
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: IconButton(
+                    tooltip: 'Detail Nutrisi',
+                    onPressed: () => _showBahanDetail(item.bahan),
+                    icon: const Icon(Icons.info_outline, color: Colors.blueAccent, size: 20),
                   ),
                 ),
                 const SizedBox(width: 8),

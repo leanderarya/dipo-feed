@@ -23,7 +23,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
   final TextEditingController _paritasController = TextEditingController();
   final TextEditingController _bulanBuntingController = TextEditingController();
 
-  TahapLaktasi _tahapLaktasi = TahapLaktasi.awalLaktasiMinggu0sampai4;
+  TahapLaktasi _tahapLaktasi = TahapLaktasi.laktasiAwal;
   StatusKebuntingan _statusKebuntingan = StatusKebuntingan.tidakBunting;
 
   KebutuhanNutrisiSapi? _hasilKebutuhan;
@@ -104,16 +104,16 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
   // LABEL ENUM
   String _labelTahapLaktasi(TahapLaktasi tahap) {
     switch (tahap) {
+      case TahapLaktasi.laktasiAwal:
+        return 'Laktasi Awal';
+      case TahapLaktasi.laktasiTengah:
+        return 'Laktasi Tengah';
+      case TahapLaktasi.laktasiAkhir:
+        return 'Laktasi Akhir';
       case TahapLaktasi.keringKandang:
-        return 'Kering kandang';
-      case TahapLaktasi.awalLaktasiMinggu0sampai4:
-        return 'Awal laktasi 0-4 minggu';
-      case TahapLaktasi.awalLaktasiMinggu4sampai16:
-        return 'Awal laktasi 4-16 minggu';
-      case TahapLaktasi.tengahLaktasiMinggu16sampai30:
-        return 'Tengah laktasi 16-30 minggu';
-      case TahapLaktasi.akhirLaktasiMinggu30sampai44:
-        return 'Akhir laktasi 30-44 minggu';
+        return 'Kering Kandang';
+      case TahapLaktasi.dara:
+        return 'Dara (Heifer)';
     }
   }
 
@@ -212,7 +212,8 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
               _buildNumberField(
                 controller: _produksiSusuController,
                 label: 'Produksi susu',
-                suffix: 'liter/hari',
+                suffix: 'liter/ekor/hari',
+                helperText: 'Rata-rata produksi harian',
               ),
               const SizedBox(height: 12),
 
@@ -225,8 +226,9 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
 
               _buildNumberField(
                 controller: _paritasController,
-                label: 'Paritas',
-                suffix: 'kali',
+                label: 'Periode Laktasi',
+                suffix: 'ke',
+                helperText: 'Jumlah masa laktasi',
                 isInteger: true,
               ),
               const SizedBox(height: 12),
@@ -234,7 +236,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
               DropdownButtonFormField<TahapLaktasi>(
                 initialValue: _tahapLaktasi,
                 decoration: const InputDecoration(
-                  labelText: 'Tahap laktasi',
+                  labelText: 'Bulan Laktasi (mm-yyyy)',
                   border: OutlineInputBorder(),
                 ),
                 items: TahapLaktasi.values.map((tahap) {
@@ -315,14 +317,24 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
     required TextEditingController controller,
     required String label,
     required String suffix,
+    String helperText = '',
     bool isInteger = false,
   }) {
     return TextFormField(
       controller: controller,
       keyboardType: TextInputType.numberWithOptions(decimal: !isInteger),
+      onChanged: (value) {
+        if (!isInteger && value.contains('.')) {
+          controller.text = value.replaceAll('.', ',');
+          controller.selection = TextSelection.fromPosition(
+            TextPosition(offset: controller.text.length),
+          );
+        }
+      },
       decoration: InputDecoration(
         labelText: label,
         suffixText: suffix,
+        helperText: helperText,
         border: const OutlineInputBorder(),
       ),
       validator: (v) => v!.isEmpty ? 'Wajib diisi' : null,

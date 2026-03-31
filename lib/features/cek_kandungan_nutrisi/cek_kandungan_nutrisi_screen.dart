@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../data/models/bahan_pakan.dart';
 import '../../data/models/campuran_pakan_item.dart';
 import '../../data/models/hasil_pakan_terpilih.dart';
-import '../../data/sources/bahan_pakan_local_source.dart';
+import '../../data/sources/bahan_pakan_repository.dart';
 import 'logic/perhitungan_nutrisi.dart';
 
 class CekKandunganNutrisiScreen extends StatefulWidget {
@@ -20,7 +20,7 @@ class CekKandunganNutrisiScreen extends StatefulWidget {
 }
 
 class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
-  final BahanPakanLocalSource _localSource = BahanPakanLocalSource();
+  final BahanPakanRepository _repository = BahanPakanRepository();
 
   List<BahanPakan> _semuaBahan = [];
   final List<CampuranPakanItem> _campuran = [];
@@ -36,10 +36,10 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
 
   Future<void> _muatBahanPakan() async {
     try {
-      final data = await _localSource.ambilSemuaBahanPakan();
+      await _repository.initialize();
 
       setState(() {
-        _semuaBahan = data;
+        _semuaBahan = _repository.data;
         _isLoading = false;
       });
     } catch (e) {
@@ -48,6 +48,21 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
         _isLoading = false;
       });
     }
+  }
+
+  void _bukaManajemenMaster() {
+    // This allows synchronization: "Feature 1 buat sediaan di feature 2"
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => _MasterPakanSheet(
+        onUpdate: () {
+          setState(() {
+            _semuaBahan = _repository.data;
+          });
+        },
+      ),
+    );
   }
 
   void _tambahBahan() {
@@ -157,10 +172,23 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
         title: const Text('Cek Kandungan Nutrisi'),
         centerTitle: true,
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _isLoading ? null : _tambahBahan,
-        icon: const Icon(Icons.add),
-        label: const Text('Tambah'),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton.small(
+            heroTag: 'fab_master',
+            onPressed: _isLoading ? null : _bukaManajemenMaster,
+            backgroundColor: Colors.orange.shade700,
+            child: const Icon(Icons.inventory_2_outlined, color: Colors.white),
+          ),
+          const SizedBox(height: 12),
+          FloatingActionButton.extended(
+            heroTag: 'fab_add',
+            onPressed: _isLoading ? null : _tambahBahan,
+            icon: const Icon(Icons.add),
+            label: const Text('Tambah'),
+          ),
+        ],
       ),
       body: SafeArea(child: _buildBody(hasil)),
       bottomNavigationBar: widget.modePilihUntukEvaluasi
@@ -313,13 +341,21 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
+              onChanged: (value) {
+                if (value.contains('.')) {
+                  // This is tricky with initialValue/onChanged combo if not using controller
+                  // But for now let's just use the same logic
+                  _ubahJumlahKg(index, value.replaceAll('.', ','));
+                } else {
+                  _ubahJumlahKg(index, value);
+                }
+              },
               decoration: const InputDecoration(
                 labelText: 'Jumlah',
                 suffixText: 'kg',
                 border: OutlineInputBorder(),
                 hintText: 'Contoh: 10',
               ),
-              onChanged: (value) => _ubahJumlahKg(index, value),
             ),
             const SizedBox(height: 12),
             TextFormField(
@@ -330,13 +366,19 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
+              onChanged: (value) {
+                if (value.contains('.')) {
+                  _ubahHargaPerKg(index, value.replaceAll('.', ','));
+                } else {
+                  _ubahHargaPerKg(index, value);
+                }
+              },
               decoration: const InputDecoration(
                 labelText: 'Harga per kg',
                 prefixText: 'Rp ',
                 border: OutlineInputBorder(),
                 hintText: 'Contoh: 3500',
               ),
-              onChanged: (value) => _ubahHargaPerKg(index, value),
             ),
             const SizedBox(height: 12),
             Wrap(
@@ -383,12 +425,12 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Hasil Analisis',
+              'Hasil Perhitungan',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             const Text(
-              'Dari hasil analisis di atas, dapat diketahui bahwa pakan yang Anda berikan kepada sapi perah mengandung:',
+              'Dari hasil perhitungan di atas, dapat diketahui bahwa pakan yang Anda berikan kepada sapi perah mengandung:',
               style: TextStyle(height: 1.5),
             ),
             const SizedBox(height: 16),
@@ -429,6 +471,110 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
           const SizedBox(width: 12),
           Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
         ],
+      ),
+    );
+  }
+}
+
+class _MasterPakanSheet extends StatefulWidget {
+  final VoidCallback onUpdate;
+
+  const _MasterPakanSheet({required this.onUpdate});
+
+  @override
+  State<_MasterPakanSheet> createState() => _MasterPakanSheetState();
+}
+
+class _MasterPakanSheetState extends State<_MasterPakanSheet> {
+  final BahanPakanRepository _repository = BahanPakanRepository();
+
+  @override
+  Widget build(BuildContext context) {
+    final data = _repository.data;
+
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        children: [
+          _buildHandle(),
+          _buildHeader(),
+          Expanded(
+            child: ListView.separated(
+              padding: const EdgeInsets.all(16),
+              itemCount: data.length,
+              separatorBuilder: (_, _) => const Divider(),
+              itemBuilder: (context, index) {
+                final bahan = data[index];
+                return ListTile(
+                  title: Text(bahan.nama, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: Text('${bahan.kategori} • BK: ${bahan.bk}% • PK: ${bahan.protein}%'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    // Placeholder for Edit
+                  },
+                );
+              },
+            ),
+          ),
+          _buildFooter(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHandle() {
+    return Center(
+      child: Container(
+        margin: const EdgeInsets.only(top: 12),
+        width: 40,
+        height: 4,
+        decoration: BoxDecoration(
+          color: Colors.grey.shade300,
+          borderRadius: BorderRadius.circular(2),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: Row(
+        children: [
+          const Icon(Icons.inventory_2, color: Colors.orange),
+          const SizedBox(width: 12),
+          const Text(
+            'Manajemen Master Pakan',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const Spacer(),
+          IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.close),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFooter() {
+    return SafeArea(
+      minimum: const EdgeInsets.all(16),
+      child: SizedBox(
+        width: double.infinity,
+        child: OutlinedButton.icon(
+          onPressed: () {
+             ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Fitur tambah pakan baru akan segera hadir.')),
+            );
+          },
+          icon: const Icon(Icons.add_circle_outline),
+          label: const Text('Tambah Bahan Pakan Ke Library'),
+        ),
       ),
     );
   }
