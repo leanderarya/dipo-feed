@@ -505,7 +505,7 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<TahapLaktasi>(
-                    value: _tahapLaktasi,
+                    initialValue: _tahapLaktasi,
                     isExpanded: true,
                     decoration: const InputDecoration(
                       labelText: 'Bulan Laktasi (mm-yyyy)',
@@ -525,7 +525,7 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<StatusKebuntingan>(
-                    value: _statusKebuntingan,
+                    initialValue: _statusKebuntingan,
                     isExpanded: true,
                     decoration: const InputDecoration(
                       labelText: 'Status kebuntingan',
@@ -625,7 +625,7 @@ class _FormulasiRansumScreenState extends State<FormulasiRansumScreen> {
               children: [
                 Expanded(
                   child: DropdownButtonFormField<BahanPakan>(
-                    value: item.bahan,
+                    initialValue: item.bahan,
                     isExpanded: true,
                     decoration: const InputDecoration(
                       labelText: 'Pilih Bahan',

@@ -506,7 +506,7 @@ class _MasterPakanSheetState extends State<_MasterPakanSheet> {
             child: ListView.separated(
               padding: const EdgeInsets.all(16),
               itemCount: data.length,
-              separatorBuilder: (_, __) => const Divider(),
+              separatorBuilder: (_, _) => const Divider(),
               itemBuilder: (context, index) {
                 final bahan = data[index];
                 return ListTile(
