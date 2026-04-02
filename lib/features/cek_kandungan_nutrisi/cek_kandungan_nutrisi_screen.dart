@@ -51,7 +51,6 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
   }
 
   void _bukaManajemenMaster() {
-    // This allows synchronization: "Feature 1 buat sediaan di feature 2"
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -141,7 +140,7 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
       _campuran[index].hargaPerKg = harga < 0 ? 0 : harga;
     });
   }
-  
+
   void _gunakanUntukEvaluasi(HasilPerhitunganNutrisi hasil) {
     if (hasil.totalBerat <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -172,38 +171,42 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
         title: const Text('Cek Kandungan Nutrisi'),
         centerTitle: true,
       ),
-      floatingActionButton: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          FloatingActionButton.small(
-            heroTag: 'fab_master',
-            onPressed: _isLoading ? null : _bukaManajemenMaster,
-            backgroundColor: Colors.orange.shade700,
-            child: const Icon(Icons.inventory_2_outlined, color: Colors.white),
-          ),
-          const SizedBox(height: 12),
-          FloatingActionButton.extended(
-            heroTag: 'fab_add',
-            onPressed: _isLoading ? null : _tambahBahan,
-            icon: const Icon(Icons.add),
-            label: const Text('Tambah'),
-          ),
-        ],
-      ),
+      floatingActionButton: _buildFabGroup(),
       body: SafeArea(child: _buildBody(hasil)),
-      bottomNavigationBar: widget.modePilihUntukEvaluasi
+      bottomNavigationBar:
+          widget.modePilihUntukEvaluasi &&
+              _campuran.isNotEmpty &&
+              hasil.totalBerat > 0
           ? SafeArea(
               minimum: const EdgeInsets.fromLTRB(16, 8, 16, 16),
               child: FilledButton.icon(
-                onPressed: () {
-                  final hasil = PerhitunganNutrisi.hitungSemua(_campuran);
-                  _gunakanUntukEvaluasi(hasil);
-                },
+                onPressed: () => _gunakanUntukEvaluasi(hasil),
                 icon: const Icon(Icons.check_circle_outline),
                 label: const Text('Gunakan untuk Evaluasi'),
               ),
             )
           : null,
+    );
+  }
+
+  Widget _buildFabGroup() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        FloatingActionButton.small(
+          heroTag: 'fab_master',
+          onPressed: _isLoading ? null : _bukaManajemenMaster,
+          backgroundColor: Colors.orange.shade700,
+          child: const Icon(Icons.inventory_2_outlined, color: Colors.white),
+        ),
+        const SizedBox(height: 12),
+        FloatingActionButton.extended(
+          heroTag: 'fab_add',
+          onPressed: _isLoading ? null : _tambahBahan,
+          icon: const Icon(Icons.add),
+          label: const Text('Tambah Bahan'),
+        ),
+      ],
     );
   }
 
@@ -226,15 +229,18 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
       children: [
         _buildHeader(),
         const SizedBox(height: 16),
+        _buildRingkasanSingkat(hasil),
+        const SizedBox(height: 16),
         if (_campuran.isEmpty)
           _buildEmptyState()
-        else
+        else ...[
           ...List.generate(
             _campuran.length,
             (index) => _buildKartuBahan(index, _campuran[index]),
           ),
-        const SizedBox(height: 16),
-        _buildKartuHasil(hasil),
+          const SizedBox(height: 16),
+          _buildKartuHasil(hasil),
+        ],
       ],
     );
   }
@@ -263,17 +269,101 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
     );
   }
 
+  Widget _buildRingkasanSingkat(HasilPerhitunganNutrisi hasil) {
+    return Card(
+      elevation: 0,
+      color: Colors.grey.shade50,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Colors.grey.shade200),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: _campuran.isEmpty
+            ? const Text(
+                'Belum ada bahan pakan yang dipilih.',
+                textAlign: TextAlign.center,
+              )
+            : Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildMiniStat(
+                          'Jumlah Bahan',
+                          '${_campuran.length}',
+                        ),
+                      ),
+                      Expanded(
+                        child: _buildMiniStat(
+                          'Total Berat',
+                          '${hasil.totalBerat.toStringAsFixed(2)} kg',
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildMiniStat(
+                          'Protein',
+                          '${hasil.protein.toStringAsFixed(2)}%',
+                        ),
+                      ),
+                      Expanded(
+                        child: _buildMiniStat(
+                          'TDN',
+                          '${hasil.tdn.toStringAsFixed(2)}%',
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+
+  Widget _buildMiniStat(String label, String value) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+        ),
+      ],
+    );
+  }
+
   Widget _buildEmptyState() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.grey.shade100,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.grey.shade300),
       ),
-      child: const Text(
-        'Belum ada bahan yang ditambahkan.\nTekan tombol "Tambah" untuk mulai membuat campuran.',
-        textAlign: TextAlign.center,
+      child: const Column(
+        children: [
+          Icon(Icons.feed_outlined, size: 40, color: Colors.grey),
+          SizedBox(height: 12),
+          Text(
+            'Belum ada bahan yang ditambahkan.',
+            style: TextStyle(fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 6),
+          Text(
+            'Tekan tombol "Tambah Bahan" untuk mulai membuat campuran pakan.',
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
@@ -341,15 +431,7 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
-              onChanged: (value) {
-                if (value.contains('.')) {
-                  // This is tricky with initialValue/onChanged combo if not using controller
-                  // But for now let's just use the same logic
-                  _ubahJumlahKg(index, value.replaceAll('.', ','));
-                } else {
-                  _ubahJumlahKg(index, value);
-                }
-              },
+              onChanged: (value) => _ubahJumlahKg(index, value),
               decoration: const InputDecoration(
                 labelText: 'Jumlah',
                 suffixText: 'kg',
@@ -366,13 +448,7 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
-              onChanged: (value) {
-                if (value.contains('.')) {
-                  _ubahHargaPerKg(index, value.replaceAll('.', ','));
-                } else {
-                  _ubahHargaPerKg(index, value);
-                }
-              },
+              onChanged: (value) => _ubahHargaPerKg(index, value),
               decoration: const InputDecoration(
                 labelText: 'Harga per kg',
                 prefixText: 'Rp ',
@@ -503,22 +579,30 @@ class _MasterPakanSheetState extends State<_MasterPakanSheet> {
           _buildHandle(),
           _buildHeader(),
           Expanded(
-            child: ListView.separated(
-              padding: const EdgeInsets.all(16),
-              itemCount: data.length,
-              separatorBuilder: (_, _) => const Divider(),
-              itemBuilder: (context, index) {
-                final bahan = data[index];
-                return ListTile(
-                  title: Text(bahan.nama, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text('${bahan.kategori} • BK: ${bahan.bk}% • PK: ${bahan.protein}%'),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () {
-                    // Placeholder for Edit
-                  },
-                );
-              },
-            ),
+            child: data.isEmpty
+                ? const Center(child: Text('Belum ada data master pakan.'))
+                : ListView.separated(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: data.length,
+                    separatorBuilder: (_, _) => const Divider(),
+                    itemBuilder: (context, index) {
+                      final bahan = data[index];
+                      return ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(
+                          bahan.nama,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Text(
+                          '${bahan.kategori} • BK: ${bahan.bk}% • PK: ${bahan.protein}%',
+                        ),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () {
+                          // Placeholder for Edit
+                        },
+                      );
+                    },
+                  ),
           ),
           _buildFooter(),
         ],
@@ -568,12 +652,14 @@ class _MasterPakanSheetState extends State<_MasterPakanSheet> {
         width: double.infinity,
         child: OutlinedButton.icon(
           onPressed: () {
-             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Fitur tambah pakan baru akan segera hadir.')),
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Fitur tambah pakan baru akan segera hadir.'),
+              ),
             );
           },
           icon: const Icon(Icons.add_circle_outline),
-          label: const Text('Tambah Bahan Pakan Ke Library'),
+          label: const Text('Tambah Bahan Pakan ke Library'),
         ),
       ),
     );

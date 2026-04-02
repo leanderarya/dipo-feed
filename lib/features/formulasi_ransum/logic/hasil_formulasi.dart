@@ -1,22 +1,29 @@
-import '../../../data/models/campuran_pakan_item.dart';
 import '../../../data/models/hasil_kecukupan_pakan.dart';
 
+class RekomendasiPakanItem {
+  final String namaBahan;
+  final double jumlahKg;
+  final String kategori;
+
+  const RekomendasiPakanItem({
+    required this.namaBahan,
+    required this.jumlahKg,
+    required this.kategori,
+  });
+}
+
 class HasilFormulasi {
-  final List<CampuranPakanItem> daftarBahan;
-  final HasilEvaluasiKecukupan evaluasi;
   final double persentaseHijauan;
   final double persentaseKonsentrat;
-  final double totalBkHijauan;
-  final double totalBkKonsentrat;
   final double bkRansumPersen;
+  final List<RekomendasiPakanItem> rekomendasiPakan;
+  final HasilEvaluasiKecukupan evaluasi;
 
   const HasilFormulasi({
-    required this.daftarBahan,
-    required this.evaluasi,
     required this.persentaseHijauan,
     required this.persentaseKonsentrat,
-    required this.totalBkHijauan,
-    required this.totalBkKonsentrat,
     required this.bkRansumPersen,
+    required this.rekomendasiPakan,
+    required this.evaluasi,
   });
 }
