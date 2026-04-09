@@ -54,6 +54,7 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (context) => _MasterPakanSheet(
         onUpdate: () {
           setState(() {
@@ -171,6 +172,7 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
         title: const Text('Cek Kandungan Nutrisi'),
         centerTitle: true,
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: _buildFabGroup(),
       body: SafeArea(child: _buildBody(hasil)),
       bottomNavigationBar:
@@ -180,6 +182,12 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
           ? SafeArea(
               minimum: const EdgeInsets.fromLTRB(16, 8, 16, 16),
               child: FilledButton.icon(
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
                 onPressed: () => _gunakanUntukEvaluasi(hasil),
                 icon: const Icon(Icons.check_circle_outline),
                 label: const Text('Gunakan untuk Evaluasi'),
@@ -218,14 +226,14 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
     if (_errorMessage != null) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(24),
           child: Text(_errorMessage!, textAlign: TextAlign.center),
         ),
       );
     }
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
       children: [
         _buildHeader(),
         const SizedBox(height: 16),
@@ -247,22 +255,33 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
 
   Widget _buildHeader() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.green.shade50,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.green.shade100),
+        gradient: LinearGradient(
+          colors: [Colors.green.shade50, Colors.green.shade100],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.green.shade200),
       ),
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Formulasi Campuran Pakan',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          Row(
+            children: [
+              Icon(Icons.analytics_outlined, size: 22),
+              SizedBox(width: 8),
+              Text(
+                'Formulasi Campuran Pakan',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ],
           ),
-          SizedBox(height: 6),
+          SizedBox(height: 8),
           Text(
             'Tambahkan bahan pakan, isi jumlah dan harga, lalu sistem akan menghitung kandungan nutrisi campuran.',
+            style: TextStyle(height: 1.5),
           ),
         ],
       ),
@@ -274,91 +293,104 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
       elevation: 0,
       color: Colors.grey.shade50,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         side: BorderSide(color: Colors.grey.shade200),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: _campuran.isEmpty
-            ? const Text(
-                'Belum ada bahan pakan yang dipilih.',
-                textAlign: TextAlign.center,
-              )
-            : Column(
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildMiniStat(
-                          'Jumlah Bahan',
-                          '${_campuran.length}',
-                        ),
-                      ),
-                      Expanded(
-                        child: _buildMiniStat(
-                          'Total Berat',
-                          '${hasil.totalBerat.toStringAsFixed(2)} kg',
-                        ),
-                      ),
-                    ],
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: _buildMiniStat(
+                    'Jumlah Bahan',
+                    '${_campuran.length}',
+                    Icons.layers_outlined,
                   ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildMiniStat(
-                          'Protein',
-                          '${hasil.protein.toStringAsFixed(2)}%',
-                        ),
-                      ),
-                      Expanded(
-                        child: _buildMiniStat(
-                          'TDN',
-                          '${hasil.tdn.toStringAsFixed(2)}%',
-                        ),
-                      ),
-                    ],
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildMiniStat(
+                    'Total Berat',
+                    '${hasil.totalBerat.toStringAsFixed(2)} kg',
+                    Icons.scale_outlined,
                   ),
-                ],
-              ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildMiniStat(
+                    'Protein',
+                    '${hasil.protein.toStringAsFixed(2)}%',
+                    Icons.bubble_chart_outlined,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildMiniStat(
+                    'TDN',
+                    '${hasil.tdn.toStringAsFixed(2)}%',
+                    Icons.show_chart_outlined,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildMiniStat(String label, String value) {
-    return Column(
-      children: [
-        Text(
-          label,
-          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-        ),
-      ],
+  Widget _buildMiniStat(String label, String value, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, size: 18, color: Colors.grey.shade700),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildEmptyState() {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: Colors.grey.shade300),
       ),
       child: const Column(
         children: [
-          Icon(Icons.feed_outlined, size: 40, color: Colors.grey),
-          SizedBox(height: 12),
+          Icon(Icons.feed_outlined, size: 42, color: Colors.grey),
+          SizedBox(height: 14),
           Text(
-            'Belum ada bahan yang ditambahkan.',
-            style: TextStyle(fontWeight: FontWeight.bold),
+            'Belum ada bahan yang ditambahkan',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: 6),
+          SizedBox(height: 8),
           Text(
             'Tekan tombol "Tambah Bahan" untuk mulai membuat campuran pakan.',
             textAlign: TextAlign.center,
@@ -376,9 +408,12 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
     );
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 1,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      margin: const EdgeInsets.only(bottom: 14),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: BorderSide(color: Colors.grey.shade200),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -386,10 +421,22 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
           children: [
             Row(
               children: [
-                Expanded(
+                CircleAvatar(
+                  radius: 16,
+                  backgroundColor: Colors.green.shade50,
                   child: Text(
-                    'Bahan ${index + 1}',
-                    style: const TextStyle(
+                    '${index + 1}',
+                    style: TextStyle(
+                      color: Colors.green.shade800,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                const Expanded(
+                  child: Text(
+                    'Bahan Pakan',
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
@@ -402,7 +449,7 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             DropdownButtonFormField<BahanPakan>(
               initialValue: item.bahan,
               isExpanded: true,
@@ -423,40 +470,48 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
               },
             ),
             const SizedBox(height: 12),
-            TextFormField(
-              key: ValueKey('jumlah_$index'),
-              initialValue: item.jumlahKg == 0
-                  ? ''
-                  : item.jumlahKg.toStringAsFixed(2),
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              onChanged: (value) => _ubahJumlahKg(index, value),
-              decoration: const InputDecoration(
-                labelText: 'Jumlah',
-                suffixText: 'kg',
-                border: OutlineInputBorder(),
-                hintText: 'Contoh: 10',
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    key: ValueKey('jumlah_$index'),
+                    initialValue: item.jumlahKg == 0
+                        ? ''
+                        : item.jumlahKg.toStringAsFixed(2),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    onChanged: (value) => _ubahJumlahKg(index, value),
+                    decoration: const InputDecoration(
+                      labelText: 'Jumlah',
+                      suffixText: 'kg',
+                      border: OutlineInputBorder(),
+                      hintText: 'Contoh: 10',
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextFormField(
+                    key: ValueKey('harga_$index'),
+                    initialValue: item.hargaPerKg == 0
+                        ? ''
+                        : item.hargaPerKg.toStringAsFixed(0),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    onChanged: (value) => _ubahHargaPerKg(index, value),
+                    decoration: const InputDecoration(
+                      labelText: 'Harga/kg',
+                      prefixText: 'Rp ',
+                      border: OutlineInputBorder(),
+                      hintText: '3500',
+                    ),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 12),
-            TextFormField(
-              key: ValueKey('harga_$index'),
-              initialValue: item.hargaPerKg == 0
-                  ? ''
-                  : item.hargaPerKg.toStringAsFixed(0),
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              onChanged: (value) => _ubahHargaPerKg(index, value),
-              decoration: const InputDecoration(
-                labelText: 'Harga per kg',
-                prefixText: 'Rp ',
-                border: OutlineInputBorder(),
-                hintText: 'Contoh: 3500',
-              ),
-            ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -481,7 +536,7 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
 
   Widget _buildInfoChip(String label, String value) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.grey.shade100,
         borderRadius: BorderRadius.circular(999),
@@ -493,21 +548,38 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
 
   Widget _buildKartuHasil(HasilPerhitunganNutrisi hasil) {
     return Card(
-      elevation: 1,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: BorderSide(color: Colors.grey.shade200),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Hasil Perhitungan',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            const Row(
+              children: [
+                Icon(Icons.calculate_outlined),
+                SizedBox(width: 8),
+                Text(
+                  'Hasil Perhitungan',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Dari hasil perhitungan di atas, dapat diketahui bahwa pakan yang Anda berikan kepada sapi perah mengandung:',
-              style: TextStyle(height: 1.5),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.green.shade50,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.green.shade100),
+              ),
+              child: const Text(
+                'Dari hasil perhitungan di atas, dapat diketahui bahwa pakan yang Anda berikan kepada sapi perah mengandung:',
+                style: TextStyle(height: 1.5),
+              ),
             ),
             const SizedBox(height: 16),
             _buildItemHasil('Bahan Kering', '${hasil.bk.toStringAsFixed(2)}%'),
@@ -520,9 +592,10 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
               'Dengan harga per kg',
               'Rp ${hasil.hargaRataRata.toStringAsFixed(0)}',
             ),
-            const SizedBox(height: 16),
-            const Divider(),
-            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Divider(color: Colors.grey.shade300),
+            ),
             _buildItemHasil(
               'Total Berat Campuran',
               '${hasil.totalBerat.toStringAsFixed(2)} kg',
@@ -539,7 +612,7 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
 
   Widget _buildItemHasil(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -569,10 +642,10 @@ class _MasterPakanSheetState extends State<_MasterPakanSheet> {
     final data = _repository.data;
 
     return Container(
-      height: MediaQuery.of(context).size.height * 0.85,
+      height: MediaQuery.of(context).size.height * 0.88,
       decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
         children: [
@@ -582,24 +655,35 @@ class _MasterPakanSheetState extends State<_MasterPakanSheet> {
             child: data.isEmpty
                 ? const Center(child: Text('Belum ada data master pakan.'))
                 : ListView.separated(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                     itemCount: data.length,
-                    separatorBuilder: (_, _) => const Divider(),
+                    separatorBuilder: (_, _) => const SizedBox(height: 8),
                     itemBuilder: (context, index) {
                       final bahan = data[index];
-                      return ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(
-                          bahan.nama,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                      return Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: Colors.grey.shade200),
                         ),
-                        subtitle: Text(
-                          '${bahan.kategori} • BK: ${bahan.bk}% • PK: ${bahan.protein}%',
+                        child: ListTile(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          title: Text(
+                            bahan.nama,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Padding(
+                            padding: const EdgeInsets.only(top: 6),
+                            child: Text(
+                              '${bahan.kategori} • BK: ${bahan.bk}% • PK: ${bahan.protein}%',
+                            ),
+                          ),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: () {
+                            // Placeholder for Edit
+                          },
                         ),
-                        trailing: const Icon(Icons.chevron_right),
-                        onTap: () {
-                          // Placeholder for Edit
-                        },
                       );
                     },
                   ),
@@ -614,11 +698,11 @@ class _MasterPakanSheetState extends State<_MasterPakanSheet> {
     return Center(
       child: Container(
         margin: const EdgeInsets.only(top: 12),
-        width: 40,
+        width: 42,
         height: 4,
         decoration: BoxDecoration(
           color: Colors.grey.shade300,
-          borderRadius: BorderRadius.circular(2),
+          borderRadius: BorderRadius.circular(999),
         ),
       ),
     );
@@ -626,16 +710,21 @@ class _MasterPakanSheetState extends State<_MasterPakanSheet> {
 
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      padding: const EdgeInsets.fromLTRB(16, 18, 16, 8),
       child: Row(
         children: [
-          const Icon(Icons.inventory_2, color: Colors.orange),
-          const SizedBox(width: 12),
-          const Text(
-            'Manajemen Master Pakan',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          CircleAvatar(
+            radius: 18,
+            backgroundColor: Colors.orange.shade50,
+            child: const Icon(Icons.inventory_2, color: Colors.orange),
           ),
-          const Spacer(),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Text(
+              'Manajemen Master Pakan',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
           IconButton(
             onPressed: () => Navigator.pop(context),
             icon: const Icon(Icons.close),
@@ -647,10 +736,16 @@ class _MasterPakanSheetState extends State<_MasterPakanSheet> {
 
   Widget _buildFooter() {
     return SafeArea(
-      minimum: const EdgeInsets.all(16),
+      minimum: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       child: SizedBox(
         width: double.infinity,
         child: OutlinedButton.icon(
+          style: OutlinedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+          ),
           onPressed: () {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(

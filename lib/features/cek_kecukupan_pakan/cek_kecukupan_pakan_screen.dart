@@ -270,6 +270,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
         title: const Text('Cek Kecukupan Pakan'),
         centerTitle: true,
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _isLoadingBahan ? null : _tambahBahanPakan,
         icon: const Icon(Icons.add),
@@ -281,12 +282,12 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
             : _errorBahan != null
             ? Center(
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(24),
                   child: Text(_errorBahan!, textAlign: TextAlign.center),
                 ),
               )
             : ListView(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
                 children: [
                   _buildHeader(),
                   const SizedBox(height: 16),
@@ -306,22 +307,33 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
 
   Widget _buildHeader() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.orange.shade50,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.orange.shade100),
+        gradient: LinearGradient(
+          colors: [Colors.orange.shade50, Colors.orange.shade100],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.orange.shade200),
       ),
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Evaluasi Kecukupan Pakan',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          Row(
+            children: [
+              Icon(Icons.rule_folder_outlined, size: 22),
+              SizedBox(width: 8),
+              Text(
+                'Evaluasi Kecukupan Pakan',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ],
           ),
-          SizedBox(height: 6),
+          SizedBox(height: 8),
           Text(
             'Isi data sapi dan pilih bahan pakan yang diberikan. Sistem akan menghitung total nutrisi pakan lalu membandingkannya dengan kebutuhan sapi.',
+            style: TextStyle(height: 1.5),
           ),
         ],
       ),
@@ -337,7 +349,11 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
           message: message,
           triggerMode: TooltipTriggerMode.tap,
           showDuration: const Duration(seconds: 3),
-          child: const Icon(Icons.info_outline, size: 18, color: Colors.grey),
+          child: Icon(
+            Icons.info_outline,
+            size: 18,
+            color: Colors.grey.shade600,
+          ),
         ),
       ],
     );
@@ -345,7 +361,11 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
 
   Widget _buildFormInput() {
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: BorderSide(color: Colors.grey.shade200),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -355,17 +375,15 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
             children: [
               const Text(
                 'Data Sapi',
-                style: TextStyle(fontWeight: FontWeight.bold),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
-              const SizedBox(height: 12),
-
+              const SizedBox(height: 14),
               _buildNumberField(
                 controller: _beratBadanController,
                 label: 'Berat badan',
                 suffix: 'kg',
               ),
               const SizedBox(height: 12),
-
               _buildLabelWithInfo(
                 'Produksi susu',
                 'Diisi jumlah produksi susu rata-rata per hari dalam satuan liter per ekor.',
@@ -377,10 +395,9 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
                 suffix: 'liter/ekor/hari',
               ),
               const SizedBox(height: 12),
-
               _buildLabelWithInfo(
                 'Lemak susu',
-                'Diisi sesuai dengan pengetahuan peternak. Misal 3 - 3,5%',
+                'Diisi sesuai dengan pengetahuan peternak. Misal 3 - 3,5%.',
               ),
               const SizedBox(height: 8),
               _buildNumberField(
@@ -389,20 +406,18 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
                 suffix: '%',
               ),
               const SizedBox(height: 12),
-
               _buildLabelWithInfo(
-                'Periode Laktasi',
+                'Periode laktasi',
                 'Jumlah berapa kali sapi sudah beranak. Contoh: jika sapi sudah melahirkan 2 kali, maka isi 2.',
               ),
               const SizedBox(height: 8),
               _buildNumberField(
                 controller: _paritasController,
-                label: 'Periode Laktasi',
+                label: 'Periode laktasi',
                 suffix: 'ke',
                 isInteger: true,
               ),
               const SizedBox(height: 12),
-
               _buildLabelWithInfo(
                 'Bulan laktasi',
                 'Diisi jumlah bulan sejak sapi terakhir melahirkan. Contoh: jika sapi melahirkan 6 bulan yang lalu, isi 6.',
@@ -415,7 +430,6 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
                 isInteger: true,
               ),
               const SizedBox(height: 12),
-
               DropdownButtonFormField<StatusKebuntingan>(
                 initialValue: _statusKebuntingan,
                 decoration: const InputDecoration(
@@ -440,7 +454,6 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
                   }
                 },
               ),
-
               if (_statusKebuntingan == StatusKebuntingan.bunting) ...[
                 const SizedBox(height: 12),
                 _buildLabelWithInfo(
@@ -455,37 +468,29 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
                   isInteger: true,
                 ),
               ],
-
               const SizedBox(height: 20),
               const Text(
                 'Pemberian Pakan',
-                style: TextStyle(fontWeight: FontWeight.bold),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               const SizedBox(height: 12),
-
               if (_pemberianPakan.isEmpty)
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.shade300),
-                  ),
-                  child: const Text(
-                    'Belum ada bahan pakan yang ditambahkan. Tekan tombol "Tambah Pakan".',
-                  ),
-                )
+                _buildEmptyPakanState()
               else
                 ...List.generate(
                   _pemberianPakan.length,
                   (index) => _buildKartuPakan(index, _pemberianPakan[index]),
                 ),
-
               const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,
                 child: FilledButton(
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
                   onPressed: _hitungEvaluasi,
                   child: const Text('Hitung Evaluasi'),
                 ),
@@ -493,6 +498,34 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyPakanState() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: const Column(
+        children: [
+          Icon(Icons.restaurant_outlined, size: 40, color: Colors.grey),
+          SizedBox(height: 12),
+          Text(
+            'Belum ada bahan pakan yang ditambahkan',
+            style: TextStyle(fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 6),
+          Text(
+            'Tekan tombol "Tambah Pakan" untuk mulai mengevaluasi pakan.',
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
@@ -505,24 +538,36 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
     );
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 14),
       elevation: 0,
-      color: Colors.grey.shade50,
+      color: Colors.white,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-        side: BorderSide(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(18),
+        side: BorderSide(color: Colors.grey.shade200),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Expanded(
+                CircleAvatar(
+                  radius: 16,
+                  backgroundColor: Colors.orange.shade50,
                   child: Text(
-                    'Pakan ${index + 1}',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    '${index + 1}',
+                    style: TextStyle(
+                      color: Colors.orange.shade800,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                const Expanded(
+                  child: Text(
+                    'Bahan Pakan',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
                 IconButton(
@@ -531,7 +576,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             DropdownButtonFormField<BahanPakan>(
               initialValue: item.bahan,
               isExpanded: true,
@@ -567,7 +612,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
               ),
               onChanged: (value) => _ubahJumlahPakan(index, value),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -592,7 +637,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
 
   Widget _buildInfoChip(String label, String value) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.grey.shade100,
         borderRadius: BorderRadius.circular(999),
@@ -641,7 +686,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
         children: [
@@ -662,11 +707,27 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
     if (_hasilKebutuhan == null) return const SizedBox();
 
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: BorderSide(color: Colors.grey.shade200),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(18),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const Row(
+              children: [
+                Icon(Icons.fact_check_outlined),
+                SizedBox(width: 8),
+                Text(
+                  'Kebutuhan Nutrisi Sapi',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
             _buildItemHasil('BK', _hasilKebutuhan!.kebutuhanBkKg, 'kg'),
             _buildItemHasil('Protein', _hasilKebutuhan!.kebutuhanProtein, 'kg'),
             _buildItemHasil('TDN', _hasilKebutuhan!.kebutuhanTdn, 'kg'),
@@ -683,17 +744,27 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
     }
 
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: BorderSide(color: Colors.grey.shade200),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Ringkasan Pemberian Pakan',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            const Row(
+              children: [
+                Icon(Icons.summarize_outlined),
+                SizedBox(width: 8),
+                Text(
+                  'Ringkasan Pemberian Pakan',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             _buildItemHasil(
               'Total Pakan',
               _hasilCampuranPakan!.totalBerat,
@@ -707,22 +778,33 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
             ),
             _buildItemHasil('TDN Campuran', _hasilCampuranPakan!.tdn, '%'),
             _buildItemHasil('ME Campuran', _hasilCampuranPakan!.me, ''),
-            const SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Divider(color: Colors.grey.shade300),
+            ),
             const Text(
               'Hasil Evaluasi Kecukupan',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
-            Text(
-              _hasilEvaluasi!.kesimpulanUmum,
-              style: const TextStyle(height: 1.5),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.orange.shade50,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.orange.shade100),
+              ),
+              child: Text(
+                _hasilEvaluasi!.kesimpulanUmum,
+                style: const TextStyle(height: 1.5),
+              ),
             ),
             const SizedBox(height: 16),
             _buildKartuEvaluasiItem('BK', _hasilEvaluasi!.bk, 'kg'),
             _buildKartuEvaluasiItem('PK', _hasilEvaluasi!.protein, 'kg'),
             _buildKartuEvaluasiItem('TDN', _hasilEvaluasi!.tdn, 'kg'),
             _buildKartuEvaluasiItem('ME', _hasilEvaluasi!.me, ''),
-            const SizedBox(height: 8),
+            const SizedBox(height: 4),
             const Text(
               'Keterangan: hijau = berlebih, merah = kurang, hitam = pas.',
               style: TextStyle(fontSize: 12),
@@ -826,10 +908,11 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
         : '${value.toStringAsFixed(2)} $suffix';
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         children: [
           Expanded(child: Text(label)),
+          const SizedBox(width: 12),
           Text(text, style: const TextStyle(fontWeight: FontWeight.bold)),
         ],
       ),
