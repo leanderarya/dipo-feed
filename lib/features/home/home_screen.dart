@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../cek_kandungan_nutrisi/cek_kandungan_nutrisi_screen.dart';
 import '../cek_kecukupan_pakan/cek_kecukupan_pakan_screen.dart';
 import '../formulasi_ransum/formulasi_ransum_screen.dart';
+import '../master_pakan/master_pakan_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -43,6 +44,13 @@ class _HomeScreenState extends State<HomeScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const CekKandunganNutrisiScreen()),
+    );
+  }
+
+  void _bukaMasterPakan() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const MasterPakanScreen()),
     );
   }
 
@@ -199,10 +207,21 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 14),
                   _MenuCard(
                     title: 'Master Bahan Pakan',
-                    subtitle: 'Kelola sediaan & cek kandungan nutrisi',
+                    subtitle: 'Kelola data master pakan yang tersimpan lokal',
                     icon: Icons.inventory_2,
                     iconBg: const Color(0xFFF4E7C5),
                     iconColor: const Color(0xFF9C6B00),
+                    cardColor: cardColor,
+                    textColor: brownText,
+                    onTap: _bukaMasterPakan,
+                  ),
+                  const SizedBox(height: 14),
+                  _MenuCard(
+                    title: 'Cek Kandungan Nutrisi',
+                    subtitle: 'Hitung kandungan nutrisi campuran pakan',
+                    icon: Icons.analytics_outlined,
+                    iconBg: const Color(0xFFE4EEF9),
+                    iconColor: const Color(0xFF1E5B8C),
                     cardColor: cardColor,
                     textColor: brownText,
                     onTap: _bukaCekKandungan,

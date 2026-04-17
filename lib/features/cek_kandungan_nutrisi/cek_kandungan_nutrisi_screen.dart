@@ -4,6 +4,7 @@ import '../../data/models/bahan_pakan.dart';
 import '../../data/models/campuran_pakan_item.dart';
 import '../../data/models/hasil_pakan_terpilih.dart';
 import '../../data/sources/bahan_pakan_repository.dart';
+import '../master_pakan/master_pakan_screen.dart';
 import 'logic/perhitungan_nutrisi.dart';
 
 class CekKandunganNutrisiScreen extends StatefulWidget {
@@ -39,7 +40,7 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
       await _repository.initialize();
 
       setState(() {
-        _semuaBahan = _repository.data;
+        _semuaBahan = _repository.dataAktif;
         _isLoading = false;
       });
     } catch (e) {
@@ -50,19 +51,16 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
     }
   }
 
-  void _bukaManajemenMaster() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _MasterPakanSheet(
-        onUpdate: () {
-          setState(() {
-            _semuaBahan = _repository.data;
-          });
-        },
-      ),
+  Future<void> _bukaManajemenMaster() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const MasterPakanScreen()),
     );
+    await _repository.refresh();
+    if (!mounted) return;
+    setState(() {
+      _semuaBahan = _repository.dataAktif;
+    });
   }
 
   void _tambahBahan() {

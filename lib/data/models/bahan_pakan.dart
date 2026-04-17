@@ -46,4 +46,54 @@ class BahanPakan {
       isActive: json['isActive'] as bool,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'nama': nama,
+      'kategori': kategori,
+      'bk': bk,
+      'abu': abu,
+      'lemak': lemak,
+      'serat': serat,
+      'protein': protein,
+      'betn': betn,
+      'tdn': tdn,
+      'me': me,
+      'hargaDefault': hargaDefault,
+      'isActive': isActive,
+    };
+  }
+
+  BahanPakan copyWith({
+    int? id,
+    String? nama,
+    String? kategori,
+    double? bk,
+    double? abu,
+    double? lemak,
+    double? serat,
+    double? protein,
+    double? betn,
+    double? tdn,
+    double? me,
+    double? hargaDefault,
+    bool? isActive,
+  }) {
+    return BahanPakan(
+      id: id ?? this.id,
+      nama: nama ?? this.nama,
+      kategori: kategori ?? this.kategori,
+      bk: bk ?? this.bk,
+      abu: abu ?? this.abu,
+      lemak: lemak ?? this.lemak,
+      serat: serat ?? this.serat,
+      protein: protein ?? this.protein,
+      betn: betn ?? this.betn,
+      tdn: tdn ?? this.tdn,
+      me: me ?? this.me,
+      hargaDefault: hargaDefault ?? this.hargaDefault,
+      isActive: isActive ?? this.isActive,
+    );
+  }
 }

@@ -4,7 +4,7 @@ import '../../data/models/bahan_pakan.dart';
 import '../../data/models/campuran_pakan_item.dart';
 import '../../data/models/hasil_kecukupan_pakan.dart';
 import '../../data/models/profil_sapi.dart';
-import '../../data/sources/bahan_pakan_local_source.dart';
+import '../../data/sources/bahan_pakan_repository.dart';
 import '../cek_kandungan_nutrisi/logic/perhitungan_nutrisi.dart';
 import 'logic/perhitungan_kecukupan_pakan.dart';
 
@@ -18,7 +18,7 @@ class CekKecukupanPakanScreen extends StatefulWidget {
 
 class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
   final _formKey = GlobalKey<FormState>();
-  final BahanPakanLocalSource _localSource = BahanPakanLocalSource();
+  final BahanPakanRepository _repository = BahanPakanRepository();
 
   final TextEditingController _beratBadanController = TextEditingController();
   final TextEditingController _produksiSusuController = TextEditingController();
@@ -59,7 +59,8 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
 
   Future<void> _muatBahanPakan() async {
     try {
-      final data = await _localSource.ambilSemuaBahanPakan();
+      await _repository.initialize();
+      final data = _repository.dataAktif;
       setState(() {
         _semuaBahan = data;
         _isLoadingBahan = false;
