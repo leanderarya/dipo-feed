@@ -375,7 +375,6 @@ class _FormBahanPakanSheetState extends State<_FormBahanPakanSheet> {
   final _formKey = GlobalKey<FormState>();
 
   late final TextEditingController _namaController;
-  late final TextEditingController _kategoriController;
   late final TextEditingController _bkController;
   late final TextEditingController _abuController;
   late final TextEditingController _lemakController;
@@ -393,7 +392,6 @@ class _FormBahanPakanSheetState extends State<_FormBahanPakanSheet> {
     super.initState();
     final data = widget.initialData;
     _namaController = TextEditingController(text: data?.nama ?? '');
-    _kategoriController = TextEditingController(text: data?.kategori ?? '');
     _bkController = TextEditingController(text: _formatNumber(data?.bk));
     _abuController = TextEditingController(text: _formatNumber(data?.abu));
     _lemakController = TextEditingController(text: _formatNumber(data?.lemak));
@@ -405,13 +403,15 @@ class _FormBahanPakanSheetState extends State<_FormBahanPakanSheet> {
     _hargaController = TextEditingController(
       text: data == null ? '' : data.hargaDefault.toStringAsFixed(0),
     );
+    _selectedKategori = data?.kategori ?? 'hijauan';
     _isActive = data?.isActive ?? true;
   }
+
+  late String _selectedKategori;
 
   @override
   void dispose() {
     _namaController.dispose();
-    _kategoriController.dispose();
     _bkController.dispose();
     _abuController.dispose();
     _lemakController.dispose();
@@ -441,7 +441,7 @@ class _FormBahanPakanSheetState extends State<_FormBahanPakanSheet> {
       BahanPakan(
         id: widget.initialData?.id ?? widget.nextId,
         nama: _namaController.text.trim(),
-        kategori: _kategoriController.text.trim(),
+        kategori: _selectedKategori,
         bk: _parseNumber(_bkController.text),
         abu: _parseNumber(_abuController.text),
         lemak: _parseNumber(_lemakController.text),
@@ -510,10 +510,26 @@ class _FormBahanPakanSheetState extends State<_FormBahanPakanSheet> {
                       validator: _requiredValidator,
                     ),
                     const SizedBox(height: 12),
-                    _buildTextField(
-                      controller: _kategoriController,
-                      label: 'Kategori',
-                      validator: _requiredValidator,
+                    DropdownButtonFormField<String>(
+                      value: _selectedKategori,
+                      decoration: const InputDecoration(
+                        labelText: 'Kategori',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: const [
+                        DropdownMenuItem(value: 'hijauan', child: Text('Hijauan (Rumput, Jerami, Daun)')),
+                        DropdownMenuItem(value: 'konsentrat', child: Text('Konsentrat (Pellet, Pollard, Mixfeed)')),
+                        DropdownMenuItem(value: 'limbah', child: Text('Limbah / Komboran (Ampas Tahu, dsb)')),
+                        DropdownMenuItem(value: 'energi', child: Text('Umbi / Energi (Singkong, dsb)')),
+                        DropdownMenuItem(value: 'lainnya', child: Text('Lainnya')),
+                      ],
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() {
+                            _selectedKategori = value;
+                          });
+                        }
+                      },
                     ),
                     const SizedBox(height: 12),
                     Row(
@@ -522,6 +538,7 @@ class _FormBahanPakanSheetState extends State<_FormBahanPakanSheet> {
                           child: _buildNumberField(
                             controller: _bkController,
                             label: 'BK (%)',
+                            validator: _percentageValidator,
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -529,6 +546,7 @@ class _FormBahanPakanSheetState extends State<_FormBahanPakanSheet> {
                           child: _buildNumberField(
                             controller: _abuController,
                             label: 'Abu (%)',
+                            validator: _percentageValidator,
                           ),
                         ),
                       ],
@@ -540,6 +558,7 @@ class _FormBahanPakanSheetState extends State<_FormBahanPakanSheet> {
                           child: _buildNumberField(
                             controller: _lemakController,
                             label: 'Lemak (%)',
+                            validator: _percentageValidator,
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -547,6 +566,7 @@ class _FormBahanPakanSheetState extends State<_FormBahanPakanSheet> {
                           child: _buildNumberField(
                             controller: _seratController,
                             label: 'Serat (%)',
+                            validator: _percentageValidator,
                           ),
                         ),
                       ],
@@ -558,6 +578,7 @@ class _FormBahanPakanSheetState extends State<_FormBahanPakanSheet> {
                           child: _buildNumberField(
                             controller: _proteinController,
                             label: 'Protein (%)',
+                            validator: _percentageValidator,
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -565,6 +586,7 @@ class _FormBahanPakanSheetState extends State<_FormBahanPakanSheet> {
                           child: _buildNumberField(
                             controller: _betnController,
                             label: 'BETN (%)',
+                            validator: _percentageValidator,
                           ),
                         ),
                       ],
@@ -576,6 +598,7 @@ class _FormBahanPakanSheetState extends State<_FormBahanPakanSheet> {
                           child: _buildNumberField(
                             controller: _tdnController,
                             label: 'TDN (%)',
+                            validator: _percentageValidator,
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -591,6 +614,7 @@ class _FormBahanPakanSheetState extends State<_FormBahanPakanSheet> {
                     _buildNumberField(
                       controller: _hargaController,
                       label: 'Harga default per kg',
+                      prefixText: 'Rp ',
                     ),
                     const SizedBox(height: 12),
                     SwitchListTile(
@@ -631,6 +655,16 @@ class _FormBahanPakanSheetState extends State<_FormBahanPakanSheet> {
     return null;
   }
 
+  String? _percentageValidator(String? value) {
+    final req = _requiredValidator(value);
+    if (req != null) return req;
+
+    final num = double.tryParse(value!.replaceAll(',', '.'));
+    if (num == null) return 'Harus angka';
+    if (num < 0 || num > 100) return 'Rentang 0-100';
+    return null;
+  }
+
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
@@ -649,15 +683,18 @@ class _FormBahanPakanSheetState extends State<_FormBahanPakanSheet> {
   Widget _buildNumberField({
     required TextEditingController controller,
     required String label,
+    String? prefixText,
+    String? Function(String?)? validator,
   }) {
     return TextFormField(
       controller: controller,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       decoration: InputDecoration(
         labelText: label,
+        prefixText: prefixText,
         border: const OutlineInputBorder(),
       ),
-      validator: _requiredValidator,
+      validator: validator ?? _requiredValidator,
     );
   }
 }
