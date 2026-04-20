@@ -1,16 +1,34 @@
+import 'package:hive/hive.dart';
+
+part 'bahan_pakan.g.dart';
+
+@HiveType(typeId: 0)
 class BahanPakan {
+  @HiveField(0)
   final int id;
+  @HiveField(1)
   final String nama;
+  @HiveField(2)
   final String kategori;
+  @HiveField(3)
   final double bk;
+  @HiveField(4)
   final double abu;
+  @HiveField(5)
   final double lemak;
+  @HiveField(6)
   final double serat;
+  @HiveField(7)
   final double protein;
+  @HiveField(8)
   final double betn;
+  @HiveField(9)
   final double tdn;
+  @HiveField(10)
   final double me;
+  @HiveField(11)
   final double hargaDefault;
+  @HiveField(12)
   final bool isActive;
 
   const BahanPakan({

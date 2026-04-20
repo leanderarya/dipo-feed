@@ -169,50 +169,35 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
       appBar: AppBar(
         title: const Text('Cek Kandungan Nutrisi'),
         centerTitle: true,
+        actions: [
+          IconButton(
+            tooltip: 'Master Pakan',
+            onPressed: _isLoading ? null : _bukaManajemenMaster,
+            icon: const Icon(Icons.inventory_2_outlined),
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      floatingActionButton: _buildFabGroup(),
       body: SafeArea(child: _buildBody(hasil)),
       bottomNavigationBar:
           widget.modePilihUntukEvaluasi &&
-              _campuran.isNotEmpty &&
-              hasil.totalBerat > 0
-          ? SafeArea(
-              minimum: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-              child: FilledButton.icon(
-                style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+                  _campuran.isNotEmpty &&
+                  hasil.totalBerat > 0
+              ? SafeArea(
+                  minimum: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                  child: FilledButton.icon(
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    onPressed: () => _gunakanUntukEvaluasi(hasil),
+                    icon: const Icon(Icons.check_circle_outline),
+                    label: const Text('Gunakan untuk Evaluasi'),
                   ),
-                ),
-                onPressed: () => _gunakanUntukEvaluasi(hasil),
-                icon: const Icon(Icons.check_circle_outline),
-                label: const Text('Gunakan untuk Evaluasi'),
-              ),
-            )
-          : null,
-    );
-  }
-
-  Widget _buildFabGroup() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        FloatingActionButton.small(
-          heroTag: 'fab_master',
-          onPressed: _isLoading ? null : _bukaManajemenMaster,
-          backgroundColor: Colors.orange.shade700,
-          child: const Icon(Icons.inventory_2_outlined, color: Colors.white),
-        ),
-        const SizedBox(height: 12),
-        FloatingActionButton.extended(
-          heroTag: 'fab_add',
-          onPressed: _isLoading ? null : _tambahBahan,
-          icon: const Icon(Icons.add),
-          label: const Text('Tambah Bahan'),
-        ),
-      ],
+                )
+              : null,
     );
   }
 
@@ -231,7 +216,7 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
     }
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
       children: [
         _buildHeader(),
         const SizedBox(height: 16),
@@ -244,7 +229,19 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
             _campuran.length,
             (index) => _buildKartuBahan(index, _campuran[index]),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+            onPressed: _tambahBahan,
+            icon: const Icon(Icons.add_circle_outline),
+            label: const Text('Tambah Bahan Pakan'),
+          ),
+          const SizedBox(height: 24),
           _buildKartuHasil(hasil),
         ],
       ],
@@ -379,19 +376,25 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: Colors.grey.shade300),
       ),
-      child: const Column(
+      child: Column(
         children: [
-          Icon(Icons.feed_outlined, size: 42, color: Colors.grey),
-          SizedBox(height: 14),
-          Text(
+          const Icon(Icons.feed_outlined, size: 42, color: Colors.grey),
+          const SizedBox(height: 14),
+          const Text(
             'Belum ada bahan yang ditambahkan',
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: 8),
-          Text(
-            'Tekan tombol "Tambah Bahan" untuk mulai membuat campuran pakan.',
+          const SizedBox(height: 8),
+          const Text(
+            'Klik tombol di bawah untuk mulai membuat campuran pakan.',
             textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 20),
+          FilledButton.icon(
+            onPressed: _tambahBahan,
+            icon: const Icon(Icons.add),
+            label: const Text('Tambah Bahan Pertama'),
           ),
         ],
       ),
