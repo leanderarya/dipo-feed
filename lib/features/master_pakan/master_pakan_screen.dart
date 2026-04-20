@@ -403,11 +403,11 @@ class _FormBahanPakanSheetState extends State<_FormBahanPakanSheet> {
     _hargaController = TextEditingController(
       text: data == null ? '' : data.hargaDefault.toStringAsFixed(0),
     );
-    _selectedKategori = data?.kategori ?? 'hijauan';
+    _selectedKategori = data?.kategori;
     _isActive = data?.isActive ?? true;
   }
 
-  late String _selectedKategori;
+  String? _selectedKategori;
 
   @override
   void dispose() {
@@ -441,7 +441,7 @@ class _FormBahanPakanSheetState extends State<_FormBahanPakanSheet> {
       BahanPakan(
         id: widget.initialData?.id ?? widget.nextId,
         nama: _namaController.text.trim(),
-        kategori: _selectedKategori,
+        kategori: _selectedKategori!,
         bk: _parseNumber(_bkController.text),
         abu: _parseNumber(_abuController.text),
         lemak: _parseNumber(_lemakController.text),
@@ -516,6 +516,7 @@ class _FormBahanPakanSheetState extends State<_FormBahanPakanSheet> {
                         labelText: 'Kategori',
                         border: OutlineInputBorder(),
                       ),
+                      hint: const Text('Pilih kategori pakan'),
                       items: const [
                         DropdownMenuItem(value: 'hijauan', child: Text('Hijauan (Rumput, Jerami, Daun)')),
                         DropdownMenuItem(value: 'konsentrat', child: Text('Konsentrat (Pellet, Pollard, Mixfeed)')),
@@ -524,12 +525,11 @@ class _FormBahanPakanSheetState extends State<_FormBahanPakanSheet> {
                         DropdownMenuItem(value: 'lainnya', child: Text('Lainnya')),
                       ],
                       onChanged: (value) {
-                        if (value != null) {
-                          setState(() {
-                            _selectedKategori = value;
-                          });
-                        }
+                        setState(() {
+                          _selectedKategori = value;
+                        });
                       },
+                      validator: (value) => value == null ? 'Wajib pilih kategori' : null,
                     ),
                     const SizedBox(height: 12),
                     Row(
