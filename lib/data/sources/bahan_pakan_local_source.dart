@@ -1,19 +1,16 @@
 import 'dart:convert';
-
 import 'package:flutter/services.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:hive/hive.dart';
 import '../models/bahan_pakan.dart';
 
 class BahanPakanLocalSource {
-  static const _storageKey = 'master_bahan_pakan_v1';
+  static const _boxName = 'bahan_pakan_box';
+
+  Box<BahanPakan> get _box => Hive.box<BahanPakan>(_boxName);
 
   Future<List<BahanPakan>> ambilSemuaBahanPakan() async {
-    final prefs = await SharedPreferences.getInstance();
-    final storedJson = prefs.getString(_storageKey);
-
-    if (storedJson != null && storedJson.isNotEmpty) {
-      return _parseJsonList(storedJson);
+    if (_box.isNotEmpty) {
+      return _box.values.toList();
     }
 
     final initialData = await ambilBahanPakanAwal();
@@ -22,17 +19,18 @@ class BahanPakanLocalSource {
   }
 
   Future<List<BahanPakan>> ambilBahanPakanAwal() async {
-    final jsonString =
-        await rootBundle.loadString('assets/data/bahan_pakan.json');
-    return _parseJsonList(jsonString);
+    try {
+      final jsonString =
+          await rootBundle.loadString('assets/data/bahan_pakan.json');
+      return _parseJsonList(jsonString);
+    } catch (e) {
+      return [];
+    }
   }
 
   Future<void> simpanSemuaBahanPakan(List<BahanPakan> daftarBahan) async {
-    final prefs = await SharedPreferences.getInstance();
-    final jsonString = json.encode(
-      daftarBahan.map((bahan) => bahan.toJson()).toList(),
-    );
-    await prefs.setString(_storageKey, jsonString);
+    await _box.clear();
+    await _box.addAll(daftarBahan);
   }
 
   Future<void> resetKeDataAwal() async {
