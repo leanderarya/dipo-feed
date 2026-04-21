@@ -40,7 +40,8 @@ class AppBottomNav extends StatelessWidget {
                 _buildNavItem(0, Icons.home_rounded, 'Beranda'),
                 _buildNavItem(1, Icons.health_and_safety_rounded, 'Kecukupan'),
                 _buildNavItem(2, Icons.inventory_2_rounded, 'Database'),
-                _buildNavItem(3, Icons.calculate_rounded, 'Simulasi'),
+                _buildNavItem(3, Icons.analytics_rounded, 'Nutrisi'),
+                _buildNavItem(4, Icons.calculate_rounded, 'Simulasi'),
               ],
             ),
           ),
@@ -59,7 +60,7 @@ class AppBottomNav extends StatelessWidget {
         children: [
           AnimatedContainer(
             duration: const Duration(milliseconds: 300),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
               color: isActive 
                   ? AppColors.primaryGreen.withValues(alpha: 0.1) 

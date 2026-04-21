@@ -29,38 +29,60 @@ class _HomeScreenState extends State<HomeScreen> {
     switch (index) {
       case 1: _bukaCekKecukupan(); break;
       case 2: _bukaMasterPakan(); break;
-      case 3: _bukaFormulasi(); break;
+      case 3: _bukaCekKandungan(); break;
+      case 4: _bukaFormulasi(); break;
     }
   }
 
   void _bukaCekKecukupan() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const CekKecukupanPakanScreen()),
+      _createRoute(const CekKecukupanPakanScreen()),
     ).then((_) => setState(() => _selectedIndex = 0));
   }
 
   void _bukaCekKandungan() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const CekKandunganNutrisiScreen()),
-    );
+      _createRoute(const CekKandunganNutrisiScreen()),
+    ).then((_) => setState(() => _selectedIndex = 0));
   }
 
   void _bukaMasterPakan() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const MasterPakanScreen()),
+      _createRoute(const MasterPakanScreen()),
     ).then((_) => setState(() => _selectedIndex = 0));
   }
 
   void _bukaFormulasi() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => const FormulasiRansumScreen(),
-      ),
+      _createRoute(const FormulasiRansumScreen()),
     ).then((_) => setState(() => _selectedIndex = 0));
+  }
+
+  Route _createRoute(Widget page) {
+    return PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) => page,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        const begin = Offset(0.0, 0.05); // Start slightly lower
+        const end = Offset.zero;
+        const curve = Curves.easeOutCubic;
+
+        var slideTween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+        var fadeTween = Tween<double>(begin: 0.0, end: 1.0).chain(CurveTween(curve: curve));
+
+        return FadeTransition(
+          opacity: animation.drive(fadeTween),
+          child: SlideTransition(
+            position: animation.drive(slideTween),
+            child: child,
+          ),
+        );
+      },
+      transitionDuration: const Duration(milliseconds: 500),
+    );
   }
 
   @override
@@ -147,8 +169,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    AppColors.surfaceLow.withValues(alpha: 0.8),
-                    AppColors.surfaceLow.withValues(alpha: 0.4),
+                    AppColors.surfaceLow.withValues(alpha: 0.6),
+                    AppColors.surfaceLow.withValues(alpha: 0.2),
                   ],
                 ),
               ),
@@ -194,12 +216,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                Text(
-                  'Standar riset terkini dari FPP Universitas Diponegoro.',
+                const Text(
+                  'Standar riset terkini dari Fakultas Peternakan dan Pertanian (FPP) Universitas Diponegoro',
                   style: TextStyle(
                     fontSize: 13,
-                    color: AppColors.textLight.withValues(alpha: 0.8),
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
                     height: 1.4,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black26,
+                        blurRadius: 4,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -217,7 +247,7 @@ class _HomeScreenState extends State<HomeScreen> {
       crossAxisCount: 2,
       crossAxisSpacing: 12,
       mainAxisSpacing: 12,
-      childAspectRatio: 0.9,
+      childAspectRatio: 1.0,
       children: [
         QuickActionCard(
           title: 'Cek Kecukupan',

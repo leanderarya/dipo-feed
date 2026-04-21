@@ -39,37 +39,39 @@ class QuickActionCard extends StatelessWidget {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min, // Keep it compact
           children: [
             Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: baseColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(16),
               ),
               child: Icon(
                 icon,
                 color: baseColor,
-                size: 28,
+                size: 26,
               ),
             ),
-            const Spacer(),
+            const SizedBox(height: 20), // Fixed gap instead of Spacer
             Text(
               title,
               style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
                 color: AppColors.textDark,
-                height: 1.2,
+                height: 1.1,
+                letterSpacing: -0.2,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 6),
             Text(
               description,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 10,
-                color: AppColors.textGrey,
+              style: TextStyle(
+                fontSize: 11,
+                color: AppColors.textGrey.withValues(alpha: 0.8),
                 height: 1.3,
               ),
             ),

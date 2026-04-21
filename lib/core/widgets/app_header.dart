@@ -58,10 +58,10 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
         child: Text(
           'DipoFeed',
           style: TextStyle(
-            fontSize: 26,
+            fontSize: 32,
             fontWeight: FontWeight.w900,
             color: AppColors.primaryGreen,
-            letterSpacing: -0.5,
+            letterSpacing: -1.0,
           ),
         ),
       ),

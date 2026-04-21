@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'core/theme/app_theme.dart';
-import 'features/home/home_screen.dart';
+import 'features/splash/splash_screen.dart';
 
 class DipoFeedApp extends StatelessWidget {
   const DipoFeedApp({super.key});
@@ -12,7 +12,7 @@ class DipoFeedApp extends StatelessWidget {
       title: 'DipoFeed',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      home: const HomeScreen(),
+      home: const SplashScreen(),
     );
   }
 }
