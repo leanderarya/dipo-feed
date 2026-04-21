@@ -37,31 +37,52 @@ class _HomeScreenState extends State<HomeScreen> {
   void _bukaCekKecukupan() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const CekKecukupanPakanScreen()),
+      _createRoute(const CekKecukupanPakanScreen()),
     ).then((_) => setState(() => _selectedIndex = 0));
   }
 
   void _bukaCekKandungan() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const CekKandunganNutrisiScreen()),
+      _createRoute(const CekKandunganNutrisiScreen()),
     ).then((_) => setState(() => _selectedIndex = 0));
   }
 
   void _bukaMasterPakan() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const MasterPakanScreen()),
+      _createRoute(const MasterPakanScreen()),
     ).then((_) => setState(() => _selectedIndex = 0));
   }
 
   void _bukaFormulasi() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => const FormulasiRansumScreen(),
-      ),
+      _createRoute(const FormulasiRansumScreen()),
     ).then((_) => setState(() => _selectedIndex = 0));
+  }
+
+  Route _createRoute(Widget page) {
+    return PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) => page,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        const begin = Offset(0.0, 0.05); // Start slightly lower
+        const end = Offset.zero;
+        const curve = Curves.easeOutCubic;
+
+        var slideTween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+        var fadeTween = Tween<double>(begin: 0.0, end: 1.0).chain(CurveTween(curve: curve));
+
+        return FadeTransition(
+          opacity: animation.drive(fadeTween),
+          child: SlideTransition(
+            position: animation.drive(slideTween),
+            child: child,
+          ),
+        );
+      },
+      transitionDuration: const Duration(milliseconds: 500),
+    );
   }
 
   @override
