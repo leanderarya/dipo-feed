@@ -38,10 +38,8 @@ class AppBottomNav extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildNavItem(0, Icons.home_rounded, 'Beranda'),
-                _buildNavItem(1, Icons.health_and_safety_rounded, 'Kecukupan'),
-                _buildNavItem(2, Icons.inventory_2_rounded, 'Database'),
-                _buildNavItem(3, Icons.analytics_rounded, 'Nutrisi'),
-                _buildNavItem(4, Icons.calculate_rounded, 'Simulasi'),
+                _buildNavItem(1, Icons.menu_book_rounded, 'Panduan'),
+                _buildNavItem(2, Icons.settings_rounded, 'Pengaturan'),
               ],
             ),
           ),
