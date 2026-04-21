@@ -169,8 +169,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    AppColors.surfaceLow.withValues(alpha: 0.8),
-                    AppColors.surfaceLow.withValues(alpha: 0.4),
+                    AppColors.surfaceLow.withValues(alpha: 0.6),
+                    AppColors.surfaceLow.withValues(alpha: 0.2),
                   ],
                 ),
               ),
@@ -216,12 +216,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                Text(
-                  'Standar riset terkini dari FPP Universitas Diponegoro.',
+                const Text(
+                  'Standar riset terkini dari Fakultas Peternakan dan Pertanian (FPP) Universitas Diponegoro',
                   style: TextStyle(
                     fontSize: 13,
-                    color: AppColors.textLight.withValues(alpha: 0.8),
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
                     height: 1.4,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black26,
+                        blurRadius: 4,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
                   ),
                 ),
               ],
