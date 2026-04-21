@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../core/widgets/app_card.dart';
+import '../../core/constants/app_colors.dart';
+import '../../core/widgets/app_header.dart';
+import '../../core/widgets/app_text_field.dart';
 import '../../data/models/bahan_pakan.dart';
 import '../../data/models/campuran_pakan_item.dart';
 import '../../data/models/hasil_pakan_terpilih.dart';
@@ -38,7 +42,6 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
   Future<void> _muatBahanPakan() async {
     try {
       await _repository.initialize();
-
       setState(() {
         _semuaBahan = _repository.dataAktif;
         _isLoading = false;
@@ -67,7 +70,6 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
     if (_semuaBahan.isEmpty) return;
 
     final bahanSudahDipakai = _campuran.map((item) => item.bahan.id).toSet();
-
     BahanPakan? bahanBaru;
     for (final bahan in _semuaBahan) {
       if (!bahanSudahDipakai.contains(bahan.id)) {
@@ -78,9 +80,7 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
 
     if (bahanBaru == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Semua bahan pakan aktif sudah ditambahkan.'),
-        ),
+        const SnackBar(content: Text('Semua bahan pakan aktif sudah ditambahkan.')),
       );
       return;
     }
@@ -109,9 +109,7 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
 
     if (sudahDipakaiOlehItemLain) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Bahan tersebut sudah dipilih pada item lain.'),
-        ),
+        const SnackBar(content: Text('Bahan tersebut sudah dipilih pada item lain.')),
       );
       return;
     }
@@ -126,7 +124,6 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
 
   void _ubahJumlahKg(int index, String value) {
     final jumlah = double.tryParse(value.replaceAll(',', '.')) ?? 0;
-
     setState(() {
       _campuran[index].jumlahKg = jumlah < 0 ? 0 : jumlah;
     });
@@ -134,7 +131,6 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
 
   void _ubahHargaPerKg(int index, String value) {
     final harga = double.tryParse(value.replaceAll(',', '.')) ?? 0;
-
     setState(() {
       _campuran[index].hargaPerKg = harga < 0 ? 0 : harga;
     });
@@ -143,9 +139,7 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
   void _gunakanUntukEvaluasi(HasilPerhitunganNutrisi hasil) {
     if (hasil.totalBerat <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Total campuran pakan harus lebih dari 0 kg.'),
-        ),
+        const SnackBar(content: Text('Total campuran pakan harus lebih dari 0 kg.')),
       );
       return;
     }
@@ -166,46 +160,34 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
     final hasil = PerhitunganNutrisi.hitungSemua(_campuran);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Cek Kandungan Nutrisi'),
-        centerTitle: true,
+      backgroundColor: AppColors.backgroundKrem,
+      appBar: AppHeader(
+        title: 'Cek Kandungan Nutrisi',
+        heading: 'Simulasi Campuran',
+        subtitle: 'Cek kandungan nutrisi dari campuran pakan buatan Anda sendiri.',
         actions: [
           IconButton(
             tooltip: 'Master Pakan',
             onPressed: _isLoading ? null : _bukaManajemenMaster,
-            icon: const Icon(Icons.inventory_2_outlined),
+            icon: const Icon(Icons.inventory_2_outlined, color: Colors.white),
           ),
-          const SizedBox(width: 8),
         ],
       ),
       body: SafeArea(child: _buildBody(hasil)),
-      bottomNavigationBar:
-          widget.modePilihUntukEvaluasi &&
-                  _campuran.isNotEmpty &&
-                  hasil.totalBerat > 0
-              ? SafeArea(
-                  minimum: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                  child: FilledButton.icon(
-                    style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
-                    onPressed: () => _gunakanUntukEvaluasi(hasil),
-                    icon: const Icon(Icons.check_circle_outline),
-                    label: const Text('Gunakan untuk Evaluasi'),
-                  ),
-                )
-              : null,
+      bottomNavigationBar: widget.modePilihUntukEvaluasi && _campuran.isNotEmpty && hasil.totalBerat > 0
+          ? Padding(
+              padding: const EdgeInsets.all(16),
+              child: FilledButton(
+                onPressed: () => _gunakanUntukEvaluasi(hasil),
+                child: const Text('Gunakan untuk Evaluasi'),
+              ),
+            )
+          : null,
     );
   }
 
   Widget _buildBody(HasilPerhitunganNutrisi hasil) {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
+    if (_isLoading) return const Center(child: CircularProgressIndicator());
     if (_errorMessage != null) {
       return Center(
         child: Padding(
@@ -216,185 +198,53 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
     }
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+      padding: const EdgeInsets.fromLTRB(16, 24, 16, 32),
       children: [
-        _buildHeader(),
-        const SizedBox(height: 16),
-        _buildRingkasanSingkat(hasil),
-        const SizedBox(height: 16),
         if (_campuran.isEmpty)
           _buildEmptyState()
         else ...[
-          ...List.generate(
-            _campuran.length,
-            (index) => _buildKartuBahan(index, _campuran[index]),
+          const Text(
+            'Bahan Campuran',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
+          const SizedBox(height: 12),
+          ..._campuran.asMap().entries.map((entry) => _buildKartuBahan(entry.key, entry.value)),
           const SizedBox(height: 8),
           OutlinedButton.icon(
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-            ),
             onPressed: _tambahBahan,
-            icon: const Icon(Icons.add_circle_outline),
+            icon: const Icon(Icons.add_circle_outline, size: 18),
             label: const Text('Tambah Bahan Pakan'),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 32),
           _buildKartuHasil(hasil),
         ],
       ],
     );
   }
 
-  Widget _buildHeader() {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.green.shade50, Colors.green.shade100],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.green.shade200),
-      ),
-      child: const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.analytics_outlined, size: 22),
-              SizedBox(width: 8),
-              Text(
-                'Formulasi Campuran Pakan',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-          SizedBox(height: 8),
-          Text(
-            'Tambahkan bahan pakan, isi jumlah dan harga, lalu sistem akan menghitung kandungan nutrisi campuran.',
-            style: TextStyle(height: 1.5),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRingkasanSingkat(HasilPerhitunganNutrisi hasil) {
-    return Card(
-      elevation: 0,
-      color: Colors.grey.shade50,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-        side: BorderSide(color: Colors.grey.shade200),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: _buildMiniStat(
-                    'Jumlah Bahan',
-                    '${_campuran.length}',
-                    Icons.layers_outlined,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildMiniStat(
-                    'Total Berat',
-                    '${hasil.totalBerat.toStringAsFixed(2)} kg',
-                    Icons.scale_outlined,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildMiniStat(
-                    'Protein',
-                    '${hasil.protein.toStringAsFixed(2)}%',
-                    Icons.bubble_chart_outlined,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildMiniStat(
-                    'TDN',
-                    '${hasil.tdn.toStringAsFixed(2)}%',
-                    Icons.show_chart_outlined,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMiniStat(String label, String value, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, size: 18, color: Colors.grey.shade700),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildEmptyState() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
+    return AppCard(
+      padding: const EdgeInsets.all(32),
       child: Column(
         children: [
-          const Icon(Icons.feed_outlined, size: 42, color: Colors.grey),
-          const SizedBox(height: 14),
+          const Icon(Icons.feed_outlined, size: 48, color: AppColors.textGrey),
+          const SizedBox(height: 16),
           const Text(
-            'Belum ada bahan yang ditambahkan',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            textAlign: TextAlign.center,
+            'Belum ada bahan campuran.',
+            style: TextStyle(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           const Text(
-            'Klik tombol di bawah untuk mulai membuat campuran pakan.',
+            'Klik tombol di bawah untuk mulai menyusun pakan.',
             textAlign: TextAlign.center,
+            style: TextStyle(color: AppColors.textGrey, fontSize: 13),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           FilledButton.icon(
             onPressed: _tambahBahan,
             icon: const Icon(Icons.add),
-            label: const Text('Tambah Bahan Pertama'),
+            label: const Text('Susun Pakan'),
           ),
         ],
       ),
@@ -402,361 +252,111 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
   }
 
   Widget _buildKartuBahan(int index, CampuranPakanItem item) {
-    final totalBerat = PerhitunganNutrisi.hitungTotalBerat(_campuran);
-    final persentase = PerhitunganNutrisi.hitungPersentaseBahan(
-      item.jumlahKg,
-      totalBerat,
-    );
-
-    return Card(
-      margin: const EdgeInsets.only(bottom: 14),
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-        side: BorderSide(color: Colors.grey.shade200),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 16,
-                  backgroundColor: Colors.green.shade50,
-                  child: Text(
-                    '${index + 1}',
-                    style: TextStyle(
-                      color: Colors.green.shade800,
-                      fontWeight: FontWeight.bold,
-                    ),
+    return AppCard(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: DropdownButtonFormField<BahanPakan>(
+                  initialValue: item.bahan,
+                  isExpanded: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Bahan Pakan',
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.zero,
                   ),
+                  items: _semuaBahan.map((bahan) {
+                    return DropdownMenuItem<BahanPakan>(
+                      value: bahan,
+                      child: Text(bahan.nama, style: const TextStyle(fontSize: 14)),
+                    );
+                  }).toList(),
+                  onChanged: (v) => v != null ? _ubahBahan(index, v) : null,
                 ),
-                const SizedBox(width: 10),
-                const Expanded(
-                  child: Text(
-                    'Bahan Pakan',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                IconButton(
-                  tooltip: 'Hapus bahan',
-                  onPressed: () => _hapusBahan(index),
-                  icon: const Icon(Icons.delete_outline),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<BahanPakan>(
-              initialValue: item.bahan,
-              isExpanded: true,
-              decoration: const InputDecoration(
-                labelText: 'Pilih Bahan Pakan',
-                border: OutlineInputBorder(),
               ),
-              items: _semuaBahan.map((bahan) {
-                return DropdownMenuItem<BahanPakan>(
-                  value: bahan,
-                  child: Text(bahan.nama, overflow: TextOverflow.ellipsis),
-                );
-              }).toList(),
-              onChanged: (value) {
-                if (value != null) {
-                  _ubahBahan(index, value);
-                }
-              },
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    key: ValueKey('jumlah_$index'),
-                    initialValue: item.jumlahKg == 0
-                        ? ''
-                        : item.jumlahKg.toStringAsFixed(2),
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    onChanged: (value) => _ubahJumlahKg(index, value),
-                    decoration: const InputDecoration(
-                      labelText: 'Jumlah',
-                      suffixText: 'kg',
-                      border: OutlineInputBorder(),
-                      hintText: 'Contoh: 10',
-                    ),
-                  ),
+              IconButton(
+                onPressed: () => _hapusBahan(index),
+                icon: const Icon(Icons.close, color: AppColors.errorRed, size: 20),
+              ),
+            ],
+          ),
+          const Divider(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: AppTextField(
+                  initialValue: item.jumlahKg == 0 ? '' : item.jumlahKg.toStringAsFixed(2),
+                  label: 'Jumlah (kg)',
+                  keyboardType: TextInputType.number,
+                  onChanged: (v) => _ubahJumlahKg(index, v),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextFormField(
-                    key: ValueKey('harga_$index'),
-                    initialValue: item.hargaPerKg == 0
-                        ? ''
-                        : item.hargaPerKg.toStringAsFixed(0),
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    onChanged: (value) => _ubahHargaPerKg(index, value),
-                    decoration: const InputDecoration(
-                      labelText: 'Harga/kg',
-                      prefixText: 'Rp ',
-                      border: OutlineInputBorder(),
-                      hintText: '3500',
-                    ),
-                  ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: AppTextField(
+                  initialValue: item.hargaPerKg == 0 ? '' : item.hargaPerKg.toStringAsFixed(0),
+                  label: 'Harga/kg',
+                  prefixText: 'Rp ',
+                  keyboardType: TextInputType.number,
+                  onChanged: (v) => _ubahHargaPerKg(index, v),
                 ),
-              ],
-            ),
-            const SizedBox(height: 14),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                _buildInfoChip('Kategori', item.bahan.kategori),
-                _buildInfoChip(
-                  'Komposisi',
-                  '${persentase.toStringAsFixed(2)}%',
-                ),
-                _buildInfoChip(
-                  'Protein',
-                  '${item.bahan.protein.toStringAsFixed(2)}%',
-                ),
-                _buildInfoChip('TDN', '${item.bahan.tdn.toStringAsFixed(2)}%'),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+        ],
       ),
-    );
-  }
-
-  Widget _buildInfoChip(String label, String value) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Text('$label: $value', style: const TextStyle(fontSize: 12)),
     );
   }
 
   Widget _buildKartuHasil(HasilPerhitunganNutrisi hasil) {
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-        side: BorderSide(color: Colors.grey.shade200),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Row(
-              children: [
-                Icon(Icons.calculate_outlined),
-                SizedBox(width: 8),
-                Text(
-                  'Hasil Perhitungan',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: Colors.green.shade50,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: Colors.green.shade100),
-              ),
-              child: const Text(
-                'Dari hasil perhitungan di atas, dapat diketahui bahwa pakan yang Anda berikan kepada sapi perah mengandung:',
-                style: TextStyle(height: 1.5),
-              ),
-            ),
-            const SizedBox(height: 16),
-            _buildItemHasil('Bahan Kering', '${hasil.bk.toStringAsFixed(2)}%'),
-            _buildItemHasil('Abu', '${hasil.abu.toStringAsFixed(2)}%'),
-            _buildItemHasil('Lemak', '${hasil.lemak.toStringAsFixed(2)}%'),
-            _buildItemHasil('Serat', '${hasil.serat.toStringAsFixed(2)}%'),
-            _buildItemHasil('Protein', '${hasil.protein.toStringAsFixed(2)}%'),
-            _buildItemHasil('TDN', '${hasil.tdn.toStringAsFixed(2)}%'),
-            _buildItemHasil(
-              'Dengan harga per kg',
-              'Rp ${hasil.hargaRataRata.toStringAsFixed(0)}',
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: Divider(color: Colors.grey.shade300),
-            ),
-            _buildItemHasil(
-              'Total Berat Campuran',
-              '${hasil.totalBerat.toStringAsFixed(2)} kg',
-            ),
-            _buildItemHasil(
-              'Total Biaya',
-              'Rp ${hasil.totalBiaya.toStringAsFixed(0)}',
-            ),
-          ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Analisis Kandungan Nutrisi',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
-      ),
+        const SizedBox(height: 12),
+        AppCard(
+          child: Column(
+            children: [
+              _buildResultRow('Bahan Kering (BK)', '${hasil.bk.toStringAsFixed(2)}%'),
+              _buildResultRow('Protein Kasar (PK)', '${hasil.protein.toStringAsFixed(2)}%'),
+              _buildResultRow('TDN', '${hasil.tdn.toStringAsFixed(2)}%'),
+              _buildResultRow('Berat Campuran', '${hasil.totalBerat.toStringAsFixed(2)} kg'),
+              const Divider(height: 32),
+              _buildResultRow(
+                'Total Biaya',
+                'Rp ${hasil.totalBiaya.toStringAsFixed(0)}',
+                isBold: true,
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildItemHasil(String label, String value) {
+  Widget _buildResultRow(String label, String value, {bool isBold = false}) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Expanded(child: Text(label)),
-          const SizedBox(width: 12),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
-        ],
-      ),
-    );
-  }
-}
-
-class _MasterPakanSheet extends StatefulWidget {
-  final VoidCallback onUpdate;
-
-  const _MasterPakanSheet({required this.onUpdate});
-
-  @override
-  State<_MasterPakanSheet> createState() => _MasterPakanSheetState();
-}
-
-class _MasterPakanSheetState extends State<_MasterPakanSheet> {
-  final BahanPakanRepository _repository = BahanPakanRepository();
-
-  @override
-  Widget build(BuildContext context) {
-    final data = _repository.data;
-
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.88,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: Column(
-        children: [
-          _buildHandle(),
-          _buildHeader(),
-          Expanded(
-            child: data.isEmpty
-                ? const Center(child: Text('Belum ada data master pakan.'))
-                : ListView.separated(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                    itemCount: data.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 8),
-                    itemBuilder: (context, index) {
-                      final bahan = data[index];
-                      return Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: Colors.grey.shade200),
-                        ),
-                        child: ListTile(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          title: Text(
-                            bahan.nama,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          subtitle: Padding(
-                            padding: const EdgeInsets.only(top: 6),
-                            child: Text(
-                              '${bahan.kategori} • BK: ${bahan.bk}% • PK: ${bahan.protein}%',
-                            ),
-                          ),
-                          trailing: const Icon(Icons.chevron_right),
-                          onTap: () {
-                            // Placeholder for Edit
-                          },
-                        ),
-                      );
-                    },
-                  ),
-          ),
-          _buildFooter(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHandle() {
-    return Center(
-      child: Container(
-        margin: const EdgeInsets.only(top: 12),
-        width: 42,
-        height: 4,
-        decoration: BoxDecoration(
-          color: Colors.grey.shade300,
-          borderRadius: BorderRadius.circular(999),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 18, 16, 8),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 18,
-            backgroundColor: Colors.orange.shade50,
-            child: const Icon(Icons.inventory_2, color: Colors.orange),
-          ),
-          const SizedBox(width: 12),
-          const Expanded(
-            child: Text(
-              'Manajemen Master Pakan',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          Text(label, style: const TextStyle(color: AppColors.textGrey)),
+          Text(
+            value,
+            style: TextStyle(
+              fontWeight: isBold ? FontWeight.bold : FontWeight.w500,
+              color: isBold ? AppColors.primaryGreen : null,
+              fontSize: isBold ? 16 : null,
             ),
           ),
-          IconButton(
-            onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.close),
-          ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildFooter() {
-    return SafeArea(
-      minimum: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-      child: SizedBox(
-        width: double.infinity,
-        child: OutlinedButton.icon(
-          style: OutlinedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-            ),
-          ),
-          onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Fitur tambah pakan baru akan segera hadir.'),
-              ),
-            );
-          },
-          icon: const Icon(Icons.add_circle_outline),
-          label: const Text('Tambah Bahan Pakan ke Library'),
-        ),
       ),
     );
   }

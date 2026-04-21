@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'core/theme/app_theme.dart';
 import 'features/home/home_screen.dart';
 
 class DipoFeedApp extends StatelessWidget {
@@ -10,10 +11,7 @@ class DipoFeedApp extends StatelessWidget {
     return MaterialApp(
       title: 'DipoFeed',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorSchemeSeed: Colors.green,
-        useMaterial3: true,
-      ),
+      theme: AppTheme.light,
       home: const HomeScreen(),
     );
   }
