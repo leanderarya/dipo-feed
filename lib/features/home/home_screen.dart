@@ -21,17 +21,27 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
   void _onTapBottomNav(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-    
-    // Simple direct navigation for the demo/stabilization
-    switch (index) {
-      case 1: _bukaCekKecukupan(); break;
-      case 2: _bukaMasterPakan(); break;
-      case 3: _bukaCekKandungan(); break;
-      case 4: _bukaFormulasi(); break;
+    if (index == 0) {
+      setState(() {
+        _selectedIndex = index;
+      });
+      return;
     }
+
+    // Show "Under Development" for Panduan and Pengaturan
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          index == 1 ? 'Fitur Panduan segera hadir.' : 'Fitur Pengaturan segera hadir.',
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        backgroundColor: AppColors.primaryGreen,
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 
   void _bukaCekKecukupan() {
@@ -89,24 +99,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.backgroundCream,
-      appBar: AppHeader(
+      appBar: const AppHeader(
         isHome: true,
-        actions: [
-          IconButton(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Halaman Setelan segera hadir.')),
-              );
-            },
-            icon: const Icon(
-              Icons.tune_rounded,
-              color: AppColors.primaryGreen,
-            ),
-            style: IconButton.styleFrom(
-              backgroundColor: AppColors.primaryLight.withValues(alpha: 0.3),
-            ),
-          ),
-        ],
       ),
       body: Stack(
         children: [
