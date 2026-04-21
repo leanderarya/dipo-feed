@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 
+
+import '../../core/constants/app_colors.dart';
+import '../../core/widgets/app_header.dart';
+import '../../core/widgets/app_bottom_nav.dart';
+import '../../core/widgets/quick_action_card.dart';
 import '../cek_kandungan_nutrisi/cek_kandungan_nutrisi_screen.dart';
 import '../cek_kecukupan_pakan/cek_kecukupan_pakan_screen.dart';
 import '../formulasi_ransum/formulasi_ransum_screen.dart';
@@ -19,17 +24,12 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _selectedIndex = index;
     });
-
-    if (index == 1) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Halaman panduan belum dibuat.')),
-      );
-    }
-
-    if (index == 2) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Halaman tentang belum dibuat.')),
-      );
+    
+    // Simple direct navigation for the demo/stabilization
+    switch (index) {
+      case 1: _bukaCekKecukupan(); break;
+      case 2: _bukaMasterPakan(); break;
+      case 3: _bukaFormulasi(); break;
     }
   }
 
@@ -37,7 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const CekKecukupanPakanScreen()),
-    );
+    ).then((_) => setState(() => _selectedIndex = 0));
   }
 
   void _bukaCekKandungan() {
@@ -51,7 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const MasterPakanScreen()),
-    );
+    ).then((_) => setState(() => _selectedIndex = 0));
   }
 
   void _bukaFormulasi() {
@@ -60,286 +60,194 @@ class _HomeScreenState extends State<HomeScreen> {
       MaterialPageRoute(
         builder: (_) => const FormulasiRansumScreen(),
       ),
-    );
+    ).then((_) => setState(() => _selectedIndex = 0));
   }
 
   @override
   Widget build(BuildContext context) {
-    const backgroundColor = Color(0xFFF1EBDD);
-    const greenDark = Color(0xFF0F6A2C);
-    const greenLight = Color(0xFFA6CE39);
-    const cardColor = Color(0xFFF7F3E8);
-    const brownText = Color(0xFF5A4A35);
-
     return Scaffold(
-      backgroundColor: backgroundColor,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // HEADER HIJAU
-            Container(
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [greenDark, Color(0xFF1B7F34)],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-              ),
-              child: Column(
-                children: [
-                  const SizedBox(height: 14),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Row(
-                      children: [
-                        const Spacer(),
-                        RichText(
-                          textAlign: TextAlign.center,
-                          text: const TextSpan(
-                            children: [
-                              TextSpan(
-                                text: 'Dipo',
-                                style: TextStyle(
-                                  fontSize: 34,
-                                  fontWeight: FontWeight.w800,
-                                  color: Colors.white,
-                                  height: 1,
-                                ),
-                              ),
-                              TextSpan(
-                                text: 'Feed',
-                                style: TextStyle(
-                                  fontSize: 34,
-                                  fontWeight: FontWeight.w800,
-                                  color: greenLight,
-                                  height: 1,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const Spacer(),
-                        Container(
-                          width: 44,
-                          height: 44,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.18),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.school,
-                            color: Colors.white,
-                            size: 28,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  const Text(
-                    'oleh Universitas Diponegoro',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-
-                  // BANNER GAMBAR
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    height: 120,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(6),
-                      image: const DecorationImage(
-                        image: AssetImage('assets/images/banner_sapi.webp'),
-                        fit: BoxFit.cover,
-                      ),
-                      color: Colors.white24,
-                    ),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(6),
-                        color: Colors.black.withValues(alpha: 0.08),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // STRIP SAMBUTAN
-                  Container(
-                    width: double.infinity,
-                    color: greenDark,
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    child: const Center(
-                      child: Text(
-                        'Selamat Datang di Kalkulator Pakan Sapi Perah',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+      backgroundColor: AppColors.backgroundCream,
+      appBar: AppHeader(
+        isHome: true,
+        actions: [
+          IconButton(
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Halaman Setelan segera hadir.')),
+              );
+            },
+            icon: const Icon(
+              Icons.tune_rounded,
+              color: AppColors.primaryGreen,
             ),
-
-            // MENU
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
-                children: [
-                  _MenuCard(
-                    title: 'Cek Kecukupan Pakan',
-                    subtitle: 'Periksa kecukupan pakan sapi Anda',
-                    icon: Icons.verified,
-                    iconBg: const Color(0xFFE2F1DB),
-                    iconColor: const Color(0xFF2E7D32),
-                    cardColor: cardColor,
-                    textColor: brownText,
-                    onTap: _bukaCekKecukupan,
-                  ),
-                  const SizedBox(height: 14),
-                  _MenuCard(
-                    title: 'Master Bahan Pakan',
-                    subtitle: 'Kelola data master pakan yang tersimpan lokal',
-                    icon: Icons.inventory_2,
-                    iconBg: const Color(0xFFF4E7C5),
-                    iconColor: const Color(0xFF9C6B00),
-                    cardColor: cardColor,
-                    textColor: brownText,
-                    onTap: _bukaMasterPakan,
-                  ),
-                  const SizedBox(height: 14),
-                  _MenuCard(
-                    title: 'Cek Kandungan Nutrisi',
-                    subtitle: 'Hitung kandungan nutrisi campuran pakan',
-                    icon: Icons.analytics_outlined,
-                    iconBg: const Color(0xFFE4EEF9),
-                    iconColor: const Color(0xFF1E5B8C),
-                    cardColor: cardColor,
-                    textColor: brownText,
-                    onTap: _bukaCekKandungan,
-                  ),
-                  const SizedBox(height: 14),
-                  _MenuCard(
-                    title: 'Simulator Formulasi Ransum',
-                    subtitle: 'Rancang ransum dari sediaan pakan',
-                    icon: Icons.calculate,
-                    iconBg: const Color(0xFFEADBC8),
-                    iconColor: const Color(0xFF8D5B2A),
-                    cardColor: cardColor,
-                    textColor: brownText,
-                    onTap: _bukaFormulasi,
-                  ),
-                ],
-              ),
+            style: IconButton.styleFrom(
+              backgroundColor: AppColors.primaryLight.withValues(alpha: 0.3),
             ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onTapBottomNav,
-        selectedItemColor: greenDark,
-        unselectedItemColor: Colors.grey.shade600,
-        backgroundColor: backgroundColor,
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Beranda'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.menu_book),
-            label: 'Panduan',
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.info), label: 'Tentang'),
+        ],
+      ),
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 140),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeroBanner(),
+                const SizedBox(height: 32),
+                const Text(
+                  'Layanan Utama',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primaryGreen,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _buildFeatureGrid(),
+              ],
+            ),
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: AppBottomNav(
+              currentIndex: _selectedIndex,
+              onTap: _onTapBottomNav,
+            ),
+          ),
         ],
       ),
     );
   }
-}
 
-class _MenuCard extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final Color iconBg;
-  final Color iconColor;
-  final Color cardColor;
-  final Color textColor;
-  final VoidCallback onTap;
-
-  const _MenuCard({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.iconBg,
-    required this.iconColor,
-    required this.cardColor,
-    required this.textColor,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: cardColor,
-      borderRadius: BorderRadius.circular(14),
-      elevation: 2,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(14),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(14),
-          child: Row(
-            children: [
-              Container(
-                width: 58,
-                height: 58,
-                decoration: BoxDecoration(
-                  color: iconBg,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, size: 30, color: iconColor),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        color: textColor,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        color: textColor.withValues(alpha: 0.75),
-                        fontSize: 13,
-                      ),
-                    ),
+  Widget _buildHeroBanner() {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: AppColors.surfaceLow,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        children: [
+          // SVG Background
+          Positioned.fill(
+            child: Image.asset(
+              'assets/design/hero-bg.jpg',
+              fit: BoxFit.cover,
+            ),
+          ),
+          // Subtle Overlay to ensure readability
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    AppColors.surfaceLow.withValues(alpha: 0.8),
+                    AppColors.surfaceLow.withValues(alpha: 0.4),
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
-              Icon(
-                Icons.chevron_right,
-                size: 30,
-                color: textColor.withValues(alpha: 0.6),
-              ),
-            ],
+            ),
           ),
-        ),
+          // Content
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryLight.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.eco_rounded, size: 14, color: AppColors.primaryGreen),
+                      SizedBox(width: 6),
+                      Text(
+                        'RESEARCH-BASED',
+                        style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.primaryGreen,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Optimalkan Nutrisi\nTernak Anda',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.primaryGreen,
+                    height: 1.1,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Standar riset terkini dari FPP Universitas Diponegoro.',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: AppColors.textLight.withValues(alpha: 0.8),
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
+    );
+  }
+
+  Widget _buildFeatureGrid() {
+    return GridView.count(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: 2,
+      crossAxisSpacing: 12,
+      mainAxisSpacing: 12,
+      childAspectRatio: 0.9,
+      children: [
+        QuickActionCard(
+          title: 'Cek Kecukupan',
+          description: 'Evaluasi gizi harian sapi',
+          icon: Icons.health_and_safety_rounded,
+          baseColor: AppColors.primaryGreen,
+          onTap: _bukaCekKecukupan,
+        ),
+        QuickActionCard(
+          title: 'Database Pakan',
+          description: 'Katalog kimiawi pakan lokal',
+          icon: Icons.inventory_2_rounded,
+          baseColor: const Color(0xFF476553), // Secondary
+          onTap: _bukaMasterPakan,
+        ),
+        QuickActionCard(
+          title: 'Cek Nutrisi',
+          description: 'Estimasi gizi campuran pakan',
+          icon: Icons.analytics_rounded,
+          baseColor: const Color(0xFF3C2B12), // Tertiary
+          onTap: _bukaCekKandungan,
+        ),
+        QuickActionCard(
+          title: 'Simulasi Ransum',
+          description: 'Formula pakan biaya terendah',
+          icon: Icons.calculate_rounded,
+          baseColor: AppColors.primaryGreen,
+          onTap: _bukaFormulasi,
+        ),
+      ],
     );
   }
 }

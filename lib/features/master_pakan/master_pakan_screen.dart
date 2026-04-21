@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../core/constants/app_colors.dart';
+import '../../core/widgets/app_card.dart';
+import '../../core/widgets/app_text_field.dart';
+import '../../core/widgets/app_header.dart';
 import '../../data/models/bahan_pakan.dart';
 import '../../data/sources/bahan_pakan_repository.dart';
 
@@ -150,93 +154,166 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
     final totalAktif = semuaData.where((item) => item.isActive).length;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Master Bahan Pakan'),
-        centerTitle: true,
+      backgroundColor: AppColors.backgroundCream,
+      appBar: AppHeader(
+        title: 'Master Bahan Pakan',
+        heading: 'Database Pakan',
+        subtitle: 'Kelola basis data bahan pakan yang tersedia secara lokal.',
         actions: [
           IconButton(
-            tooltip: 'Reset data awal',
+            tooltip: 'Reset Data',
             onPressed: _isLoading ? null : _resetDataAwal,
-            icon: const Icon(Icons.restart_alt),
+            icon: const Icon(Icons.refresh_rounded, color: Colors.white),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _isLoading ? null : () => _bukaFormBahan(),
+        backgroundColor: AppColors.primaryGreen,
+        foregroundColor: Colors.white,
         icon: const Icon(Icons.add),
         label: const Text('Tambah Bahan'),
       ),
-      body: SafeArea(
-        child: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : _errorMessage != null
-            ? Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Text(_errorMessage!, textAlign: TextAlign.center),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _errorMessage != null
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Text(_errorMessage!, textAlign: TextAlign.center),
+                  ),
+                )
+              : RefreshIndicator(
+                  onRefresh: _muatData,
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 120),
+                    children: [
+                      const SizedBox(height: 24),
+                      _buildRingkasan(totalSemua: semuaData.length, totalAktif: totalAktif),
+                      const SizedBox(height: 16),
+                      if (semuaData.isEmpty)
+                        _buildEmptyState()
+                      else
+                        ...semuaData.map(_buildBahanCard),
+                    ],
+                  ),
                 ),
-              )
-            : RefreshIndicator(
-                onRefresh: _muatData,
-                child: ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
-                  children: [
-                    _buildRingkasan(totalSemua: semuaData.length, totalAktif: totalAktif),
-                    const SizedBox(height: 16),
-                    if (semuaData.isEmpty)
-                      _buildEmptyState()
-                    else
-                      ...semuaData.map(_buildBahanCard),
-                  ],
-                ),
-              ),
-      ),
     );
   }
+
 
   Widget _buildRingkasan({
     required int totalSemua,
     required int totalAktif,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.orange.shade50, Colors.green.shade50],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+    return Row(
+      children: [
+        Expanded(
+          child: AppCard(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.inventory_2_outlined, color: AppColors.primaryGreen, size: 20),
+                const SizedBox(height: 8),
+                Text('Total Pakan', style: Theme.of(context).textTheme.bodySmall),
+                Text('$totalSemua', style: Theme.of(context).textTheme.titleLarge),
+              ],
+            ),
+          ),
         ),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.orange.shade100),
+        const SizedBox(width: 12),
+        Expanded(
+          child: AppCard(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.check_circle_outline, color: AppColors.accentGreen, size: 20),
+                const SizedBox(height: 8),
+                Text('Bahan Aktif', style: Theme.of(context).textTheme.bodySmall),
+                Text('$totalAktif', style: Theme.of(context).textTheme.titleLarge),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return AppCard(
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        children: [
+          Icon(Icons.inventory_2_outlined, size: 48, color: AppColors.primaryGreen.withValues(alpha: 0.1)),
+          const SizedBox(height: 16),
+          const Text('Database Kosong', style: TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          const Text('Belum ada data bahan pakan yang tersimpan.', textAlign: TextAlign.center, style: TextStyle(fontSize: 12)),
+        ],
       ),
+    );
+  }
+
+  Widget _buildBahanCard(BahanPakan bahan) {
+    return AppCard(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Data master pakan tersimpan di perangkat ini.',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Anda bisa menambah, mengubah, menghapus, atau menonaktifkan bahan pakan. Perubahan akan dipakai oleh fitur perhitungan lainnya.',
-            style: TextStyle(height: 1.5),
-          ),
-          const SizedBox(height: 14),
           Row(
             children: [
               Expanded(
-                child: _StatCard(
-                  label: 'Total Data',
-                  value: '$totalSemua bahan',
-                  icon: Icons.inventory_2_outlined,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      bahan.nama,
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      bahan.kategori.toUpperCase(),
+                      style: const TextStyle(fontSize: 10, color: AppColors.textGrey, letterSpacing: 1),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(width: 12),
+              Switch(
+                value: bahan.isActive,
+                activeThumbColor: AppColors.primaryGreen,
+                onChanged: (value) => _ubahStatusAktif(bahan, value),
+              ),
+            ],
+          ),
+          const Divider(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildMetric('BK', '${bahan.bk.toStringAsFixed(1)}%'),
+              _buildMetric('PK', '${bahan.protein.toStringAsFixed(1)}%'),
+              _buildMetric('TDN', '${bahan.tdn.toStringAsFixed(1)}%'),
+              _buildMetric('Harga', 'Rp${bahan.hargaDefault.toStringAsFixed(0)}'),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
               Expanded(
-                child: _StatCard(
-                  label: 'Aktif Dipakai',
-                  value: '$totalAktif bahan',
-                  icon: Icons.check_circle_outline,
+                child: TextButton.icon(
+                  onPressed: () => _bukaFormBahan(bahan: bahan),
+                  icon: const Icon(Icons.edit_outlined, size: 18),
+                  label: const Text('Edit'),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: TextButton.icon(
+                  onPressed: () => _hapusBahan(bahan),
+                  icon: const Icon(Icons.delete_outline, size: 18),
+                  label: const Text('Hapus'),
+                  style: TextButton.styleFrom(foregroundColor: AppColors.errorRed),
                 ),
               ),
             ],
@@ -246,114 +323,13 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
     );
   }
 
-  Widget _buildEmptyState() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: const Column(
-        children: [
-          Icon(Icons.inventory_2_outlined, size: 42, color: Colors.grey),
-          SizedBox(height: 14),
-          Text(
-            'Belum ada bahan pakan tersimpan',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: 8),
-          Text(
-            'Tekan tombol "Tambah Bahan" untuk membuat data master pakan lokal.',
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBahanCard(BahanPakan bahan) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-        side: BorderSide(color: Colors.grey.shade200),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        bahan.nama,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        bahan.kategori,
-                        style: TextStyle(color: Colors.grey.shade700),
-                      ),
-                    ],
-                  ),
-                ),
-                Switch(
-                  value: bahan.isActive,
-                  onChanged: (value) => _ubahStatusAktif(bahan, value),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                _InfoChip(label: 'BK', value: '${bahan.bk.toStringAsFixed(2)}%'),
-                _InfoChip(
-                  label: 'Protein',
-                  value: '${bahan.protein.toStringAsFixed(2)}%',
-                ),
-                _InfoChip(label: 'TDN', value: '${bahan.tdn.toStringAsFixed(2)}%'),
-                _InfoChip(
-                  label: 'Harga',
-                  value: 'Rp ${bahan.hargaDefault.toStringAsFixed(0)}',
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () => _bukaFormBahan(bahan: bahan),
-                    icon: const Icon(Icons.edit_outlined),
-                    label: const Text('Ubah'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () => _hapusBahan(bahan),
-                    icon: const Icon(Icons.delete_outline),
-                    label: const Text('Hapus'),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
+  Widget _buildMetric(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 10, color: AppColors.textGrey)),
+        Text(value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+      ],
     );
   }
 }
@@ -376,16 +352,12 @@ class _FormBahanPakanSheetState extends State<_FormBahanPakanSheet> {
 
   late final TextEditingController _namaController;
   late final TextEditingController _bkController;
-  late final TextEditingController _abuController;
-  late final TextEditingController _lemakController;
-  late final TextEditingController _seratController;
   late final TextEditingController _proteinController;
-  late final TextEditingController _betnController;
   late final TextEditingController _tdnController;
-  late final TextEditingController _meController;
   late final TextEditingController _hargaController;
 
   late bool _isActive;
+  String? _selectedKategori;
 
   @override
   void initState() {
@@ -393,13 +365,8 @@ class _FormBahanPakanSheetState extends State<_FormBahanPakanSheet> {
     final data = widget.initialData;
     _namaController = TextEditingController(text: data?.nama ?? '');
     _bkController = TextEditingController(text: _formatNumber(data?.bk));
-    _abuController = TextEditingController(text: _formatNumber(data?.abu));
-    _lemakController = TextEditingController(text: _formatNumber(data?.lemak));
-    _seratController = TextEditingController(text: _formatNumber(data?.serat));
     _proteinController = TextEditingController(text: _formatNumber(data?.protein));
-    _betnController = TextEditingController(text: _formatNumber(data?.betn));
     _tdnController = TextEditingController(text: _formatNumber(data?.tdn));
-    _meController = TextEditingController(text: _formatNumber(data?.me));
     _hargaController = TextEditingController(
       text: data == null ? '' : data.hargaDefault.toStringAsFixed(0),
     );
@@ -407,19 +374,12 @@ class _FormBahanPakanSheetState extends State<_FormBahanPakanSheet> {
     _isActive = data?.isActive ?? true;
   }
 
-  String? _selectedKategori;
-
   @override
   void dispose() {
     _namaController.dispose();
     _bkController.dispose();
-    _abuController.dispose();
-    _lemakController.dispose();
-    _seratController.dispose();
     _proteinController.dispose();
-    _betnController.dispose();
     _tdnController.dispose();
-    _meController.dispose();
     _hargaController.dispose();
     super.dispose();
   }
@@ -443,13 +403,13 @@ class _FormBahanPakanSheetState extends State<_FormBahanPakanSheet> {
         nama: _namaController.text.trim(),
         kategori: _selectedKategori!,
         bk: _parseNumber(_bkController.text),
-        abu: _parseNumber(_abuController.text),
-        lemak: _parseNumber(_lemakController.text),
-        serat: _parseNumber(_seratController.text),
+        abu: widget.initialData?.abu ?? 0,
+        lemak: widget.initialData?.lemak ?? 0,
+        serat: widget.initialData?.serat ?? 0,
         protein: _parseNumber(_proteinController.text),
-        betn: _parseNumber(_betnController.text),
+        betn: widget.initialData?.betn ?? 0,
         tdn: _parseNumber(_tdnController.text),
-        me: _parseNumber(_meController.text),
+        me: widget.initialData?.me ?? 0,
         hargaDefault: _parseNumber(_hargaController.text),
         isActive: _isActive,
       ),
@@ -459,302 +419,122 @@ class _FormBahanPakanSheetState extends State<_FormBahanPakanSheet> {
   @override
   Widget build(BuildContext context) {
     final isEdit = widget.initialData != null;
-    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-
-    return Padding(
-      padding: EdgeInsets.only(bottom: bottomInset),
-      child: DraggableScrollableSheet(
-        expand: false,
-        initialChildSize: 0.9,
-        maxChildSize: 0.95,
-        minChildSize: 0.6,
-        builder: (context, scrollController) {
-          return Material(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-            clipBehavior: Clip.antiAlias,
-            child: SingleChildScrollView(
-              controller: scrollController,
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Center(
-                      child: Container(
-                        width: 42,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade300,
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      isEdit ? 'Ubah Bahan Pakan' : 'Tambah Bahan Pakan',
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Lengkapi data nutrisi dan harga. Data ini akan disimpan lokal di perangkat.',
-                      style: TextStyle(height: 1.5),
-                    ),
-                    const SizedBox(height: 20),
-                    _buildTextField(
-                      controller: _namaController,
-                      label: 'Nama bahan pakan',
-                      validator: _requiredValidator,
-                    ),
-                    const SizedBox(height: 12),
-                    DropdownButtonFormField<String>(
-                      value: _selectedKategori,
-                      decoration: const InputDecoration(
-                        labelText: 'Kategori',
-                        border: OutlineInputBorder(),
-                      ),
-                      hint: const Text('Pilih kategori pakan'),
-                      items: const [
-                        DropdownMenuItem(value: 'hijauan', child: Text('Hijauan (Rumput, Jerami, Daun)')),
-                        DropdownMenuItem(value: 'konsentrat', child: Text('Konsentrat (Pellet, Pollard, Mixfeed)')),
-                        DropdownMenuItem(value: 'limbah', child: Text('Limbah / Komboran (Ampas Tahu, dsb)')),
-                        DropdownMenuItem(value: 'energi', child: Text('Umbi / Energi (Singkong, dsb)')),
-                        DropdownMenuItem(value: 'lainnya', child: Text('Lainnya')),
-                      ],
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedKategori = value;
-                        });
-                      },
-                      validator: (value) => value == null ? 'Wajib pilih kategori' : null,
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildNumberField(
-                            controller: _bkController,
-                            label: 'BK (%)',
-                            validator: _percentageValidator,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildNumberField(
-                            controller: _abuController,
-                            label: 'Abu (%)',
-                            validator: _percentageValidator,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildNumberField(
-                            controller: _lemakController,
-                            label: 'Lemak (%)',
-                            validator: _percentageValidator,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildNumberField(
-                            controller: _seratController,
-                            label: 'Serat (%)',
-                            validator: _percentageValidator,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildNumberField(
-                            controller: _proteinController,
-                            label: 'Protein (%)',
-                            validator: _percentageValidator,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildNumberField(
-                            controller: _betnController,
-                            label: 'BETN (%)',
-                            validator: _percentageValidator,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildNumberField(
-                            controller: _tdnController,
-                            label: 'TDN (%)',
-                            validator: _percentageValidator,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildNumberField(
-                            controller: _meController,
-                            label: 'ME',
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    _buildNumberField(
-                      controller: _hargaController,
-                      label: 'Harga default per kg',
-                      prefixText: 'Rp ',
-                    ),
-                    const SizedBox(height: 12),
-                    SwitchListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: const Text('Aktif dipakai di perhitungan'),
-                      subtitle: const Text(
-                        'Jika dimatikan, bahan tidak muncul di pilihan kalkulasi.',
-                      ),
-                      value: _isActive,
-                      onChanged: (value) {
-                        setState(() {
-                          _isActive = value;
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: _simpan,
-                        child: Text(isEdit ? 'Simpan Perubahan' : 'Simpan Bahan'),
-                      ),
-                    ),
-                  ],
+    return Container(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+        left: 20,
+        right: 20,
+        top: 20,
+      ),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      child: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  String? _requiredValidator(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'Wajib diisi';
-    }
-    return null;
-  }
-
-  String? _percentageValidator(String? value) {
-    final req = _requiredValidator(value);
-    if (req != null) return req;
-
-    final num = double.tryParse(value!.replaceAll(',', '.'));
-    if (num == null) return 'Harus angka';
-    if (num < 0 || num > 100) return 'Rentang 0-100';
-    return null;
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    String? Function(String?)? validator,
-  }) {
-    return TextFormField(
-      controller: controller,
-      decoration: InputDecoration(
-        labelText: label,
-        border: const OutlineInputBorder(),
-      ),
-      validator: validator,
-    );
-  }
-
-  Widget _buildNumberField({
-    required TextEditingController controller,
-    required String label,
-    String? prefixText,
-    String? Function(String?)? validator,
-  }) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      decoration: InputDecoration(
-        labelText: label,
-        prefixText: prefixText,
-        border: const OutlineInputBorder(),
-      ),
-      validator: validator ?? _requiredValidator,
-    );
-  }
-}
-
-class _StatCard extends StatelessWidget {
-  final String label;
-  final String value;
-  final IconData icon;
-
-  const _StatCard({
-    required this.label,
-    required this.value,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: Colors.grey.shade700),
-          const SizedBox(height: 10),
-          Text(label, style: TextStyle(color: Colors.grey.shade700)),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              const SizedBox(height: 24),
+              Text(
+                isEdit ? 'Ubah Bahan' : 'Tambah Bahan Baru',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 24),
+              AppTextField(
+                controller: _namaController,
+                label: 'Nama Bahan Pakan',
+                hintText: 'Contoh: Rumput Gajah',
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                initialValue: _selectedKategori,
+                decoration: const InputDecoration(labelText: 'Kategori'),
+                items: const [
+                  DropdownMenuItem(value: 'hijauan', child: Text('Hijauan')),
+                  DropdownMenuItem(value: 'konsentrat', child: Text('Konsentrat')),
+                  DropdownMenuItem(value: 'limbah', child: Text('Limbah')),
+                  DropdownMenuItem(value: 'energi', child: Text('Energi')),
+                  DropdownMenuItem(value: 'lainnya', child: Text('Lainnya')),
+                ],
+                onChanged: (v) => setState(() => _selectedKategori = v),
+                validator: (v) => v == null ? 'Wajib' : null,
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: AppTextField(
+                      controller: _bkController,
+                      label: 'BK (%)',
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: AppTextField(
+                      controller: _proteinController,
+                      label: 'PK (%)',
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: AppTextField(
+                      controller: _tdnController,
+                      label: 'TDN (%)',
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: AppTextField(
+                      controller: _hargaController,
+                      label: 'Harga /kg',
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Bahan Aktif'),
+                subtitle: const Text('Muncul di pilihan kalkulasi', style: TextStyle(fontSize: 12)),
+                value: _isActive,
+                onChanged: (v) => setState(() => _isActive = v),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                height: 54,
+                child: FilledButton(
+                  onPressed: _simpan,
+                  child: Text(isEdit ? 'Simpan Perubahan' : 'Tambah Bahan'),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 }
 
-class _InfoChip extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const _InfoChip({
-    required this.label,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Text('$label: $value', style: const TextStyle(fontSize: 12)),
-    );
-  }
-}
+// Removed legacy _StatCard and other helpers
