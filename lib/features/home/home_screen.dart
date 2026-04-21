@@ -29,7 +29,8 @@ class _HomeScreenState extends State<HomeScreen> {
     switch (index) {
       case 1: _bukaCekKecukupan(); break;
       case 2: _bukaMasterPakan(); break;
-      case 3: _bukaFormulasi(); break;
+      case 3: _bukaCekKandungan(); break;
+      case 4: _bukaFormulasi(); break;
     }
   }
 
@@ -44,7 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const CekKandunganNutrisiScreen()),
-    );
+    ).then((_) => setState(() => _selectedIndex = 0));
   }
 
   void _bukaMasterPakan() {
