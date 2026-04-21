@@ -247,7 +247,7 @@ class _HomeScreenState extends State<HomeScreen> {
       crossAxisCount: 2,
       crossAxisSpacing: 12,
       mainAxisSpacing: 12,
-      childAspectRatio: 0.9,
+      childAspectRatio: 1.0,
       children: [
         QuickActionCard(
           title: 'Cek Kecukupan',
