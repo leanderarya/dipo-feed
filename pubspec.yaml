@@ -36,6 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   hive: ^2.2.3
   hive_flutter: ^1.1.0
+  flutter_svg: ^2.0.10+1
 
 dev_dependencies:
   flutter_test:
@@ -64,6 +65,8 @@ flutter:
   assets:
     - assets/data/bahan_pakan.json
     - assets/images/banner_sapi.webp
+    - assets/design/logo_undip.png
+    - assets/design/hero-bg.jpg
   #  - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
