@@ -16,7 +16,7 @@ class _SplashScreenState extends State<SplashScreen> {
     _navigateToHome();
   }
 
-  _navigateToHome() async {
+  Future<void> _navigateToHome() async {
     // Wait for 3 seconds to show the splash screen
     await Future.delayed(const Duration(seconds: 3));
     if (mounted) {
