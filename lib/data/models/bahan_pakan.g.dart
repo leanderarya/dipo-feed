@@ -30,13 +30,15 @@ class BahanPakanAdapter extends TypeAdapter<BahanPakan> {
       me: fields[10] as double,
       hargaDefault: fields[11] as double,
       isActive: fields[12] as bool,
+      ca: (fields[13] as double?) ?? 0,
+      p: (fields[14] as double?) ?? 0,
     );
   }
 
   @override
   void write(BinaryWriter writer, BahanPakan obj) {
     writer
-      ..writeByte(13)
+      ..writeByte(15)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -62,7 +64,11 @@ class BahanPakanAdapter extends TypeAdapter<BahanPakan> {
       ..writeByte(11)
       ..write(obj.hargaDefault)
       ..writeByte(12)
-      ..write(obj.isActive);
+      ..write(obj.isActive)
+      ..writeByte(13)
+      ..write(obj.ca)
+      ..writeByte(14)
+      ..write(obj.p);
   }
 
   @override

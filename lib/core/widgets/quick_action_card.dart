@@ -39,7 +39,7 @@ class QuickActionCard extends StatelessWidget {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min, // Keep it compact
+          mainAxisSize: MainAxisSize.max,
           children: [
             Container(
               padding: const EdgeInsets.all(12),
@@ -53,9 +53,11 @@ class QuickActionCard extends StatelessWidget {
                 size: 26,
               ),
             ),
-            const SizedBox(height: 20), // Fixed gap instead of Spacer
+            const SizedBox(height: 16),
             Text(
               title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w800,
@@ -65,14 +67,16 @@ class QuickActionCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 6),
-            Text(
-              description,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 11,
-                color: AppColors.textGrey.withValues(alpha: 0.8),
-                height: 1.3,
+            Expanded(
+              child: Text(
+                description,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: AppColors.textGrey.withValues(alpha: 0.8),
+                  height: 1.3,
+                ),
               ),
             ),
           ],

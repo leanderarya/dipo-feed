@@ -153,20 +153,17 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
   @override
   Size get preferredSize {
     if (isHome) return const Size.fromHeight(70);
-    
-    // Start with top bar height
+
     double height = 56;
-    
-    // Add estimated heights for heading and subtitle
-    if (heading != null) height += 40;
-    if (subtitle != null) {
-      // Allow more space for multi-line subtitles
-      height += 60; 
-    }
+
     if (heading != null || subtitle != null) {
-      height += 40; // Extra padding
+      height += 128;
     }
-    
+
+    if ((subtitle?.length ?? 0) > 80) {
+      height += 24;
+    }
+
     return Size.fromHeight(height);
   }
 }

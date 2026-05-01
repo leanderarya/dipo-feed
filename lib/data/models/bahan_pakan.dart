@@ -30,6 +30,10 @@ class BahanPakan {
   final double hargaDefault;
   @HiveField(12)
   final bool isActive;
+  @HiveField(13)
+  final double ca;
+  @HiveField(14)
+  final double p;
 
   const BahanPakan({
     required this.id,
@@ -45,6 +49,8 @@ class BahanPakan {
     required this.me,
     required this.hargaDefault,
     required this.isActive,
+    this.ca = 0,
+    this.p = 0,
   });
 
   factory BahanPakan.fromJson(Map<String, dynamic> json) {
@@ -62,6 +68,8 @@ class BahanPakan {
       me: (json['me'] as num).toDouble(),
       hargaDefault: (json['hargaDefault'] as num).toDouble(),
       isActive: json['isActive'] as bool,
+      ca: (json['ca'] as num?)?.toDouble() ?? 0,
+      p: (json['p'] as num?)?.toDouble() ?? 0,
     );
   }
 
@@ -80,6 +88,8 @@ class BahanPakan {
       'me': me,
       'hargaDefault': hargaDefault,
       'isActive': isActive,
+      'ca': ca,
+      'p': p,
     };
   }
 
@@ -97,6 +107,8 @@ class BahanPakan {
     double? me,
     double? hargaDefault,
     bool? isActive,
+    double? ca,
+    double? p,
   }) {
     return BahanPakan(
       id: id ?? this.id,
@@ -112,6 +124,8 @@ class BahanPakan {
       me: me ?? this.me,
       hargaDefault: hargaDefault ?? this.hargaDefault,
       isActive: isActive ?? this.isActive,
+      ca: ca ?? this.ca,
+      p: p ?? this.p,
     );
   }
 }

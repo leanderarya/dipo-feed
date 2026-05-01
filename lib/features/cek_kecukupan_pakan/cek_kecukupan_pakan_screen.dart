@@ -243,6 +243,10 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
     final bkPemberianKg = totalBerat * (hasilPakan.bk / 100);
     final proteinPemberianKg = totalBerat * (hasilPakan.protein / 100);
     final tdnPemberianKg = totalBerat * (hasilPakan.tdn / 100);
+    // Data Ca dan P per bahan pakan belum tersedia di master bahan pakan,
+    // sehingga evaluasi sementara membaca pemberian Ca/P sebagai 0.
+    const caPemberianGram = 0.0;
+    const pPemberianGram = 0.0;
 
     final hasilEvaluasi = _HasilEvaluasiRingkas(
       bk: _DetailEvaluasi(
@@ -256,6 +260,14 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
       tdn: _DetailEvaluasi(
         kebutuhan: _kebutuhanNutrien!.kebutuhanTdnKg,
         pemberian: tdnPemberianKg,
+      ),
+      ca: _DetailEvaluasi(
+        kebutuhan: _kebutuhanNutrien!.kebutuhanCaGram,
+        pemberian: caPemberianGram,
+      ),
+      p: _DetailEvaluasi(
+        kebutuhan: _kebutuhanNutrien!.kebutuhanPGram,
+        pemberian: pPemberianGram,
       ),
     );
 
@@ -421,7 +433,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
                 _parseDouble(_lemakSusuController.text) > 0 &&
                         (_parseDouble(_lemakSusuController.text) < 2.5 ||
                             _parseDouble(_lemakSusuController.text) > 4.0)
-                    ? 'Lemak susu di luar rentang rekomendasi 2.5%–4.0%. Perhitungan tetap dilakukan dengan ekstrapolasi.'
+                    ? 'Lemak susu di luar rentang normal (2.5%–4.0%). Perhitungan tetap dilakukan dengan ekstrapolasi.'
                     : 'Diisi sesuai dengan pengetahuan peternak, misalnya 3–3,5%.',
                 style: TextStyle(
                   fontSize: 12,
@@ -744,10 +756,35 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
                 limit: hasil.tdn.kebutuhan,
                 unit: 'kg',
               ),
+              const SizedBox(height: 20),
+              AppComparisonBar(
+                label: 'Ca',
+                current: hasil.ca.pemberian,
+                limit: hasil.ca.kebutuhan,
+                unit: 'gram',
+              ),
+              const SizedBox(height: 20),
+              AppComparisonBar(
+                label: 'P',
+                current: hasil.p.pemberian,
+                limit: hasil.p.kebutuhan,
+                unit: 'gram',
+              ),
             ],
           ),
         ),
         const SizedBox(height: 16),
+        const Padding(
+          padding: EdgeInsets.only(bottom: 16),
+          child: Text(
+            'Catatan: nilai pemberian Ca dan P saat ini masih 0 karena data kandungan Ca/P pada bahan pakan belum tersedia.',
+            style: TextStyle(
+              fontSize: 12,
+              color: AppColors.textLight,
+              height: 1.5,
+            ),
+          ),
+        ),
         AppCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -804,22 +841,32 @@ class _HasilEvaluasiRingkas {
   final _DetailEvaluasi bk;
   final _DetailEvaluasi protein;
   final _DetailEvaluasi tdn;
+  final _DetailEvaluasi ca;
+  final _DetailEvaluasi p;
 
   const _HasilEvaluasiRingkas({
     required this.bk,
     required this.protein,
     required this.tdn,
+    required this.ca,
+    required this.p,
   });
 
   String get kesimpulanUmum {
-    final semuaStatus = [bk.status, protein.status, tdn.status];
+    final semuaStatus = [
+      bk.status,
+      protein.status,
+      tdn.status,
+      ca.status,
+      p.status,
+    ];
 
     if (semuaStatus.every((status) => status == 'Cukup')) {
-      return 'Pakan yang diberikan sudah sesuai dengan kebutuhan nutrien Dara.';
+      return 'Pakan yang diberikan sudah sesuai dengan kebutuhan nutrien sapi.';
     }
 
     if (semuaStatus.any((status) => status == 'Kurang')) {
-      return 'Pakan yang diberikan belum mencukupi seluruh kebutuhan nutrien Dara.';
+      return 'Pakan yang diberikan belum mencukupi seluruh kebutuhan nutrien sapi.';
     }
 
     return 'Pakan yang diberikan cenderung berlebih pada beberapa komponen nutrien.';

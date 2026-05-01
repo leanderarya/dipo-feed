@@ -7,8 +7,8 @@ import '../../core/widgets/app_bottom_nav.dart';
 import '../../core/widgets/quick_action_card.dart';
 import '../cek_kandungan_nutrisi/cek_kandungan_nutrisi_screen.dart';
 import '../cek_kecukupan_pakan/cek_kecukupan_pakan_screen.dart';
-import '../formulasi_ransum/formulasi_ransum_screen.dart';
 import '../master_pakan/master_pakan_screen.dart';
+import '../rekomendasi_pakan/rekomendasi_pakan_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -68,7 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _bukaFormulasi() {
     Navigator.push(
       context,
-      _createRoute(const FormulasiRansumScreen()),
+      _createRoute(const RekomendasiPakanScreen()),
     ).then((_) => setState(() => _selectedIndex = 0));
   }
 
@@ -265,8 +265,8 @@ class _HomeScreenState extends State<HomeScreen> {
           onTap: _bukaCekKandungan,
         ),
         QuickActionCard(
-          title: 'Simulasi Ransum',
-          description: 'Formula pakan biaya terendah',
+          title: 'Rekomendasi Pakan',
+          description: 'Rekomendasi pakan berdasarkan kebutuhan nutrien',
           icon: Icons.calculate_rounded,
           baseColor: AppColors.primaryGreen,
           onTap: _bukaFormulasi,

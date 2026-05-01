@@ -412,6 +412,8 @@ class _FormBahanPakanSheetState extends State<_FormBahanPakanSheet> {
         me: widget.initialData?.me ?? 0,
         hargaDefault: _parseNumber(_hargaController.text),
         isActive: _isActive,
+        ca: widget.initialData?.ca ?? 0,
+        p: widget.initialData?.p ?? 0,
       ),
     );
   }
