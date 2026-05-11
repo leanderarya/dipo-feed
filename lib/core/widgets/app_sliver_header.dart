@@ -19,14 +19,23 @@ class AppSliverHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double expandedHeight = subtitle != null ? 200.0 : 140.0;
+    double expandedHeight = 140.0;
+    if (subtitle != null) {
+      if (subtitle!.length < 40) {
+        expandedHeight = 165.0;
+      } else if (subtitle!.length < 80) {
+        expandedHeight = 185.0;
+      } else {
+        expandedHeight = 210.0;
+      }
+    }
 
     return SliverAppBar(
       expandedHeight: expandedHeight,
       floating: false,
       pinned: true,
       elevation: 0,
-      backgroundColor: AppColors.primaryGreen,
+      backgroundColor: AppColors.primaryBlue,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
           bottom: Radius.circular(20),
