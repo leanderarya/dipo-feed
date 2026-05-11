@@ -38,7 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        backgroundColor: AppColors.primaryGreen,
+        backgroundColor: AppColors.primaryBlue,
         duration: const Duration(seconds: 2),
       ),
     );
@@ -112,11 +112,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 _buildHeroBanner(),
                 const SizedBox(height: 32),
                 const Text(
-                  'Layanan Utama',
+                  'Fitur Utama',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.primaryGreen,
+                    color: AppColors.primaryBlue,
                     letterSpacing: -0.5,
                   ),
                 ),
@@ -179,20 +179,20 @@ class _HomeScreenState extends State<HomeScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryLight.withValues(alpha: 0.3),
+                    color: AppColors.primaryBlue.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(100),
                   ),
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.eco_rounded, size: 14, color: AppColors.primaryGreen),
+                      Icon(Icons.eco_rounded, size: 14, color: AppColors.primaryBlue),
                       SizedBox(width: 6),
                       Text(
                         'RESEARCH-BASED',
                         style: TextStyle(
                           fontSize: 9,
                           fontWeight: FontWeight.w800,
-                          color: AppColors.primaryGreen,
+                          color: AppColors.primaryBlue,
                           letterSpacing: 1,
                         ),
                       ),
@@ -205,7 +205,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.w800,
-                    color: AppColors.primaryGreen,
+                    color: AppColors.primaryBlue,
                     height: 1.1,
                   ),
                 ),
@@ -244,31 +244,31 @@ class _HomeScreenState extends State<HomeScreen> {
       childAspectRatio: 1.0,
       children: [
         QuickActionCard(
-          title: 'Cek Kecukupan',
-          description: 'Evaluasi gizi harian sapi',
+          title: 'Cek Kecukupan Pakan',
+          description: 'Evaluasi kecukupan nutrien pada pemberian pakan ternak',
           icon: Icons.health_and_safety_rounded,
-          baseColor: AppColors.primaryGreen,
+          baseColor: AppColors.secondaryGreen,
           onTap: _bukaCekKecukupan,
         ),
         QuickActionCard(
           title: 'Database Pakan',
-          description: 'Katalog kimiawi pakan lokal',
+          description: 'Database bahan pakan',
           icon: Icons.inventory_2_rounded,
-          baseColor: const Color(0xFF476553), // Secondary
+          baseColor: AppColors.primaryBlue,
           onTap: _bukaMasterPakan,
         ),
         QuickActionCard(
-          title: 'Cek Nutrisi',
-          description: 'Estimasi gizi campuran pakan',
+          title: 'Cek Kandungan Pakan',
+          description: 'Cek kandungan nutrisi pada pakan',
           icon: Icons.analytics_rounded,
-          baseColor: const Color(0xFF3C2B12), // Tertiary
+          baseColor: AppColors.expertPurple,
           onTap: _bukaCekKandungan,
         ),
         QuickActionCard(
           title: 'Rekomendasi Pakan',
-          description: 'Rekomendasi pakan berdasarkan kebutuhan nutrien',
-          icon: Icons.calculate_rounded,
-          baseColor: AppColors.primaryGreen,
+          description: 'Rekomendasi pemberian pakan untuk mencukupi kebutuhan nutrisi ternak',
+          icon: Icons.auto_awesome_rounded,
+          baseColor: AppColors.accentOrange,
           onTap: _bukaFormulasi,
         ),
       ],

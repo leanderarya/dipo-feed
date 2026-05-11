@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/widgets/app_card.dart';
 import '../../core/widgets/app_comparison_bar.dart';
-import '../../core/widgets/app_header.dart';
+import '../../core/widgets/app_sliver_header.dart';
 import '../../core/widgets/app_text_field.dart';
 import '../../data/models/bahan_pakan.dart';
 import '../../data/models/campuran_pakan_item.dart';
@@ -342,14 +342,9 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.backgroundCream,
-      appBar: const AppHeader(
-        title: 'Cek Kecukupan',
-        heading: 'Kebutuhan Nutrien',
-        subtitle: 'Hitung kebutuhan nutrien sapi berdasarkan fisiologi dan evaluasi pemberian pakan.',
-      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _isLoadingBahan ? null : _tambahBahanPakan,
-        backgroundColor: AppColors.primaryGreen,
+        backgroundColor: AppColors.primaryBlue,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add),
         label: const Text('Bahan Pakan'),
@@ -363,20 +358,28 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
                 child: Text(_errorBahan!, textAlign: TextAlign.center),
               ),
             )
-          : SingleChildScrollView(
-              padding: const EdgeInsets.only(bottom: 120),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    _buildFormInput(),
-                    const SizedBox(height: 16),
-                    _buildOutputSection(),
-                    const SizedBox(height: 16),
-                    _buildPemberianPakanSection(),
-                  ],
+          : CustomScrollView(
+              slivers: [
+                const AppSliverHeader(
+                  title: 'Cek Kecukupan Pakan',
+                  subtitle:
+                      'Evaluasi kecukupan nutrien pada pemberian pakan ternak.',
                 ),
-              ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
+                    child: Column(
+                      children: [
+                        _buildFormInput(),
+                        const SizedBox(height: 16),
+                        _buildOutputSection(),
+                        const SizedBox(height: 16),
+                        _buildPemberianPakanSection(),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
     );
   }
@@ -393,11 +396,19 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
             const SizedBox(height: 16),
             const Text(
               'Fisiologi Sapi',
-              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
             ),
             const SizedBox(height: 8),
             DropdownButtonFormField<FisiologiSapi>(
               initialValue: _fisiologi,
+              hint: const Text('-- Pilih Fisiologi --'),
+              decoration: const InputDecoration(
+                filled: true,
+                fillColor: Colors.white,
+              ),
               items: FisiologiSapi.values.map((fisiologi) {
                 return DropdownMenuItem<FisiologiSapi>(
                   value: fisiologi,
@@ -463,7 +474,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.primaryGreen,
+                  color: AppColors.primaryBlue,
                 ),
               ),
               SizedBox(height: 12),
@@ -489,7 +500,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: AppColors.primaryGreen,
+                color: AppColors.primaryBlue,
               ),
             ),
             SizedBox(height: 12),
@@ -512,7 +523,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: AppColors.primaryGreen,
+                color: AppColors.primaryBlue,
               ),
             ),
             SizedBox(height: 12),
@@ -538,7 +549,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
           Text(
             'Kebutuhan Nutrien',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              color: AppColors.primaryGreen,
+              color: AppColors.primaryBlue,
             ),
           ),
           const SizedBox(height: 16),
@@ -640,7 +651,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
           Icon(
             Icons.eco_outlined,
             size: 48,
-            color: AppColors.primaryGreen.withValues(alpha: 0.3),
+            color: AppColors.secondaryGreen.withValues(alpha: 0.3),
           ),
           const SizedBox(height: 16),
           const Text(
@@ -675,7 +686,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
                 'Bahan ${index + 1}',
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: AppColors.primaryGreen,
+                  color: AppColors.primaryBlue,
                 ),
               ),
               const Spacer(),
@@ -794,14 +805,14 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
                   Icon(
                     Icons.info_outline,
                     size: 16,
-                    color: AppColors.primaryGreen,
+                    color: AppColors.primaryBlue,
                   ),
                   SizedBox(width: 8),
                   Text(
                     'Kesimpulan Umum',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: AppColors.primaryGreen,
+                      color: AppColors.primaryBlue,
                     ),
                   ),
                 ],

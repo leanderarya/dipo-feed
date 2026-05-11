@@ -14,16 +14,10 @@ DipoFeed adalah aplikasi berbasis seluler (Mobile App) yang dibangun menggunakan
 
 ## 📱 Penjelasan Fitur dan Alur Kerja
 
-Aplikasi DipoFeed memiliki 3 fitur utama. Berikut adalah penjelasan konsep, masukan (input), keluaran (output), beserta ilustrasi alur kerjanya:
+Aplikasi DipoFeed memiliki 4 fitur utama. Berikut adalah penjelasan konsep, masukan (input), keluaran (output), beserta ilustrasi alur kerjanya:
 
-### 1. Cek Kandungan Nutrisi
-**Deskripsi:** Fitur referensi yang bertindak sebagai *database* ensiklopedia mini untuk melihat profil nutrisi dari berbagai bahan pakan lokal.
-- **Konsep:** Pengguna dapat mencari dan melihat komposisi zat gizi dari suatu pakan (misalnya: Rumput Odot, Ampas Tahu, Bekatul, dll).
-- **📝 Input:** Pencarian nama bahan pakan (opsional).
-- **📤 Output:** Informasi profil nutrisi meliputi: Bahan Kering (BK), Protein, Total Digestible Nutrients (TDN), Energi Metabolisme (ME), Lemak, Abu, Serat, dll.
-
-### 2. Cek Kecukupan Pakan
-**Deskripsi:** Fitur ini berfungsi untuk mengevaluasi apakah *satu porsi pakan spesifik* yang biasa diberikan peternak sudah memenuhi standar kebutuhan gizi seekor sapi atau belum.
+### 1. Cek Kecukupan Pakan
+**Deskripsi:** evaluasi kecukupan nutrien pada pemberian pakan ternak. Fitur ini berfungsi untuk mengevaluasi apakah satu porsi pakan spesifik yang biasa diberikan peternak sudah memenuhi standar kebutuhan gizi seekor sapi atau belum.
 
 **Logika & Alur Kerja:**
 Sistem memecah proses menjadi dua jalur: mengkalkulasi **"Apa yang dibutuhkan sapi"** dan **"Apa yang diberikan oleh pakan"**. Keduanya lalu diadu untuk mencari selisihnya (kurang/Cukup/Berlebih).
@@ -38,39 +32,37 @@ graph TD
 ```
 
 - **📝 Input:**
-  1. **Profil Sapi:** Berat Badan, Produksi Susu (liter), % Lemak Susu, Paritas, Tahap Laktasi, dan Status Kebuntingan.
-  2. **Pakan Terpilih:** Milih satu kombinasi pakan beserta berat basahnya (kg).
+  1. **Profil Sapi:** Berat Badan, Produksi Susu (liter), % Lemak Susu, Fisiologi (Dara/Laktasi/Kering Kandang).
+  2. **Pemberian Pakan:** Daftar bahan pakan beserta berat basahnya (kg).
 - **📤 Output:**
-  Tabel rincian evaluasi Nutrisi (BK, Protein, TDN, Energi ME). Jika asupan pakan lebih rendah dari kebutuhan sapi, statusnya merah (**Kurang**).
+  Tabel rincian evaluasi Nutrisi (BK, Protein, TDN, Ca, P). Jika asupan pakan lebih rendah dari kebutuhan sapi, statusnya merah (**Kurang**).
 
-### 3. Formulasi Ransum
-**Deskripsi:** Fitur simulasi tingkat lanjut (kalkulator utama). Memungkinkan peternak mensimulasikan "mencampur" berbagai macam bahan pakan dengan takaran berbeda-beda, lalu mengevaluasi apakah campuran seluruh pakan tersebut bagus untuk sapi.
+### 2. Rekomendasi Pakan
+**Deskripsi:** Rekomendasi pemberian pakan untuk mencukupi kebutuhan nutrisi ternak. Sistem akan mencari kombinasi terbaik dari bahan pakan yang dimiliki peternak.
 
 **Logika & Alur Kerja:**
-Sistem mengakumulasi seluruh pakan yang ada di "keranjang" campuran, menghitung total nutrisinya, dan membaginya sesuai kategori pakan (Hijauan vs Konsentrat) untuk mencari rasio seimbang.
-
-```mermaid
-graph TD
-    A[Input Profil Sapi] --> C{Hitung Kebutuhan Sapi}
-    
-    B1[Bahan Pakan A - 5 kg] --> D{Akumulasi Total Nutrisi Campuran}
-    B2[Bahan Pakan B - 2 kg] --> D
-    B3[Bahan Pakan C - 1 kg] --> D
-    
-    C --> E[Evaluasi Kombinasi Pakan]
-    D --> E
-    D --> F[Hitung Rasio Hijauan vs Konsentrat]
-    E --> G[Output Hasil Simulasi Ransum]
-    F --> G
-```
+Sistem menghitung kebutuhan sapi, lalu melakukan pencarian kombinasi pakan (Trial and Error) untuk memenuhi target Bahan Kering (60% Hijauan, 40% Konsentrat) dan target nutrien lainnya.
 
 - **📝 Input:**
   1. **Profil Sapi** (Sama seperti fitur sebelumnya).
-  2. **Keranjang Pakan:** *List* atau daftar berbagai macam bahan pakan beserta berat masing-masing (kg).
+  2. **Bahan yang Dimiliki:** Daftar hijauan dan konsentrat yang tersedia di kandang.
+- **📤 Output:**
+  Rekomendasi jumlah pemberian (kg) untuk setiap bahan pakan agar kebutuhan nutrien sapi terpenuhi secara optimal.
+
+### 3. Cek Kandungan Pakan
+**Deskripsi:** Cek kandungan nutrisi pada pakan. Memungkinkan peternak mensimulasikan "mencampur" berbagai macam bahan pakan dengan takaran berbeda-beda, lalu mengevaluasi kandungan gizi totalnya.
+
+- **📝 Input:**
+  **Keranjang Pakan:** *List* atau daftar berbagai macam bahan pakan beserta berat masing-masing (kg).
 - **📤 Output:**
   1. **Total Nutrisi Keseluruhan:** Akumulasi BK, Protein, TDN, dan ME dari *seluruh* pakan.
-  2. **Imbangan / Rasio:** Perbandingan persentase antara kategori Hijauan dan Konsentrat.
-  3. **Kesimpulan:** Pesan rekomendasi apakah ransum ini sudah pas, berlebih, atau masih ada komposisi gizi yang kurang.
+  2. **Analisis Biaya:** Estimasi total biaya campuran pakan.
+
+### 4. Database Pakan
+**Deskripsi:** Database bahan pakan. Fitur referensi yang bertindak sebagai ensiklopedia mini untuk melihat profil nutrisi dari berbagai bahan pakan lokal.
+- **Konsep:** Pengguna dapat mencari, melihat, menambah, atau mengubah komposisi zat gizi dari berbagai bahan pakan.
+- **📝 Input:** Nama bahan pakan, Kategori, Kandungan Nutrisi (BK, PK, TDN, Harga, dll).
+- **📤 Output:** Katalog profil nutrisi pakan lokal yang digunakan sebagai basis perhitungan di seluruh fitur aplikasi.
 
 ---
 

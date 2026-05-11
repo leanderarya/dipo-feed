@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/widgets/app_card.dart';
 import '../../core/widgets/app_text_field.dart';
-import '../../core/widgets/app_header.dart';
+import '../../core/widgets/app_sliver_header.dart';
 import '../../data/models/bahan_pakan.dart';
 import '../../data/sources/bahan_pakan_repository.dart';
 
@@ -155,49 +155,57 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.backgroundCream,
-      appBar: AppHeader(
-        title: 'Master Bahan Pakan',
-        heading: 'Database Pakan',
-        subtitle: 'Kelola basis data bahan pakan yang tersedia secara lokal.',
-        actions: [
-          IconButton(
-            tooltip: 'Reset Data',
-            onPressed: _isLoading ? null : _resetDataAwal,
-            icon: const Icon(Icons.refresh_rounded, color: Colors.white),
-          ),
-        ],
-      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _isLoading ? null : () => _bukaFormBahan(),
-        backgroundColor: AppColors.primaryGreen,
+        backgroundColor: AppColors.accentOrange,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add),
         label: const Text('Tambah Bahan'),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _errorMessage != null
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Text(_errorMessage!, textAlign: TextAlign.center),
-                  ),
-                )
-              : RefreshIndicator(
-                  onRefresh: _muatData,
-                  child: ListView(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 120),
-                    children: [
-                      const SizedBox(height: 24),
-                      _buildRingkasan(totalSemua: semuaData.length, totalAktif: totalAktif),
-                      const SizedBox(height: 16),
-                      if (semuaData.isEmpty)
-                        _buildEmptyState()
-                      else
-                        ...semuaData.map(_buildBahanCard),
-                    ],
-                  ),
+      body: CustomScrollView(
+        slivers: [
+          AppSliverHeader(
+            title: 'Database Pakan',
+            subtitle: 'Database bahan pakan.',
+            actions: [
+              IconButton(
+                tooltip: 'Reset Data',
+                onPressed: _isLoading ? null : _resetDataAwal,
+                icon: const Icon(Icons.refresh_rounded, color: Colors.white),
+              ),
+            ],
+          ),
+          if (_isLoading)
+            const SliverFillRemaining(
+              child: Center(child: CircularProgressIndicator()),
+            )
+          else if (_errorMessage != null)
+            SliverFillRemaining(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(_errorMessage!, textAlign: TextAlign.center),
                 ),
+              ),
+            )
+          else
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 120),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  const SizedBox(height: 24),
+                  _buildRingkasan(
+                      totalSemua: semuaData.length, totalAktif: totalAktif),
+                  const SizedBox(height: 16),
+                  if (semuaData.isEmpty)
+                    _buildEmptyState()
+                  else
+                    ...semuaData.map(_buildBahanCard),
+                ]),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
@@ -214,7 +222,7 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.inventory_2_outlined, color: AppColors.primaryGreen, size: 20),
+                const Icon(Icons.inventory_2_outlined, color: AppColors.secondaryGreen, size: 20),
                 const SizedBox(height: 8),
                 Text('Total Pakan', style: Theme.of(context).textTheme.bodySmall),
                 Text('$totalSemua', style: Theme.of(context).textTheme.titleLarge),
@@ -246,7 +254,7 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
       padding: const EdgeInsets.all(32),
       child: Column(
         children: [
-          Icon(Icons.inventory_2_outlined, size: 48, color: AppColors.primaryGreen.withValues(alpha: 0.1)),
+          Icon(Icons.inventory_2_outlined, size: 48, color: AppColors.secondaryGreen.withValues(alpha: 0.1)),
           const SizedBox(height: 16),
           const Text('Database Kosong', style: TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
@@ -282,7 +290,7 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
               ),
               Switch(
                 value: bahan.isActive,
-                activeThumbColor: AppColors.primaryGreen,
+                activeThumbColor: AppColors.secondaryGreen,
                 onChanged: (value) => _ubahStatusAktif(bahan, value),
               ),
             ],
@@ -459,11 +467,23 @@ class _FormBahanPakanSheetState extends State<_FormBahanPakanSheet> {
                 controller: _namaController,
                 label: 'Nama Bahan Pakan',
                 hintText: 'Contoh: Rumput Gajah',
+                keyboardType: TextInputType.text,
               ),
-              const SizedBox(height: 16),
+              const Text(
+                'Kategori',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(height: 8),
               DropdownButtonFormField<String>(
                 initialValue: _selectedKategori,
-                decoration: const InputDecoration(labelText: 'Kategori'),
+                hint: const Text('-- Pilih Kategori --'),
+                decoration: const InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
                 items: const [
                   DropdownMenuItem(value: 'hijauan', child: Text('Hijauan')),
                   DropdownMenuItem(value: 'konsentrat', child: Text('Konsentrat')),

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../core/widgets/app_card.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/widgets/app_header.dart';
+import '../../core/widgets/app_card.dart';
+import '../../core/widgets/app_sliver_header.dart';
 import '../../core/widgets/app_text_field.dart';
 import '../../data/models/bahan_pakan.dart';
 import '../../data/models/campuran_pakan_item.dart';
@@ -161,24 +161,33 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.backgroundKrem,
-      appBar: AppHeader(
-        title: 'Cek Kandungan Nutrisi',
-        heading: 'Simulasi Campuran',
-        subtitle: 'Cek kandungan nutrisi dari campuran pakan buatan Anda sendiri.',
-        actions: [
-          IconButton(
-            tooltip: 'Master Pakan',
-            onPressed: _isLoading ? null : _bukaManajemenMaster,
-            icon: const Icon(Icons.inventory_2_outlined, color: Colors.white),
+      body: CustomScrollView(
+        slivers: [
+          AppSliverHeader(
+            title: 'Cek Kandungan Pakan',
+            subtitle: 'Cek kandungan nutrisi pada pakan.',
+            actions: [
+              IconButton(
+                tooltip: 'Database Pakan',
+                onPressed: _isLoading ? null : _bukaManajemenMaster,
+                icon: const Icon(Icons.inventory_2_outlined, color: Colors.white),
+              ),
+            ],
+          ),
+          SliverToBoxAdapter(
+            child: _buildBody(hasil),
           ),
         ],
       ),
-      body: SafeArea(child: _buildBody(hasil)),
       bottomNavigationBar: widget.modePilihUntukEvaluasi && _campuran.isNotEmpty && hasil.totalBerat > 0
           ? Padding(
               padding: const EdgeInsets.all(16),
               child: FilledButton(
                 onPressed: () => _gunakanUntukEvaluasi(hasil),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.accentOrange,
+                  minimumSize: const Size(double.infinity, 48),
+                ),
                 child: const Text('Gunakan untuk Evaluasi'),
               ),
             )
@@ -197,9 +206,11 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
       );
     }
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 24, 16, 32),
-      children: [
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 24, 16, 120),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
         if (_campuran.isEmpty)
           _buildEmptyState()
         else ...[
@@ -219,8 +230,9 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
           _buildKartuHasil(hasil),
         ],
       ],
-    );
-  }
+    ),
+  );
+}
 
 
   Widget _buildEmptyState() {
@@ -352,7 +364,7 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
             value,
             style: TextStyle(
               fontWeight: isBold ? FontWeight.bold : FontWeight.w500,
-              color: isBold ? AppColors.primaryGreen : null,
+              color: isBold ? AppColors.primaryBlue : null,
               fontSize: isBold ? 16 : null,
             ),
           ),

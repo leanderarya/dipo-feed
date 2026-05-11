@@ -34,7 +34,7 @@ class AppTextField extends StatelessWidget {
         Text(
           label,
           style: const TextStyle(
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.bold,
             fontSize: 14,
           ),
         ),
@@ -48,6 +48,15 @@ class AppTextField extends StatelessWidget {
             if (value == null || value.trim().isEmpty) {
               return 'Wajib diisi';
             }
+            
+            // Detect if the field is intended to be numeric
+            final isNumeric = keyboardType == null || 
+                             keyboardType == TextInputType.number || 
+                             keyboardType?.index == TextInputType.number.index;
+
+            // Skip numeric validation for explicit text or other non-numeric types
+            if (keyboardType == TextInputType.text || !isNumeric) return null;
+
             if (isInteger) {
               final parsed = int.tryParse(value);
               if (parsed == null) return 'Angka bulat tidak valid';
