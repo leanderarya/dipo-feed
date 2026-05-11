@@ -469,10 +469,20 @@ class _FormBahanPakanSheetState extends State<_FormBahanPakanSheet> {
                 hintText: 'Contoh: Rumput Gajah',
                 keyboardType: TextInputType.text,
               ),
-              const SizedBox(height: 16),
+              const Text(
+                'Kategori',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(height: 8),
               DropdownButtonFormField<String>(
                 initialValue: _selectedKategori,
-                decoration: const InputDecoration(labelText: 'Kategori'),
+                decoration: const InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
                 items: const [
                   DropdownMenuItem(value: 'hijauan', child: Text('Hijauan')),
                   DropdownMenuItem(value: 'konsentrat', child: Text('Konsentrat')),

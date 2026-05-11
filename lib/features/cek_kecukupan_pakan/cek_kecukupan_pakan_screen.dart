@@ -396,11 +396,18 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
             const SizedBox(height: 16),
             const Text(
               'Fisiologi Sapi',
-              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
             ),
             const SizedBox(height: 8),
             DropdownButtonFormField<FisiologiSapi>(
               initialValue: _fisiologi,
+              decoration: const InputDecoration(
+                filled: true,
+                fillColor: Colors.white,
+              ),
               items: FisiologiSapi.values.map((fisiologi) {
                 return DropdownMenuItem<FisiologiSapi>(
                   value: fisiologi,

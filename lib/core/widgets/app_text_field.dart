@@ -34,7 +34,7 @@ class AppTextField extends StatelessWidget {
         Text(
           label,
           style: const TextStyle(
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.bold,
             fontSize: 14,
           ),
         ),
