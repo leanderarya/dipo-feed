@@ -404,6 +404,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
             const SizedBox(height: 8),
             DropdownButtonFormField<FisiologiSapi>(
               initialValue: _fisiologi,
+              hint: const Text('-- Pilih Fisiologi --'),
               decoration: const InputDecoration(
                 filled: true,
                 fillColor: Colors.white,

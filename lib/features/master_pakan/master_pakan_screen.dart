@@ -479,6 +479,7 @@ class _FormBahanPakanSheetState extends State<_FormBahanPakanSheet> {
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
                 initialValue: _selectedKategori,
+                hint: const Text('-- Pilih Kategori --'),
                 decoration: const InputDecoration(
                   filled: true,
                   fillColor: Colors.white,

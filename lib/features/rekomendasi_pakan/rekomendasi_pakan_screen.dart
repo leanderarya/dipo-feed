@@ -535,6 +535,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
             const SizedBox(height: 8),
             DropdownButtonFormField<FisiologiSapi>(
               initialValue: _fisiologi,
+              hint: const Text('-- Pilih Fisiologi --'),
               decoration: _dropdownDecoration(),
               items: FisiologiSapi.values.map((fisiologi) {
                 return DropdownMenuItem<FisiologiSapi>(
