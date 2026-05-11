@@ -553,25 +553,14 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                 title: 'Data kebutuhan nutrien belum tersedia.',
                 subtitle: 'Isi profil sapi terlebih dahulu agar target nutrien dapat dihitung.',
               ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: [
-                if (widget.kebutuhanAwal != null)
-                  OutlinedButton.icon(
-                    onPressed: _gunakanDataCekKecukupan,
-                    icon: const Icon(Icons.sync_alt_outlined),
-                    label: const Text('Gunakan Data Cek Kecukupan Pakan'),
-                  )
-                else
-                  OutlinedButton.icon(
-                    onPressed: () => _showSnackBar('Isi profil sapi pada form di bawah.'),
-                    icon: const Icon(Icons.edit_note_outlined),
-                    label: const Text('Isi Profil Sapi'),
-                  ),
-              ],
-            ),
+            if (widget.kebutuhanAwal != null) ...[
+              const SizedBox(height: 16),
+              OutlinedButton.icon(
+                onPressed: _gunakanDataCekKecukupan,
+                icon: const Icon(Icons.sync_alt_outlined),
+                label: const Text('Gunakan Data Cek Kecukupan Pakan'),
+              ),
+            ],
             const SizedBox(height: 16),
             _buildFieldLabel('Fisiologi Sapi'),
             const SizedBox(height: 8),
