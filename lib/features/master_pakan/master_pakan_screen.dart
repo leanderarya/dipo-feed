@@ -467,6 +467,7 @@ class _FormBahanPakanSheetState extends State<_FormBahanPakanSheet> {
                 controller: _namaController,
                 label: 'Nama Bahan Pakan',
                 hintText: 'Contoh: Rumput Gajah',
+                keyboardType: TextInputType.text,
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
