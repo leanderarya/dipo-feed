@@ -625,7 +625,22 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: _hitungEvaluasi,
-              child: const Text('Hitung Evaluasi'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.accentOrange,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 0,
+              ),
+              child: const Text(
+                'Hitung Evaluasi',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
             ),
           ),
           if (_hasilEvaluasi != null) ...[
