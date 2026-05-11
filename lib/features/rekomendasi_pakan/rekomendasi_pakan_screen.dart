@@ -531,37 +531,6 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (_kebutuhanNutrien != null)
-              GridView.count(
-                crossAxisCount: 2,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 1.55,
-                children: [
-                  _buildNutrientMiniCard('BK', '${_format(_kebutuhanNutrien!.kebutuhanBkKg)} kg'),
-                  _buildNutrientMiniCard('PK', '${_format(_kebutuhanNutrien!.kebutuhanProteinKg)} kg'),
-                  _buildNutrientMiniCard('TDN', '${_format(_kebutuhanNutrien!.kebutuhanTdnKg)} kg'),
-                  _buildNutrientMiniCard('Ca', '${_format(_kebutuhanNutrien!.kebutuhanCaGram)} gram'),
-                  _buildNutrientMiniCard('P', '${_format(_kebutuhanNutrien!.kebutuhanPGram)} gram'),
-                ],
-              )
-            else
-              _buildEmptyState(
-                icon: Icons.fact_check_outlined,
-                title: 'Data kebutuhan nutrien belum tersedia.',
-                subtitle: 'Isi profil sapi terlebih dahulu agar target nutrien dapat dihitung.',
-              ),
-            if (widget.kebutuhanAwal != null) ...[
-              const SizedBox(height: 16),
-              OutlinedButton.icon(
-                onPressed: _gunakanDataCekKecukupan,
-                icon: const Icon(Icons.sync_alt_outlined),
-                label: const Text('Gunakan Data Cek Kecukupan Pakan'),
-              ),
-            ],
-            const SizedBox(height: 16),
             _buildFieldLabel('Fisiologi Sapi'),
             const SizedBox(height: 8),
             DropdownButtonFormField<FisiologiSapi>(
@@ -620,6 +589,41 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                       ),
                     ),
                   ),
+                ],
+              ),
+            ],
+            if (widget.kebutuhanAwal != null) ...[
+              const SizedBox(height: 16),
+              OutlinedButton.icon(
+                onPressed: _gunakanDataCekKecukupan,
+                icon: const Icon(Icons.sync_alt_outlined),
+                label: const Text('Gunakan Data Cek Kecukupan Pakan'),
+              ),
+            ],
+            if (_kebutuhanNutrien != null) ...[
+              const Divider(height: 32),
+              const Text(
+                'Target Kebutuhan Nutrien',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textGrey,
+                ),
+              ),
+              const SizedBox(height: 12),
+              GridView.count(
+                crossAxisCount: 3,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+                childAspectRatio: 1.3,
+                children: [
+                  _buildNutrientMiniCard('BK (kg)', _format(_kebutuhanNutrien!.kebutuhanBkKg)),
+                  _buildNutrientMiniCard('PK (kg)', _format(_kebutuhanNutrien!.kebutuhanProteinKg)),
+                  _buildNutrientMiniCard('TDN (kg)', _format(_kebutuhanNutrien!.kebutuhanTdnKg)),
+                  _buildNutrientMiniCard('Ca (g)', _format(_kebutuhanNutrien!.kebutuhanCaGram)),
+                  _buildNutrientMiniCard('P (g)', _format(_kebutuhanNutrien!.kebutuhanPGram)),
                 ],
               ),
             ],
@@ -1087,11 +1091,11 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
 
   Widget _buildNutrientMiniCard(String title, String value) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFFF7F7F5),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
+        color: AppColors.backgroundCream.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1100,18 +1104,18 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
           Text(
             title,
             style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textLight,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textGrey,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 2),
           Text(
             value,
             style: const TextStyle(
-              fontSize: 16,
+              fontSize: 14,
               fontWeight: FontWeight.w800,
-              color: AppColors.textDark,
+              color: AppColors.primaryBlue,
             ),
           ),
         ],
