@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/constants/app_colors.dart';
-import '../../core/widgets/app_header.dart';
+import '../../core/widgets/app_sliver_header.dart';
 import '../../core/widgets/app_text_field.dart';
 import '../../data/models/bahan_pakan.dart';
 import '../../data/models/fisiologi_sapi.dart';
@@ -109,7 +109,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
 
   void _gunakanDataCekKecukupan() {
     if (widget.kebutuhanAwal == null) {
-      _showSnackBar('Data Cek Kecukupan belum tersedia.');
+      _showSnackBar('Data Cek Kecukupan Pakan belum tersedia.');
       return;
     }
 
@@ -346,12 +346,6 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.backgroundCream,
-      appBar: const AppHeader(
-        title: 'Rekomendasi Pakan',
-        heading: 'Rekomendasi Pakan',
-        subtitle:
-            'Pilih pakan yang dimiliki peternak. Sistem akan menghitung rekomendasi pemberian pakan berdasarkan kebutuhan nutrien sapi.',
-      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _errorMessage != null
@@ -361,12 +355,18 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                     child: Text(_errorMessage!, textAlign: TextAlign.center),
                   ),
                 )
-              : SafeArea(
-                  top: false,
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+              : CustomScrollView(
+                  slivers: [
+                    const AppSliverHeader(
+                      title: 'Rekomendasi Pakan',
+                      subtitle:
+                          'Rekomendasi pemberian pakan untuk mencukupi kebutuhan nutrisi ternak.',
+                    ),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _buildProfilCard(),
                         if (_kebutuhanNutrien != null) ...[
@@ -416,7 +416,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                             icon: const Icon(Icons.calculate_outlined),
                             label: const Text('Hitung Rekomendasi'),
                             style: FilledButton.styleFrom(
-                              backgroundColor: AppColors.primaryGreen,
+                              backgroundColor: AppColors.accentOrange,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(14),
                               ),
@@ -428,16 +428,16 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                           _buildRecommendationCard(
                             title: 'Rekomendasi Hijauan',
                             icon: Icons.eco_outlined,
-                            tint: const Color(0xFFE6F6EB),
-                            accent: AppColors.primaryGreen,
+                            tint: AppColors.secondaryGreen.withValues(alpha: 0.1),
+                            accent: AppColors.secondaryGreen,
                             items: _hasilRekomendasi!.rekomendasiHijauan,
                           ),
                           const SizedBox(height: 16),
                           _buildRecommendationCard(
                             title: 'Rekomendasi Konsentrat',
                             icon: Icons.restaurant_menu_outlined,
-                            tint: const Color(0xFFFFF1DE),
-                            accent: const Color(0xFFC77700),
+                            tint: AppColors.accentOrange.withValues(alpha: 0.1),
+                            accent: AppColors.accentOrange,
                             items: _hasilRekomendasi!.rekomendasiKonsentrat,
                           ),
                           const SizedBox(height: 16),
@@ -445,9 +445,11 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                           const SizedBox(height: 16),
                           _buildEvaluationCard(_hasilRekomendasi!),
                         ],
-                      ],
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
     );
   }
@@ -479,7 +481,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                   color: AppColors.surfaceLow,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(icon, size: 18, color: AppColors.primaryGreen),
+                child: Icon(icon, size: 18, color: AppColors.secondaryGreen),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -560,7 +562,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                   OutlinedButton.icon(
                     onPressed: _gunakanDataCekKecukupan,
                     icon: const Icon(Icons.sync_alt_outlined),
-                    label: const Text('Gunakan Data Cek Kecukupan'),
+                    label: const Text('Gunakan Data Cek Kecukupan Pakan'),
                   )
                 else
                   OutlinedButton.icon(
@@ -653,7 +655,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
               value: '${_format(targetHijauan)} kg BK',
               badge: '60%',
               background: const Color(0xFFE8F7EC),
-              textColor: AppColors.primaryGreen,
+              textColor: AppColors.primaryBlue,
             ),
           ),
           const SizedBox(width: 12),
