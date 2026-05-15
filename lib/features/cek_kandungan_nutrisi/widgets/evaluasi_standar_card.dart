@@ -18,115 +18,103 @@ class EvaluasiStandarCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    EvaluasiStandarNutrienItem? lemakItem;
+    for (final item in evaluasi.items) {
+      if (item.label == 'Lemak') {
+        lemakItem = item;
+        break;
+      }
+    }
+    final showLemakWarning = lemakItem != null &&
+        lemakItem.status == StatusStandarNutrien.berlebih;
+
     return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+      padding: const EdgeInsets.all(14),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final useSingleColumnSummary = constraints.maxWidth < 280;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(
-                Icons.rule_folder_outlined,
-                color: AppColors.primaryBlue,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(
+                    Icons.rule_folder_outlined,
+                    color: AppColors.primaryBlue,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Hasil Kandungan Pakan',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Standar: ${evaluasi.standar.nama}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.textLight,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              const SizedBox(height: 16),
+              if (useSingleColumnSummary) ...[
+                _buildMiniInfo(
+                  'Berat Campuran',
+                  '${totalBeratKg.toStringAsFixed(2)} kg',
+                ),
+                const SizedBox(height: 10),
+                _buildMiniInfo(
+                  'Total Biaya',
+                  'Rp ${totalBiaya.toStringAsFixed(0)}',
+                ),
+              ] else
+                Row(
                   children: [
-                    const Text(
-                      'Hasil Kandungan Pakan',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                    Expanded(
+                      child: _buildMiniInfo(
+                        'Berat Campuran',
+                        '${totalBeratKg.toStringAsFixed(2)} kg',
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Standar: ${evaluasi.standar.nama}',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textLight,
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _buildMiniInfo(
+                        'Total Biaya',
+                        'Rp ${totalBiaya.toStringAsFixed(0)}',
                       ),
                     ),
                   ],
                 ),
+              const SizedBox(height: 12),
+              _buildNutrientPanel(
+                items: evaluasi.items,
+                showLemakWarning: showLemakWarning,
               ),
             ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _buildMiniInfo(
-                  'Berat Campuran',
-                  '${totalBeratKg.toStringAsFixed(2)} kg',
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _buildMiniInfo(
-                  'Total Biaya',
-                  'Rp ${totalBiaya.toStringAsFixed(0)}',
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          ...evaluasi.items.map(_buildItem),
-          const SizedBox(height: 12),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceLow,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Rangkuman',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textDark,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                ...evaluasi.narasi.map(
-                  (narasi) => Padding(
-                    padding: const EdgeInsets.only(bottom: 4),
-                    child: Text(
-                      narasi,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: AppColors.textLight,
-                        height: 1.35,
-                      ),
-                    ),
-                  ),
-                ),
-                if (evaluasi.narasi.isNotEmpty) const SizedBox(height: 6),
-                Text(
-                  evaluasi.kesimpulan,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
 
   Widget _buildMiniInfo(String label, String value) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.surfaceLow,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -136,14 +124,14 @@ class EvaluasiStandarCard extends StatelessWidget {
             style: const TextStyle(
               fontSize: 12,
               color: AppColors.textLight,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 10),
           Text(
             value,
             style: const TextStyle(
-              fontSize: 15,
+              fontSize: 18,
               fontWeight: FontWeight.w800,
               color: AppColors.textDark,
             ),
@@ -153,20 +141,46 @@ class EvaluasiStandarCard extends StatelessWidget {
     );
   }
 
-  Widget _buildItem(EvaluasiStandarNutrienItem item) {
-    final visual = _statusVisual(item.status);
+  Widget _buildNutrientPanel({
+    required List<EvaluasiStandarNutrienItem> items,
+    required bool showLemakWarning,
+  }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: visual.background,
-        borderRadius: BorderRadius.circular(16),
+        color: AppColors.surfaceLow,
+        borderRadius: BorderRadius.circular(12),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+      child: Column(
         children: [
-          Icon(visual.icon, color: visual.foreground, size: 18),
-          const SizedBox(width: 8),
+          for (var i = 0; i < items.length; i++) ...[
+            _buildItem(
+              items[i],
+              showInlineWarning:
+                  showLemakWarning && items[i].label == 'Lemak',
+            ),
+            if (i != items.length - 1)
+              Divider(
+                height: 1,
+                thickness: 1,
+                color: Colors.white.withValues(alpha: 0.9),
+                indent: 12,
+                endIndent: 12,
+              ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildItem(
+    EvaluasiStandarNutrienItem item, {
+    bool showInlineWarning = false,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -176,30 +190,56 @@ class EvaluasiStandarCard extends StatelessWidget {
                   style: const TextStyle(
                     fontWeight: FontWeight.w700,
                     color: AppColors.textDark,
+                    fontSize: 13,
                   ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 3),
                 Text(
-                  '${item.hasil.toStringAsFixed(2)}%  •  ${item.standar}',
+                  'Standar: ${item.standar}',
                   style: const TextStyle(
                     color: AppColors.textLight,
-                    fontSize: 12,
+                    fontSize: 11,
+                    height: 1.3,
                   ),
                 ),
+                if (showInlineWarning) ...[
+                  const SizedBox(height: 4),
+                  const Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        Icons.warning_amber_rounded,
+                        color: Color(0xFFC97A18),
+                        size: 14,
+                      ),
+                      SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          'Melebihi batas aman 7%',
+                          style: TextStyle(
+                            color: Color(0xFF9A5D11),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            height: 1.3,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.85),
-              borderRadius: BorderRadius.circular(999),
-            ),
+          const SizedBox(width: 12),
+          ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: 74, maxWidth: 112),
             child: Text(
-              _statusLabel(item.status),
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: visual.foreground,
+              '${item.hasil.toStringAsFixed(2)}%',
+              textAlign: TextAlign.end,
+              style: const TextStyle(
+                fontWeight: FontWeight.w800,
+                color: AppColors.textDark,
+                fontSize: 18,
               ),
             ),
           ),
@@ -207,50 +247,4 @@ class EvaluasiStandarCard extends StatelessWidget {
       ),
     );
   }
-
-  _StatusVisual _statusVisual(StatusStandarNutrien status) {
-    switch (status) {
-      case StatusStandarNutrien.kurang:
-        return _StatusVisual(
-          background: const Color(0xFFFFE5E5),
-          foreground: AppColors.errorRed,
-          icon: Icons.south_rounded,
-        );
-      case StatusStandarNutrien.sesuai:
-        return _StatusVisual(
-          background: const Color(0xFFE6F4EA),
-          foreground: const Color(0xFF1B8A5A),
-          icon: Icons.check_circle_outline,
-        );
-      case StatusStandarNutrien.berlebih:
-        return _StatusVisual(
-          background: const Color(0xFFFFF0E1),
-          foreground: const Color(0xFFC97A18),
-          icon: Icons.north_rounded,
-        );
-    }
-  }
-
-  String _statusLabel(StatusStandarNutrien status) {
-    switch (status) {
-      case StatusStandarNutrien.kurang:
-        return 'Kurang';
-      case StatusStandarNutrien.sesuai:
-        return 'Sesuai';
-      case StatusStandarNutrien.berlebih:
-        return 'Berlebih';
-    }
-  }
-}
-
-class _StatusVisual {
-  final Color background;
-  final Color foreground;
-  final IconData icon;
-
-  const _StatusVisual({
-    required this.background,
-    required this.foreground,
-    required this.icon,
-  });
 }

@@ -27,7 +27,7 @@ void main() {
         fisiologi: FisiologiSapi.laktasi,
       );
 
-      expect(evaluasi.standar.nama, 'Laktasi Tengah');
+      expect(evaluasi.standar.nama, 'Laktasi');
       expect(
         evaluasi.items.firstWhere((item) => item.label == 'Protein').status,
         StatusStandarNutrien.sesuai,
