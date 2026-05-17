@@ -9,7 +9,7 @@ void main() {
     await tester.pumpWidget(const DipoFeedApp());
     await tester.pumpAndSettle();
 
-    expect(find.text('Cek Kecukupan'), findsOneWidget);
+    expect(find.text('Cek Kecukupan Pakan'), findsOneWidget);
     expect(find.text('Beranda'), findsOneWidget);
     expect(find.text('Panduan'), findsOneWidget);
   });

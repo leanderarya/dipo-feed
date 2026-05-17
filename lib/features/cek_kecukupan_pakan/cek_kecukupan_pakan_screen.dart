@@ -342,13 +342,6 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.backgroundCream,
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _isLoadingBahan ? null : _tambahBahanPakan,
-        backgroundColor: AppColors.primaryBlue,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add),
-        label: const Text('Bahan Pakan'),
-      ),
       body: _isLoadingBahan
           ? const Center(child: CircularProgressIndicator())
           : _errorBahan != null
@@ -367,7 +360,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
                 ),
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
                     child: Column(
                       children: [
                         _buildFormInput(),
@@ -618,8 +611,22 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
           else
             ...List.generate(
               _pemberianPakan.length,
-              (index) => _buildKartuPakan(index, _pemberianPakan[index]),
+              (index) => Padding(
+                padding: EdgeInsets.only(
+                  bottom: index == _pemberianPakan.length - 1 ? 0 : 12,
+                ),
+                child: _buildKartuPakan(index, _pemberianPakan[index]),
+              ),
             ),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: _isLoadingBahan ? null : _tambahBahanPakan,
+              icon: const Icon(Icons.add_circle_outline),
+              label: const Text('Tambah Bahan Pakan'),
+            ),
+          ),
           const SizedBox(height: 20),
           SizedBox(
             width: double.infinity,
