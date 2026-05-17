@@ -10,6 +10,8 @@ class HasilPerhitunganNutrisi {
   final double serat;
   final double protein;
   final double tdn;
+  final double ca;
+  final double p;
   final double me;
 
   const HasilPerhitunganNutrisi({
@@ -22,6 +24,8 @@ class HasilPerhitunganNutrisi {
     required this.serat,
     required this.protein,
     required this.tdn,
+    required this.ca,
+    required this.p,
     required this.me,
   });
 }
@@ -75,6 +79,8 @@ class PerhitunganNutrisi {
       serat: hitungNutrisiCampuran(items, (item) => item.bahan.serat),
       protein: hitungNutrisiCampuran(items, (item) => item.bahan.protein),
       tdn: hitungNutrisiCampuran(items, (item) => item.bahan.tdn),
+      ca: hitungNutrisiCampuran(items, (item) => item.bahan.ca),
+      p: hitungNutrisiCampuran(items, (item) => item.bahan.p),
       me: hitungNutrisiCampuran(items, (item) => item.bahan.me),
     );
   }

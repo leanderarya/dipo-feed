@@ -6,10 +6,13 @@ import '../../core/widgets/app_sliver_header.dart';
 import '../../core/widgets/app_text_field.dart';
 import '../../data/models/bahan_pakan.dart';
 import '../../data/models/campuran_pakan_item.dart';
+import '../../data/models/fisiologi_sapi.dart';
 import '../../data/models/hasil_pakan_terpilih.dart';
 import '../../data/sources/bahan_pakan_repository.dart';
 import '../master_pakan/master_pakan_screen.dart';
+import 'logic/evaluasi_standar_nutrien.dart';
 import 'logic/perhitungan_nutrisi.dart';
+import 'widgets/evaluasi_standar_card.dart';
 
 class CekKandunganNutrisiScreen extends StatefulWidget {
   final bool modePilihUntukEvaluasi;
@@ -29,6 +32,7 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
 
   List<BahanPakan> _semuaBahan = [];
   final List<CampuranPakanItem> _campuran = [];
+  FisiologiSapi _fisiologi = FisiologiSapi.laktasi;
 
   bool _isLoading = true;
   String? _errorMessage;
@@ -158,6 +162,12 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
   @override
   Widget build(BuildContext context) {
     final hasil = PerhitunganNutrisi.hitungSemua(_campuran);
+    final evaluasiStandar = hasil.totalBerat > 0
+        ? EvaluasiStandarNutrienHelper.evaluasi(
+            hasil: hasil,
+            fisiologi: _fisiologi,
+          )
+        : null;
 
     return Scaffold(
       backgroundColor: AppColors.backgroundKrem,
@@ -175,7 +185,7 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
             ],
           ),
           SliverToBoxAdapter(
-            child: _buildBody(hasil),
+            child: _buildBody(hasil, evaluasiStandar),
           ),
         ],
       ),
@@ -195,7 +205,10 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
     );
   }
 
-  Widget _buildBody(HasilPerhitunganNutrisi hasil) {
+  Widget _buildBody(
+    HasilPerhitunganNutrisi hasil,
+    HasilEvaluasiStandarNutrien? evaluasiStandar,
+  ) {
     if (_isLoading) return const Center(child: CircularProgressIndicator());
     if (_errorMessage != null) {
       return Center(
@@ -211,6 +224,8 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+        _buildKartuStandarFisiologi(),
+        const SizedBox(height: 16),
         if (_campuran.isEmpty)
           _buildEmptyState()
         else ...[
@@ -226,13 +241,70 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
             icon: const Icon(Icons.add_circle_outline, size: 18),
             label: const Text('Tambah Bahan Pakan'),
           ),
-          const SizedBox(height: 32),
-          _buildKartuHasil(hasil),
+          if (evaluasiStandar != null) ...[
+            const SizedBox(height: 16),
+            EvaluasiStandarCard(
+              evaluasi: evaluasiStandar,
+              totalBeratKg: hasil.totalBerat,
+              totalBiaya: hasil.totalBiaya,
+            ),
+          ],
         ],
       ],
     ),
   );
 }
+
+  Widget _buildKartuStandarFisiologi() {
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.category_outlined, color: AppColors.primaryBlue),
+              SizedBox(width: 8),
+              Text(
+                'Standar Evaluasi Nutrien',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'Pilih fisiologi sapi untuk membandingkan kualitas campuran dengan standar nutrien umum.',
+            style: TextStyle(
+              color: AppColors.textLight,
+              fontSize: 13,
+              height: 1.45,
+            ),
+          ),
+          const SizedBox(height: 14),
+          DropdownButtonFormField<FisiologiSapi>(
+            initialValue: _fisiologi,
+            items: FisiologiSapi.values.map((item) {
+              return DropdownMenuItem<FisiologiSapi>(
+                value: item,
+                child: Text(_labelFisiologi(item)),
+              );
+            }).toList(),
+            onChanged: (value) {
+              if (value == null) return;
+              setState(() {
+                _fisiologi = value;
+              });
+            },
+            decoration: InputDecoration(
+              labelText: 'Fisiologi Sapi',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
 
   Widget _buildEmptyState() {
@@ -324,52 +396,15 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
     );
   }
 
-  Widget _buildKartuHasil(HasilPerhitunganNutrisi hasil) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Analisis Kandungan Nutrisi',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 12),
-        AppCard(
-          child: Column(
-            children: [
-              _buildResultRow('Bahan Kering (BK)', '${hasil.bk.toStringAsFixed(2)}%'),
-              _buildResultRow('Protein Kasar (PK)', '${hasil.protein.toStringAsFixed(2)}%'),
-              _buildResultRow('TDN', '${hasil.tdn.toStringAsFixed(2)}%'),
-              _buildResultRow('Berat Campuran', '${hasil.totalBerat.toStringAsFixed(2)} kg'),
-              const Divider(height: 32),
-              _buildResultRow(
-                'Total Biaya',
-                'Rp ${hasil.totalBiaya.toStringAsFixed(0)}',
-                isBold: true,
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
+  String _labelFisiologi(FisiologiSapi fisiologi) {
+    switch (fisiologi) {
+      case FisiologiSapi.dara:
+        return 'Dara';
+      case FisiologiSapi.laktasi:
+        return 'Laktasi';
+      case FisiologiSapi.keringKandang:
+        return 'Kering Kandang';
+    }
   }
 
-  Widget _buildResultRow(String label, String value, {bool isBold = false}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: const TextStyle(color: AppColors.textGrey)),
-          Text(
-            value,
-            style: TextStyle(
-              fontWeight: isBold ? FontWeight.bold : FontWeight.w500,
-              color: isBold ? AppColors.primaryBlue : null,
-              fontSize: isBold ? 16 : null,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
