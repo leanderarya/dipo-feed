@@ -37,6 +37,7 @@ dependencies:
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   flutter_svg: ^2.0.10+1
+  google_fonts: ^8.1.0
 
 dev_dependencies:
   flutter_test:
@@ -58,15 +59,16 @@ flutter_launcher_icons:
   ios: true
   web:
     generate: true
-  image_path: "assets/design/app_icon.png"
+  remove_alpha_ios: true
+  image_path: "assets/images/logo.png"
   adaptive_icon_background: "#064E3B"
-  adaptive_icon_foreground: "assets/design/app_icon.png"
+  adaptive_icon_foreground: "assets/images/logo.png"
 
 flutter_native_splash:
   color: "#FFFFFF"
-  image: "assets/design/logo_undip_splash.png"
+  image: "assets/images/logo.png"
   android_12:
-    image: "assets/design/logo_undip_splash.png"
+    image: "assets/images/logo.png"
     color: "#FFFFFF"
   web: false
 
@@ -83,10 +85,11 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/data/bahan_pakan.json
-    - assets/images/banner_sapi.webp
+    - assets/images/
     - assets/design/logo_undip.png
     - assets/design/logo_undip_splash.png
     - assets/design/hero-bg.jpg
+    - assets/icons/
   #  - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

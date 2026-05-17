@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../core/constants/app_colors.dart';
 import '../home/home_screen.dart';
 
@@ -40,24 +41,13 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Logo UNDIP
-            Image.asset(
-              'assets/design/logo_undip_splash.png',
-              width: 120,
-              height: 120,
-            ),
-            const SizedBox(height: 24),
+
             // DipoFeed Text
-            const Text(
-              'DipoFeed',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.w900,
-                color: AppColors.primaryGreen,
-                letterSpacing: -1,
-              ),
+            SvgPicture.asset(
+              'assets/images/logo.svg',
+              height: 140,
             ),
-            const SizedBox(height: 48),
+            const SizedBox(height: 40),
             // Loading Indicator
             const SizedBox(
               width: 24,

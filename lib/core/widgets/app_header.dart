@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../constants/app_colors.dart';
 
@@ -54,15 +55,32 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
       decoration: const BoxDecoration(
         color: AppColors.backgroundCream,
       ),
-      child: const Center(
-        child: Text(
-          'DipoFeed',
-          style: TextStyle(
-            fontSize: 32,
-            fontWeight: FontWeight.w900,
-            color: AppColors.primaryGreen,
-            letterSpacing: -1.0,
-          ),
+      child: Center(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
+          children: [
+            Text(
+              'DIPO',
+              style: GoogleFonts.montserrat(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF004AAD), // Custom Royal Blue
+                letterSpacing: 0.5,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              'Feed',
+              style: GoogleFonts.montserrat(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF00BF63), // Custom Vibrant Green
+                letterSpacing: 0.5,
+              ),
+            ),
+          ],
         ),
       ),
     );

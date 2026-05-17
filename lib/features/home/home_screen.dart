@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 
 import '../../core/constants/app_colors.dart';
@@ -105,12 +106,12 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Stack(
         children: [
           SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 140),
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 110), // Optimized padding for iOS and screen viewports
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildHeroBanner(),
-                const SizedBox(height: 32),
+                const SizedBox(height: 20), // Reduced from 32
                 const Text(
                   'Fitur Utama',
                   style: TextStyle(
@@ -120,7 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     letterSpacing: -0.5,
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12), // Reduced from 16
                 _buildFeatureGrid(),
               ],
             ),
@@ -150,21 +151,21 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           // SVG Background
           Positioned.fill(
-            child: Image.asset(
-              'assets/design/hero-bg.jpg',
+            child: SvgPicture.asset(
+              'assets/images/hero_banner.svg',
               fit: BoxFit.cover,
             ),
           ),
-          // Subtle Overlay to ensure readability
+          // Rich Overlay to ensure high readability of both dark blue title and white description text
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
                   colors: [
-                    AppColors.surfaceLow.withValues(alpha: 0.6),
-                    AppColors.surfaceLow.withValues(alpha: 0.2),
+                    const Color(0xFF0F172A).withValues(alpha: 0.2), // Light at the top
+                    const Color(0xFF0F172A).withValues(alpha: 0.8), // Dark at the bottom
                   ],
                 ),
               ),
@@ -172,55 +173,62 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           // Content
           Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(20), // Reduced from 24
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
+                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                    color: const Color(0xFF004AAD), // Solid Royal Blue for high visibility
                     borderRadius: BorderRadius.circular(100),
                   ),
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.eco_rounded, size: 14, color: AppColors.primaryBlue),
+                      Icon(Icons.eco_rounded, size: 14, color: Colors.white),
                       SizedBox(width: 6),
                       Text(
                         'RESEARCH-BASED',
                         style: TextStyle(
                           fontSize: 9,
                           fontWeight: FontWeight.w800,
-                          color: AppColors.primaryBlue,
+                          color: Colors.white,
                           letterSpacing: 1,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12), // Reduced from 16
                 const Text(
                   'Optimalkan Nutrisi\nTernak Anda',
                   style: TextStyle(
                     fontSize: 28,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.primaryBlue,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white, // High-contrast premium white
                     height: 1.1,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black38,
+                        blurRadius: 8,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8), // Reduced from 12
                 const Text(
                   'Standar riset terkini dari Fakultas Peternakan dan Pertanian (FPP) Universitas Diponegoro',
                   style: TextStyle(
                     fontSize: 13,
                     color: Colors.white,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600, // Thicker weight for premium contrast
                     height: 1.4,
                     shadows: [
                       Shadow(
-                        color: Colors.black26,
-                        blurRadius: 4,
+                        color: Colors.black45, // Darker shadow for solid pop
+                        blurRadius: 6,
                         offset: Offset(0, 2),
                       ),
                     ],
@@ -241,19 +249,19 @@ class _HomeScreenState extends State<HomeScreen> {
       crossAxisCount: 2,
       crossAxisSpacing: 12,
       mainAxisSpacing: 12,
-      childAspectRatio: 1.0,
+      childAspectRatio: 1.12, // Slightly wider and shorter for a modern, compact look
       children: [
         QuickActionCard(
           title: 'Cek Kecukupan Pakan',
           description: 'Evaluasi kecukupan nutrien pada pemberian pakan ternak',
-          icon: Icons.health_and_safety_rounded,
+          svgAsset: 'assets/icons/ic_evaluasi.svg',
           baseColor: AppColors.secondaryGreen,
           onTap: _bukaCekKecukupan,
         ),
         QuickActionCard(
           title: 'Database Pakan',
           description: 'Database bahan pakan',
-          icon: Icons.inventory_2_rounded,
+          svgAsset: 'assets/icons/ic_database.svg',
           baseColor: AppColors.primaryBlue,
           onTap: _bukaMasterPakan,
         ),
@@ -267,7 +275,7 @@ class _HomeScreenState extends State<HomeScreen> {
         QuickActionCard(
           title: 'Rekomendasi Pakan',
           description: 'Rekomendasi pemberian pakan untuk mencukupi kebutuhan nutrisi ternak',
-          icon: Icons.auto_awesome_rounded,
+          svgAsset: 'assets/icons/ic_rekomendasi.svg',
           baseColor: AppColors.accentOrange,
           onTap: _bukaFormulasi,
         ),
