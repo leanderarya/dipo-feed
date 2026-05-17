@@ -532,6 +532,8 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
     return _buildKartuKebutuhan();
   }
 
+  String _format(double value) => value.toStringAsFixed(2);
+
   Widget _buildKartuKebutuhan() {
     final kebutuhan = _kebutuhanNutrien!;
 
@@ -546,41 +548,54 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          _buildItemKebutuhan(
-            'Bahan Kering (BK)',
-            '${kebutuhan.kebutuhanBkKg.toStringAsFixed(2)} kg',
-          ),
-          _buildItemKebutuhan(
-            'Protein',
-            '${kebutuhan.kebutuhanProteinKg.toStringAsFixed(3)} kg',
-          ),
-          _buildItemKebutuhan(
-            'TDN',
-            '${kebutuhan.kebutuhanTdnKg.toStringAsFixed(2)} kg',
-          ),
-          _buildItemKebutuhan(
-            'Ca',
-            '${kebutuhan.kebutuhanCaGram.toStringAsFixed(2)} gram',
-          ),
-          _buildItemKebutuhan(
-            'P',
-            '${kebutuhan.kebutuhanPGram.toStringAsFixed(2)} gram',
+          GridView.count(
+            crossAxisCount: 3,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisSpacing: 8,
+            mainAxisSpacing: 8,
+            childAspectRatio: 1.3,
+            children: [
+              _buildNutrientMiniCard('BK (kg)', _format(kebutuhan.kebutuhanBkKg)),
+              _buildNutrientMiniCard('PK (kg)', _format(kebutuhan.kebutuhanProteinKg)),
+              _buildNutrientMiniCard('TDN (kg)', _format(kebutuhan.kebutuhanTdnKg)),
+              _buildNutrientMiniCard('Ca (g)', _format(kebutuhan.kebutuhanCaGram)),
+              _buildNutrientMiniCard('P (g)', _format(kebutuhan.kebutuhanPGram)),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildItemKebutuhan(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
+  Widget _buildNutrientMiniCard(String title, String value) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundCream.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Expanded(child: Text(label)),
-          const SizedBox(width: 12),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textGrey,
+            ),
+          ),
+          const SizedBox(height: 2),
           Text(
             value,
-            style: const TextStyle(fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+              color: AppColors.primaryBlue,
+            ),
           ),
         ],
       ),
@@ -758,96 +773,148 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
   Widget _buildKartuHasilEvaluasi() {
     final hasil = _hasilEvaluasi!;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Hasil Evaluasi',
-          style: Theme.of(context).textTheme.titleLarge,
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 24),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.expertPurple.withValues(alpha: 0.08), // Soft brand purple background
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: AppColors.expertPurple.withValues(alpha: 0.18),
+          width: 1.5,
         ),
-        const SizedBox(height: 16),
-        AppCard(
-          child: Column(
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              AppComparisonBar(
-                label: 'Bahan Kering (BK)',
-                current: hasil.bk.pemberian,
-                limit: hasil.bk.kebutuhan,
-                unit: 'kg',
+              const Icon(
+                Icons.analytics_rounded,
+                color: AppColors.expertPurple,
+                size: 24,
               ),
-              const SizedBox(height: 20),
-              AppComparisonBar(
-                label: 'Protein',
-                current: hasil.protein.pemberian,
-                limit: hasil.protein.kebutuhan,
-                unit: 'kg',
-              ),
-              const SizedBox(height: 20),
-              AppComparisonBar(
-                label: 'TDN',
-                current: hasil.tdn.pemberian,
-                limit: hasil.tdn.kebutuhan,
-                unit: 'kg',
-              ),
-              const SizedBox(height: 20),
-              AppComparisonBar(
-                label: 'Ca',
-                current: hasil.ca.pemberian,
-                limit: hasil.ca.kebutuhan,
-                unit: 'gram',
-              ),
-              const SizedBox(height: 20),
-              AppComparisonBar(
-                label: 'P',
-                current: hasil.p.pemberian,
-                limit: hasil.p.kebutuhan,
-                unit: 'gram',
+              const SizedBox(width: 8),
+              Text(
+                'Hasil Evaluasi Nutrisi',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.expertPurple,
+                  letterSpacing: -0.5,
+                ),
               ),
             ],
           ),
-        ),
-        const SizedBox(height: 16),
-        const Padding(
-          padding: EdgeInsets.only(bottom: 16),
-          child: Text(
-            'Catatan: nilai pemberian Ca dan P saat ini masih 0 karena data kandungan Ca/P pada bahan pakan belum tersedia.',
-            style: TextStyle(
-              fontSize: 12,
-              color: AppColors.textLight,
-              height: 1.5,
+          const SizedBox(height: 16),
+          // Comparison Panel inside a high-contrast white card that adapts beautifully!
+          AppCard(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                AppComparisonBar(
+                  label: 'Bahan Kering (BK)',
+                  current: hasil.bk.pemberian,
+                  limit: hasil.bk.kebutuhan,
+                  unit: 'kg',
+                ),
+                const SizedBox(height: 20),
+                AppComparisonBar(
+                  label: 'Protein',
+                  current: hasil.protein.pemberian,
+                  limit: hasil.protein.kebutuhan,
+                  unit: 'kg',
+                ),
+                const SizedBox(height: 20),
+                AppComparisonBar(
+                  label: 'TDN',
+                  current: hasil.tdn.pemberian,
+                  limit: hasil.tdn.kebutuhan,
+                  unit: 'kg',
+                ),
+                const SizedBox(height: 20),
+                AppComparisonBar(
+                  label: 'Ca',
+                  current: hasil.ca.pemberian,
+                  limit: hasil.ca.kebutuhan,
+                  unit: 'gram',
+                ),
+                const SizedBox(height: 20),
+                AppComparisonBar(
+                  label: 'P',
+                  current: hasil.p.pemberian,
+                  limit: hasil.p.kebutuhan,
+                  unit: 'gram',
+                ),
+              ],
             ),
           ),
-        ),
-        AppCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Row(
-                children: [
-                  Icon(
-                    Icons.info_outline,
-                    size: 16,
-                    color: AppColors.primaryBlue,
-                  ),
-                  SizedBox(width: 8),
-                  Text(
-                    'Kesimpulan Umum',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primaryBlue,
-                    ),
-                  ),
-                ],
+          const SizedBox(height: 14),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 4),
+            child: Text(
+              'Catatan: nilai pemberian Ca dan P saat ini masih 0 karena data kandungan Ca/P pada bahan pakan belum tersedia.',
+              style: TextStyle(
+                fontSize: 11,
+                color: AppColors.expertPurple,
+                fontWeight: FontWeight.w600,
+                height: 1.4,
               ),
-              const SizedBox(height: 12),
-              Text(
-                hasil.kesimpulanUmum,
-                style: const TextStyle(fontSize: 14, height: 1.5),
-              ),
-            ],
+            ),
           ),
-        ),
-      ],
+          const SizedBox(height: 20),
+          // KESIMPULAN UMUM with high-intensity solid purple background!
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: AppColors.expertPurple, // High-intensity brand purple
+              borderRadius: BorderRadius.circular(18),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.expertPurple.withValues(alpha: 0.3),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.info_outline,
+                      size: 20,
+                      color: Colors.white,
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Kesimpulan Umum',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                        fontSize: 15,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  hasil.kesimpulanUmum,
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    height: 1.5,
+                    color: Colors.white.withValues(alpha: 0.95),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
