@@ -458,21 +458,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                                   ],
                                 ),
                                 const SizedBox(height: 20),
-                                _buildRecommendationCard(
-                                  title: 'Rekomendasi Hijauan',
-                                  icon: Icons.eco_outlined,
-                                  tint: AppColors.secondaryGreen.withValues(alpha: 0.1),
-                                  accent: AppColors.secondaryGreen,
-                                  items: _hasilRekomendasi!.rekomendasiHijauan,
-                                ),
-                                const SizedBox(height: 16),
-                                _buildRecommendationCard(
-                                  title: 'Rekomendasi Konsentrat',
-                                  icon: Icons.restaurant_menu_outlined,
-                                  tint: AppColors.accentOrange.withValues(alpha: 0.1),
-                                  accent: AppColors.accentOrange,
-                                  items: _hasilRekomendasi!.rekomendasiKonsentrat,
-                                ),
+                                _buildCombinedRecommendationCard(_hasilRekomendasi!),
                                 const SizedBox(height: 16),
                                 _buildTotalSummaryCard(_hasilRekomendasi!),
                                 const SizedBox(height: 16),
@@ -848,36 +834,95 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     );
   }
 
-  Widget _buildRecommendationCard({
-    required String title,
-    required IconData icon,
-    required Color tint,
-    required Color accent,
-    required List<RekomendasiPakanItem> items,
-  }) {
+  Widget _buildCombinedRecommendationCard(HasilRekomendasiPakan hasil) {
+    final hijauan = hasil.rekomendasiHijauan;
+    final konsentrat = hasil.rekomendasiKonsentrat;
+
     return _buildSectionCard(
-      title: title,
-      icon: icon,
-      child: items.isEmpty
-          ? _buildEmptyState(
-              icon: icon,
-              title: 'Belum ada rekomendasi yang bisa dihitung.',
-              subtitle: 'Periksa kembali pilihan bahan pada kelompok ini.',
+      title: 'Rencana Ransum Pakan',
+      icon: Icons.assignment_outlined,
+      subtitle: 'Proporsi pemberian pakan rekomendasi untuk memenuhi kebutuhan ternak.',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Sub-bagian Hijauan
+          Row(
+            children: [
+              const Icon(Icons.grass_rounded, color: AppColors.secondaryGreen, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Hijauan',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.secondaryGreen,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          if (hijauan.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Text(
+                'Tidak ada rekomendasi hijauan.',
+                style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+              ),
             )
-          : Column(
-              children: items
-                  .map(
-                    (item) => Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: _buildRecommendationItem(
-                        item: item,
-                        tint: tint,
-                        accent: accent,
-                      ),
-                    ),
-                  )
-                  .toList(),
+          else
+            ...hijauan.map(
+              (item) => Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: _buildRecommendationItem(
+                  item: item,
+                  tint: AppColors.secondaryGreen.withValues(alpha: 0.08),
+                  accent: AppColors.secondaryGreen,
+                ),
+              ),
             ),
+
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Divider(height: 1),
+          ),
+
+          // Sub-bagian Konsentrat
+          Row(
+            children: [
+              const Icon(Icons.restaurant_menu_outlined, color: AppColors.accentOrange, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Konsentrat',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.accentOrange,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          if (konsentrat.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Text(
+                'Tidak ada rekomendasi konsentrat.',
+                style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+              ),
+            )
+          else
+            ...konsentrat.map(
+              (item) => Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: _buildRecommendationItem(
+                  item: item,
+                  tint: AppColors.accentOrange.withValues(alpha: 0.08),
+                  accent: AppColors.accentOrange,
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
