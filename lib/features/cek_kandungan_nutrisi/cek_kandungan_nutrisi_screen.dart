@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/constants/app_colors.dart';
+import '../../core/utils/currency_formatter.dart';
 import '../../core/widgets/app_card.dart';
 import '../../core/widgets/app_sliver_header.dart';
 import '../../core/widgets/app_text_field.dart';
@@ -134,7 +135,7 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
   }
 
   void _ubahHargaPerKg(int index, String value) {
-    final harga = double.tryParse(value.replaceAll(',', '.')) ?? 0;
+    final harga = CurrencyFormatter.parseRupiah(value);
     setState(() {
       _campuran[index].hargaPerKg = harga < 0 ? 0 : harga;
     });
@@ -382,10 +383,17 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: AppTextField(
-                  initialValue: item.hargaPerKg == 0 ? '' : item.hargaPerKg.toStringAsFixed(0),
+                  initialValue: item.hargaPerKg == 0
+                      ? ''
+                      : CurrencyFormatter.formatRupiah(
+                          item.hargaPerKg,
+                          withSymbol: false,
+                          withDecimals: false,
+                        ),
                   label: 'Harga/kg',
                   prefixText: 'Rp ',
                   keyboardType: TextInputType.number,
+                  inputFormatters: [IndonesianCurrencyInputFormatter()],
                   onChanged: (v) => _ubahHargaPerKg(index, v),
                 ),
               ),

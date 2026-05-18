@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_colors.dart';
+import '../../../core/utils/currency_formatter.dart';
 import '../logic/evaluasi_standar_nutrien.dart';
 
 class EvaluasiStandarCard extends StatelessWidget {
@@ -80,7 +81,7 @@ class EvaluasiStandarCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+               const SizedBox(height: 16),
               if (useSingleColumnSummary) ...[
                 _buildMiniInfo(
                   'Berat Campuran',
@@ -89,7 +90,7 @@ class EvaluasiStandarCard extends StatelessWidget {
                 const SizedBox(height: 10),
                 _buildMiniInfo(
                   'Total Biaya',
-                  'Rp ${totalBiaya.toStringAsFixed(0)}',
+                  CurrencyFormatter.formatRupiah(totalBiaya),
                 ),
               ] else
                 Row(
@@ -104,7 +105,7 @@ class EvaluasiStandarCard extends StatelessWidget {
                     Expanded(
                       child: _buildMiniInfo(
                         'Total Biaya',
-                        'Rp ${totalBiaya.toStringAsFixed(0)}',
+                        CurrencyFormatter.formatRupiah(totalBiaya),
                       ),
                     ),
                   ],
