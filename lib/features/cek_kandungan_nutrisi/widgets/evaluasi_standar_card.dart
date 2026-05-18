@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_colors.dart';
+import '../../../core/utils/currency_formatter.dart';
 import '../logic/evaluasi_standar_nutrien.dart';
 
 class EvaluasiStandarCard extends StatelessWidget {
@@ -46,8 +47,8 @@ class EvaluasiStandarCard extends StatelessWidget {
         break;
       }
     }
-    final showLemakWarning = lemakItem != null &&
-        lemakItem.status == StatusStandarNutrien.berlebih;
+    final showLemakWarning =
+        lemakItem != null && lemakItem.status == StatusStandarNutrien.berlebih;
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -93,7 +94,9 @@ class EvaluasiStandarCard extends StatelessWidget {
                           'Standar: ${evaluasi.standar.nama}',
                           style: TextStyle(
                             fontSize: 12,
-                            color: AppColors.expertPurple.withValues(alpha: 0.8),
+                            color: AppColors.expertPurple.withValues(
+                              alpha: 0.8,
+                            ),
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -266,6 +269,15 @@ class EvaluasiStandarCard extends StatelessWidget {
               fontWeight: FontWeight.w500,
             ),
           ),
+          const SizedBox(height: 2),
+          Text(
+            'Total: ${CurrencyFormatter.formatRupiah(totalBiaya)}',
+            style: TextStyle(
+              fontSize: 11,
+              color: AppColors.expertPurple.withValues(alpha: 0.7),
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ],
       ),
     );
@@ -317,8 +329,7 @@ class EvaluasiStandarCard extends StatelessWidget {
           for (var i = 0; i < items.length; i++) ...[
             _buildItem(
               items[i],
-              showInlineWarning:
-                  showLemakWarning && items[i].label == 'Lemak',
+              showInlineWarning: showLemakWarning && items[i].label == 'Lemak',
             ),
             if (i != items.length - 1)
               Divider(

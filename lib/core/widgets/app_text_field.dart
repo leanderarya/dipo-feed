@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class AppTextField extends StatelessWidget {
   final TextEditingController? controller;
@@ -11,6 +12,7 @@ class AppTextField extends StatelessWidget {
   final TextInputType? keyboardType;
   final String? hintText;
   final String? prefixText;
+  final List<TextInputFormatter>? inputFormatters;
 
   const AppTextField({
     super.key,
@@ -24,6 +26,7 @@ class AppTextField extends StatelessWidget {
     this.keyboardType,
     this.hintText,
     this.prefixText,
+    this.inputFormatters,
   });
 
   @override
@@ -44,6 +47,7 @@ class AppTextField extends StatelessWidget {
           initialValue: initialValue,
           keyboardType: keyboardType ?? TextInputType.numberWithOptions(decimal: !isInteger),
           onChanged: onChanged,
+          inputFormatters: inputFormatters,
           validator: validator ?? (value) {
             if (value == null || value.trim().isEmpty) {
               return 'Wajib diisi';
