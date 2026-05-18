@@ -109,21 +109,13 @@ class EvaluasiStandarCard extends StatelessWidget {
               if (useSingleColumnSummary) ...[
                 _buildBeratCampuranInfo(),
                 const SizedBox(height: 10),
-                _buildMiniInfo(
-                  'Total Biaya',
-                  CurrencyFormatter.formatRupiah(totalBiaya),
-                ),
+                _buildBiayaPakanInfo(),
               ] else
                 Row(
                   children: [
                     Expanded(child: _buildBeratCampuranInfo()),
                     const SizedBox(width: 10),
-                    Expanded(
-                      child: _buildMiniInfo(
-                        'Total Biaya',
-                        CurrencyFormatter.formatRupiah(totalBiaya),
-                      ),
-                    ),
+                    Expanded(child: _buildBiayaPakanInfo()),
                   ],
                 ),
               const SizedBox(height: 16),
@@ -275,6 +267,15 @@ class EvaluasiStandarCard extends StatelessWidget {
               fontSize: 11,
               color: AppColors.expertPurple.withValues(alpha: 0.55),
               fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            'Total: ${CurrencyFormatter.formatRupiah(totalBiaya)}',
+            style: TextStyle(
+              fontSize: 11,
+              color: AppColors.expertPurple.withValues(alpha: 0.7),
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
