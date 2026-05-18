@@ -310,6 +310,7 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
 
   Widget _buildEmptyState() {
     return AppCard(
+      width: double.infinity,
       padding: const EdgeInsets.all(32),
       child: Column(
         children: [
