@@ -382,6 +382,7 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: AppTextField(
+                  key: ValueKey('harga_${item.bahan.id}'),
                   initialValue: item.hargaPerKg == 0 ? '' : item.hargaPerKg.toStringAsFixed(0),
                   label: 'Harga/kg',
                   prefixText: 'Rp ',
