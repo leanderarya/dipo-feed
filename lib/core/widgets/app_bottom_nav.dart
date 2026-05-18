@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../constants/app_colors.dart';
 
 class AppBottomNav extends StatelessWidget {
@@ -37,9 +38,9 @@ class AppBottomNav extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildNavItem(0, Icons.home_rounded, 'Beranda'),
-                _buildNavItem(1, Icons.menu_book_rounded, 'Panduan'),
-                _buildNavItem(2, Icons.settings_rounded, 'Pengaturan'),
+                _buildNavItem(0, 'assets/icons/ic_home.svg', 'Beranda'),
+                _buildNavItem(1, 'assets/icons/ic_panduan.svg', 'Panduan'),
+                _buildNavItem(2, 'assets/icons/ic_pengaturan.svg', 'Pengaturan'),
               ],
             ),
           ),
@@ -48,7 +49,7 @@ class AppBottomNav extends StatelessWidget {
     );
   }
 
-  Widget _buildNavItem(int index, IconData icon, String label) {
+  Widget _buildNavItem(int index, String svgAsset, String label) {
     final bool isActive = currentIndex == index;
     return GestureDetector(
       onTap: () => onTap(index),
@@ -65,10 +66,14 @@ class AppBottomNav extends StatelessWidget {
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(
-              icon,
-              color: isActive ? AppColors.primaryGreen : AppColors.textGrey,
-              size: 26,
+            child: SvgPicture.asset(
+              svgAsset,
+              width: 26,
+              height: 26,
+              colorFilter: ColorFilter.mode(
+                isActive ? AppColors.primaryGreen : AppColors.textGrey,
+                BlendMode.srcIn,
+              ),
             ),
           ),
           const SizedBox(height: 4),

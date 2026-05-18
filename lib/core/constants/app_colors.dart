@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class AppColors {
   // Brand Colors (from color-guide.md)
   static const Color primaryBlue = Color(0xFF1E3A8A);    // Biru Undip
-  static const Color secondaryGreen = Color(0xFF9EC89B); // Hijau Pakan
+  static const Color secondaryGreen = Color(0xFF00BF63); // Official Emerald Green (High Contrast & Saturated)
   static const Color accentOrange = Color(0xFFF97316);   // Oranye
   static const Color expertPurple = Color(0xFF4D2647);   // Ungu Veterinarian
 
@@ -22,6 +22,6 @@ class AppColors {
   static const Color textLight = Color(0xFF64748B); // textSecondary
   static const Color textGrey = Color(0xFF64748B); // textSecondary
   static const Color surfaceLow = Color(0xFFF1F5F9); // Light Slate 100
-  static const Color accentGreen = Color(0xFF9EC89B); // secondaryGreen
+  static const Color accentGreen = Color(0xFF00BF63); // secondaryGreen
   static const Color errorRed = Color(0xFFBA1A1A);
 }

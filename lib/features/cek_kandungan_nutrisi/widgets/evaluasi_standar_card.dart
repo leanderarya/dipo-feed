@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_colors.dart';
-import '../../../core/widgets/app_card.dart';
 import '../logic/evaluasi_standar_nutrien.dart';
 
 class EvaluasiStandarCard extends StatelessWidget {
@@ -28,8 +27,17 @@ class EvaluasiStandarCard extends StatelessWidget {
     final showLemakWarning = lemakItem != null &&
         lemakItem.status == StatusStandarNutrien.berlebih;
 
-    return AppCard(
-      padding: const EdgeInsets.all(14),
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.expertPurple.withValues(alpha: 0.08), // Soft brand purple background
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: AppColors.expertPurple.withValues(alpha: 0.18),
+          width: 1.5,
+        ),
+      ),
       child: LayoutBuilder(
         builder: (context, constraints) {
           final useSingleColumnSummary = constraints.maxWidth < 280;
@@ -40,8 +48,9 @@ class EvaluasiStandarCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Icon(
-                    Icons.rule_folder_outlined,
-                    color: AppColors.primaryBlue,
+                    Icons.analytics_rounded,
+                    color: AppColors.expertPurple,
+                    size: 24,
                   ),
                   const SizedBox(width: 8),
                   Expanded(
@@ -51,16 +60,19 @@ class EvaluasiStandarCard extends StatelessWidget {
                         const Text(
                           'Hasil Kandungan Pakan',
                           style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w800,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.expertPurple,
+                            letterSpacing: -0.5,
                           ),
                         ),
                         const SizedBox(height: 2),
                         Text(
                           'Standar: ${evaluasi.standar.nama}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
-                            color: AppColors.textLight,
+                            color: AppColors.expertPurple.withValues(alpha: 0.8),
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],
@@ -97,11 +109,64 @@ class EvaluasiStandarCard extends StatelessWidget {
                     ),
                   ],
                 ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               _buildNutrientPanel(
                 items: evaluasi.items,
                 showLemakWarning: showLemakWarning,
               ),
+              if (evaluasi.kesimpulan.isNotEmpty) ...[
+                const SizedBox(height: 20),
+                // Kesimpulan Standar Nutrisi with high-intensity solid purple background
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: AppColors.expertPurple,
+                    borderRadius: BorderRadius.circular(18),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.expertPurple.withValues(alpha: 0.3),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.info_outline,
+                            size: 20,
+                            color: Colors.white,
+                          ),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'Kesimpulan Analisis',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                              fontSize: 15,
+                              letterSpacing: -0.2,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        evaluasi.kesimpulan,
+                        style: TextStyle(
+                          fontSize: 13.5,
+                          height: 1.5,
+                          color: Colors.white.withValues(alpha: 0.95),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ],
           );
         },
@@ -113,17 +178,21 @@ class EvaluasiStandarCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surfaceLow,
+        color: Colors.white, // Pure white background for pop contrast
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppColors.expertPurple.withValues(alpha: 0.12),
+          width: 1,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
-              color: AppColors.textLight,
+              color: AppColors.expertPurple.withValues(alpha: 0.7),
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -133,7 +202,7 @@ class EvaluasiStandarCard extends StatelessWidget {
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w800,
-              color: AppColors.textDark,
+              color: AppColors.expertPurple,
             ),
           ),
         ],
@@ -147,8 +216,12 @@ class EvaluasiStandarCard extends StatelessWidget {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surfaceLow,
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white, // Pure white background for pop contrast
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppColors.expertPurple.withValues(alpha: 0.12),
+          width: 1,
+        ),
       ),
       child: Column(
         children: [
@@ -162,7 +235,7 @@ class EvaluasiStandarCard extends StatelessWidget {
               Divider(
                 height: 1,
                 thickness: 1,
-                color: Colors.white.withValues(alpha: 0.9),
+                color: Colors.grey.shade100,
                 indent: 12,
                 endIndent: 12,
               ),

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../constants/app_colors.dart';
 
 class QuickActionCard extends StatelessWidget {
   final String title;
   final String description;
-  final IconData icon;
+  final IconData? icon;
+  final String? svgAsset;
   final Color baseColor;
   final VoidCallback onTap;
 
@@ -12,7 +14,8 @@ class QuickActionCard extends StatelessWidget {
     super.key,
     required this.title,
     required this.description,
-    required this.icon,
+    this.icon,
+    this.svgAsset,
     required this.baseColor,
     required this.onTap,
   });
@@ -22,10 +25,10 @@ class QuickActionCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12), // Reduced from 16 for compact look
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(20), // Slightly smaller radius for sleekness
           border: Border.all(
             color: Colors.black.withValues(alpha: 0.05),
           ),
@@ -42,31 +45,38 @@ class QuickActionCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.max,
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(10), // Reduced from 12
               decoration: BoxDecoration(
                 color: baseColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(14),
               ),
-              child: Icon(
-                icon,
-                color: baseColor,
-                size: 26,
-              ),
+              child: svgAsset != null
+                  ? SvgPicture.asset(
+                      svgAsset!,
+                      width: 24, // Reduced from 26
+                      height: 24, // Reduced from 26
+                      colorFilter: ColorFilter.mode(baseColor, BlendMode.srcIn),
+                    )
+                  : Icon(
+                      icon,
+                      color: baseColor,
+                      size: 24, // Reduced from 26
+                    ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 10), // Reduced from 16
             Text(
               title,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                fontSize: 16,
+                fontSize: 14, // Slightly smaller from 16 to fit beautifully in 2 lines
                 fontWeight: FontWeight.w800,
                 color: AppColors.textDark,
                 height: 1.1,
                 letterSpacing: -0.2,
               ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 4), // Reduced from 6
             Expanded(
               child: Text(
                 description,
