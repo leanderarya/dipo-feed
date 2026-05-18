@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 
 import '../../core/constants/app_colors.dart';
@@ -149,10 +148,10 @@ class _HomeScreenState extends State<HomeScreen> {
       clipBehavior: Clip.antiAlias,
       child: Stack(
         children: [
-          // SVG Background
+          // Hero Background Image
           Positioned.fill(
-            child: SvgPicture.asset(
-              'assets/images/hero_banner.svg',
+            child: Image.asset(
+              'assets/images/hero_banner_sapi.jpg',
               fit: BoxFit.cover,
             ),
           ),
