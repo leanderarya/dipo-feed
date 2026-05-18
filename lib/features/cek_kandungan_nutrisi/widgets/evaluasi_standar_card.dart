@@ -16,6 +16,28 @@ class EvaluasiStandarCard extends StatelessWidget {
     required this.totalBiaya,
   });
 
+  /// Format angka ke format ribuan Indonesia (titik sebagai pemisah ribuan)
+  String _formatRibuan(double value) {
+    final intValue = value.round();
+    final str = intValue.toString();
+    final buffer = StringBuffer();
+    final length = str.length;
+    for (var i = 0; i < length; i++) {
+      buffer.write(str[i]);
+      final remaining = length - 1 - i;
+      if (remaining > 0 && remaining % 3 == 0) {
+        buffer.write('.');
+      }
+    }
+    return buffer.toString();
+  }
+
+  /// Hitung biaya per kg campuran
+  double get _biayaPerKg {
+    if (totalBeratKg <= 0) return 0;
+    return totalBiaya / totalBeratKg;
+  }
+
   @override
   Widget build(BuildContext context) {
     EvaluasiStandarNutrienItem? lemakItem;
@@ -25,14 +47,14 @@ class EvaluasiStandarCard extends StatelessWidget {
         break;
       }
     }
-    final showLemakWarning = lemakItem != null &&
-        lemakItem.status == StatusStandarNutrien.berlebih;
+    final showLemakWarning =
+        lemakItem != null && lemakItem.status == StatusStandarNutrien.berlebih;
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.expertPurple.withValues(alpha: 0.08), // Soft brand purple background
+        color: AppColors.expertPurple.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: AppColors.expertPurple.withValues(alpha: 0.18),
@@ -59,7 +81,7 @@ class EvaluasiStandarCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Hasil Kandungan Pakan',
+                          'Kandungan Campuran Pakan',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w900,
@@ -72,7 +94,9 @@ class EvaluasiStandarCard extends StatelessWidget {
                           'Standar: ${evaluasi.standar.nama}',
                           style: TextStyle(
                             fontSize: 12,
-                            color: AppColors.expertPurple.withValues(alpha: 0.8),
+                            color: AppColors.expertPurple.withValues(
+                              alpha: 0.8,
+                            ),
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -81,12 +105,9 @@ class EvaluasiStandarCard extends StatelessWidget {
                   ),
                 ],
               ),
-               const SizedBox(height: 16),
+              const SizedBox(height: 16),
               if (useSingleColumnSummary) ...[
-                _buildMiniInfo(
-                  'Berat Campuran',
-                  '${totalBeratKg.toStringAsFixed(2)} kg',
-                ),
+                _buildBeratCampuranInfo(),
                 const SizedBox(height: 10),
                 _buildMiniInfo(
                   'Total Biaya',
@@ -95,12 +116,7 @@ class EvaluasiStandarCard extends StatelessWidget {
               ] else
                 Row(
                   children: [
-                    Expanded(
-                      child: _buildMiniInfo(
-                        'Berat Campuran',
-                        '${totalBeratKg.toStringAsFixed(2)} kg',
-                      ),
-                    ),
+                    Expanded(child: _buildBeratCampuranInfo()),
                     const SizedBox(width: 10),
                     Expanded(
                       child: _buildMiniInfo(
@@ -115,9 +131,10 @@ class EvaluasiStandarCard extends StatelessWidget {
                 items: evaluasi.items,
                 showLemakWarning: showLemakWarning,
               ),
+              const SizedBox(height: 12),
+              _buildInfoNoteBK(),
               if (evaluasi.kesimpulan.isNotEmpty) ...[
                 const SizedBox(height: 20),
-                // Kesimpulan Standar Nutrisi with high-intensity solid purple background
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(18),
@@ -135,15 +152,15 @@ class EvaluasiStandarCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
+                      const Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.info_outline,
                             size: 20,
                             color: Colors.white,
                           ),
-                          const SizedBox(width: 8),
-                          const Text(
+                          SizedBox(width: 8),
+                          Text(
                             'Kesimpulan Analisis',
                             style: TextStyle(
                               fontWeight: FontWeight.w900,
@@ -175,11 +192,11 @@ class EvaluasiStandarCard extends StatelessWidget {
     );
   }
 
-  Widget _buildMiniInfo(String label, String value) {
+  Widget _buildBeratCampuranInfo() {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white, // Pure white background for pop contrast
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: AppColors.expertPurple.withValues(alpha: 0.12),
@@ -190,7 +207,7 @@ class EvaluasiStandarCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            label,
+            'Berat Campuran',
             style: TextStyle(
               fontSize: 12,
               color: AppColors.expertPurple.withValues(alpha: 0.7),
@@ -199,11 +216,93 @@ class EvaluasiStandarCard extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            value,
+            '${totalBeratKg.toStringAsFixed(2)} kg',
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w800,
               color: AppColors.expertPurple,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '(berat segar / as fed)',
+            style: TextStyle(
+              fontSize: 11,
+              color: AppColors.expertPurple.withValues(alpha: 0.55),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBiayaPakanInfo() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppColors.expertPurple.withValues(alpha: 0.12),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Biaya Pakan',
+            style: TextStyle(
+              fontSize: 12,
+              color: AppColors.expertPurple.withValues(alpha: 0.7),
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Rp ${_formatRibuan(_biayaPerKg)}',
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              color: AppColors.expertPurple,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '/kg campuran',
+            style: TextStyle(
+              fontSize: 11,
+              color: AppColors.expertPurple.withValues(alpha: 0.55),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoNoteBK() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.info_outline,
+            size: 14,
+            color: AppColors.expertPurple.withValues(alpha: 0.5),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              'Perhitungan berdasarkan Bahan Kering',
+              style: TextStyle(
+                fontSize: 11,
+                color: AppColors.expertPurple.withValues(alpha: 0.5),
+                fontWeight: FontWeight.w500,
+                height: 1.3,
+              ),
             ),
           ),
         ],
@@ -217,7 +316,7 @@ class EvaluasiStandarCard extends StatelessWidget {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white, // Pure white background for pop contrast
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: AppColors.expertPurple.withValues(alpha: 0.12),
@@ -229,8 +328,7 @@ class EvaluasiStandarCard extends StatelessWidget {
           for (var i = 0; i < items.length; i++) ...[
             _buildItem(
               items[i],
-              showInlineWarning:
-                  showLemakWarning && items[i].label == 'Lemak',
+              showInlineWarning: showLemakWarning && items[i].label == 'Lemak',
             ),
             if (i != items.length - 1)
               Divider(
