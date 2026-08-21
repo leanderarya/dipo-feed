@@ -791,26 +791,31 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
   Widget _buildProgressIndicator() {
     const labels = ['Data Sapi', 'Bahan Pakan Tersedia', 'Hasil Rekomendasi'];
 
-    return _buildSectionCard(
-      title: 'Tahap ${_tahapAktif + 1} dari ${labels.length}',
-      icon: Icons.linear_scale_outlined,
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            labels[_tahapAktif],
+            'Tahap ${_tahapAktif + 1} dari ${labels.length}',
             style: const TextStyle(
               color: AppColors.primaryBlue,
               fontWeight: FontWeight.bold,
             ),
           ),
+          const SizedBox(height: 8),
+          Text(labels[_tahapAktif]),
           const SizedBox(height: 12),
           LinearProgressIndicator(
             value: (_tahapAktif + 1) / labels.length,
             minHeight: 8,
             borderRadius: BorderRadius.circular(8),
-            color: AppColors.primaryBlue,
-            backgroundColor: AppColors.backgroundCream,
           ),
         ],
       ),
