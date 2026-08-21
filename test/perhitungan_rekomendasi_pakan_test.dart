@@ -2,9 +2,37 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dipo_feed/data/models/bahan_pakan.dart';
 import 'package:dipo_feed/data/models/kebutuhan_nutrien_sapi.dart';
+import 'package:dipo_feed/features/rekomendasi_pakan/logic/nutrien_helper.dart';
 import 'package:dipo_feed/features/rekomendasi_pakan/logic/perhitungan_rekomendasi_pakan.dart';
 
 void main() {
+  group('Klasifikasi bahan rekomendasi pakan', () {
+    test('menerima kategori hijauan dengan spasi dan mixed case', () {
+      expect(isBahanHijauan(_bahan(1, 'Rumput Gajah', ' HIJAUAN ')), isTrue);
+      expect(isBahanHijauan(_bahan(2, 'Rumput Gajah', 'HijAuAn')), isTrue);
+    });
+
+    test('hanya menganggap kategori yang sama persis sebagai hijauan', () {
+      expect(
+        isBahanHijauan(_bahan(3, 'Rumput Lainnya', 'hijauan tambahan')),
+        isFalse,
+      );
+      expect(isBahanHijauan(_bahan(4, 'Rumput Lainnya', 'lainnya')), isFalse);
+    });
+
+    test('menggunakan inverse hijauan untuk kategori konsentrat', () {
+      expect(
+        isBahanKonsentrat(_bahan(5, 'Rumput Gajah', ' HIJAUAN ')),
+        isFalse,
+      );
+      expect(isBahanKonsentrat(_bahan(6, 'Pollard', 'konsentrat')), isTrue);
+      expect(
+        isBahanKonsentrat(_bahan(7, 'Rumput Lainnya', 'hijauan tambahan')),
+        isTrue,
+      );
+    });
+  });
+
   group('Perhitungan rekomendasi pakan', () {
     test('menghasilkan rekomendasi as-fed dari target BK 60:40', () {
       const kebutuhan = KebutuhanNutrienSapi(
@@ -59,14 +87,8 @@ void main() {
 
       expect(hasil.targetBkHijauan, closeTo(6.192, 0.0001));
       expect(hasil.targetBkKonsentrat, closeTo(4.128, 0.0001));
-      expect(
-        hasil.rekomendasiHijauan.first.asFedKg,
-        closeTo(21.18, 0.5),
-      );
-      expect(
-        hasil.rekomendasiKonsentrat.first.asFedKg,
-        closeTo(4.75, 0.5),
-      );
+      expect(hasil.rekomendasiHijauan.first.asFedKg, closeTo(21.18, 0.5));
+      expect(hasil.rekomendasiKonsentrat.first.asFedKg, closeTo(4.75, 0.5));
       expect(hasil.totalHijauan.bkKg, closeTo(6.19, 0.2));
       expect(hasil.totalKonsentrat.bkKg, closeTo(4.13, 0.3));
       expect(hasil.totalGabungan.bkKg, greaterThan(9.5));
@@ -127,76 +149,97 @@ void main() {
       expect(hasil.isLkAman, isFalse);
     });
 
-    test('tetap menghasilkan rekomendasi konsentrat saat hijauan sudah tinggi nutrien', () {
-      const kebutuhan = KebutuhanNutrienSapi(
-        kebutuhanBkKg: 10.32,
-        kebutuhanProteinKg: 1.10,
-        kebutuhanTdnKg: 6.20,
-        kebutuhanCaGram: 20,
-        kebutuhanPGram: 15,
-      );
+    test(
+      'tetap menghasilkan rekomendasi konsentrat saat hijauan sudah tinggi nutrien',
+      () {
+        const kebutuhan = KebutuhanNutrienSapi(
+          kebutuhanBkKg: 10.32,
+          kebutuhanProteinKg: 1.10,
+          kebutuhanTdnKg: 6.20,
+          kebutuhanCaGram: 20,
+          kebutuhanPGram: 15,
+        );
 
-      const hijauan = BahanPakan(
-        id: 5,
-        nama: 'Rumput Gajah',
-        kategori: 'hijauan',
-        bk: 29.24,
-        abu: 0,
-        lemak: 2.0,
-        serat: 0,
-        protein: 14.0,
-        betn: 0,
-        tdn: 58.0,
-        me: 0,
-        hargaDefault: 0,
-        isActive: true,
-      );
+        const hijauan = BahanPakan(
+          id: 5,
+          nama: 'Rumput Gajah',
+          kategori: 'hijauan',
+          bk: 29.24,
+          abu: 0,
+          lemak: 2.0,
+          serat: 0,
+          protein: 14.0,
+          betn: 0,
+          tdn: 58.0,
+          me: 0,
+          hargaDefault: 0,
+          isActive: true,
+        );
 
-      const konsentratA = BahanPakan(
-        id: 6,
-        nama: 'Pollard',
-        kategori: 'konsentrat',
-        bk: 86.0,
-        abu: 0,
-        lemak: 4.0,
-        serat: 0,
-        protein: 13.0,
-        betn: 0,
-        tdn: 78.0,
-        me: 0,
-        hargaDefault: 0,
-        isActive: true,
-      );
+        const konsentratA = BahanPakan(
+          id: 6,
+          nama: 'Pollard',
+          kategori: 'konsentrat',
+          bk: 86.0,
+          abu: 0,
+          lemak: 4.0,
+          serat: 0,
+          protein: 13.0,
+          betn: 0,
+          tdn: 78.0,
+          me: 0,
+          hargaDefault: 0,
+          isActive: true,
+        );
 
-      const konsentratB = BahanPakan(
-        id: 7,
-        nama: 'Dedak',
-        kategori: 'konsentrat',
-        bk: 88.0,
-        abu: 0,
-        lemak: 5.0,
-        serat: 0,
-        protein: 12.0,
-        betn: 0,
-        tdn: 75.0,
-        me: 0,
-        hargaDefault: 0,
-        isActive: true,
-      );
+        const konsentratB = BahanPakan(
+          id: 7,
+          nama: 'Dedak',
+          kategori: 'konsentrat',
+          bk: 88.0,
+          abu: 0,
+          lemak: 5.0,
+          serat: 0,
+          protein: 12.0,
+          betn: 0,
+          tdn: 75.0,
+          me: 0,
+          hargaDefault: 0,
+          isActive: true,
+        );
 
-      final hasil = PerhitunganRekomendasiPakan.hitung(
-        kebutuhan: kebutuhan,
-        bahanHijauan: const [hijauan],
-        bahanKonsentrat: const [konsentratA, konsentratB],
-      );
+        final hasil = PerhitunganRekomendasiPakan.hitung(
+          kebutuhan: kebutuhan,
+          bahanHijauan: const [hijauan],
+          bahanKonsentrat: const [konsentratA, konsentratB],
+        );
 
-      expect(hasil.rekomendasiKonsentrat.length, 2);
-      expect(
-        hasil.rekomendasiKonsentrat.every((item) => item.asFedKg > 0),
-        isTrue,
-      );
-      expect(hasil.totalKonsentrat.bkKg, closeTo(4.128, 0.6));
-      expect(hasil.totalGabungan.bkKg, greaterThan(hasil.totalHijauan.bkKg));
-    });
+        expect(hasil.rekomendasiKonsentrat.length, 2);
+        expect(
+          hasil.rekomendasiKonsentrat.every((item) => item.asFedKg > 0),
+          isTrue,
+        );
+        expect(hasil.totalKonsentrat.bkKg, closeTo(4.128, 0.6));
+        expect(hasil.totalGabungan.bkKg, greaterThan(hasil.totalHijauan.bkKg));
+      },
+    );
   });
+}
+
+BahanPakan _bahan(int id, String nama, String kategori) {
+  return BahanPakan(
+    id: id,
+    nama: nama,
+    kategori: kategori,
+    bk: 30,
+    abu: 0,
+    lemak: 0,
+    serat: 0,
+    protein: 0,
+    betn: 0,
+    tdn: 0,
+    me: 0,
+    hargaDefault: 0,
+    isActive: true,
+  );
 }

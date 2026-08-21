@@ -117,7 +117,7 @@ class PerhitunganKebutuhanKeringKandang {
   }
 
   static (DataKebutuhanKeringKandang, DataKebutuhanKeringKandang)
-      _pilihTitikReferensi(double bb) {
+  _pilihTitikReferensi(double bb) {
     if (bb <= _tabel.first.bb) {
       return (_tabel[0], _tabel[1]);
     }

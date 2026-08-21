@@ -40,7 +40,11 @@ class AppBottomNav extends StatelessWidget {
               children: [
                 _buildNavItem(0, 'assets/icons/ic_home.svg', 'Beranda'),
                 _buildNavItem(1, 'assets/icons/ic_panduan.svg', 'Panduan'),
-                _buildNavItem(2, 'assets/icons/ic_pengaturan.svg', 'Pengaturan'),
+                _buildNavItem(
+                  2,
+                  'assets/icons/ic_pengaturan.svg',
+                  'Pengaturan',
+                ),
               ],
             ),
           ),
@@ -61,8 +65,8 @@ class AppBottomNav extends StatelessWidget {
             duration: const Duration(milliseconds: 300),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: isActive 
-                  ? AppColors.primaryGreen.withValues(alpha: 0.1) 
+              color: isActive
+                  ? AppColors.primaryGreen.withValues(alpha: 0.1)
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(16),
             ),

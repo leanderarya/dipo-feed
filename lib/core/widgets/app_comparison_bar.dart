@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
+import '../utils/indonesian_number_formatter.dart';
 
 class AppComparisonBar extends StatelessWidget {
   final String label;
@@ -27,12 +28,9 @@ class AppComparisonBar extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
+            Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
             Text(
-              label,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            Text(
-              '${current.toStringAsFixed(2)} / ${limit.toStringAsFixed(2)} $unit',
+              '${IndonesianNumberFormatter.format(current, decimals: 2)} / ${IndonesianNumberFormatter.format(limit, decimals: 2)} $unit',
               style: TextStyle(
                 color: isOver ? AppColors.primaryGreen : AppColors.errorRed,
                 fontWeight: FontWeight.w600,
@@ -88,8 +86,11 @@ class AppComparisonBar extends StatelessWidget {
             ),
             if (!isOver)
               Text(
-                'Butuh ${(limit - current).toStringAsFixed(2)} lagi',
-                style: const TextStyle(fontSize: 11, color: AppColors.textLight),
+                'Butuh ${IndonesianNumberFormatter.format(limit - current, decimals: 2)} lagi',
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: AppColors.textLight,
+                ),
               ),
           ],
         ),

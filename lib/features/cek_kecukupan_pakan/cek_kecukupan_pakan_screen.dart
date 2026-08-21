@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../core/constants/app_colors.dart';
+import '../../core/utils/indonesian_number_formatter.dart';
+import '../../core/models/status_perhitungan.dart';
 import '../../core/widgets/app_card.dart';
-import '../../core/widgets/app_comparison_bar.dart';
 import '../../core/widgets/app_sliver_header.dart';
+import '../../core/widgets/app_comparison_bar.dart';
 import '../../core/widgets/app_text_field.dart';
 import '../../data/models/bahan_pakan.dart';
 import '../../data/models/campuran_pakan_item.dart';
@@ -14,7 +16,9 @@ import '../cek_kandungan_nutrisi/logic/perhitungan_nutrisi.dart';
 import 'logic/perhitungan_kebutuhan_nutrien.dart';
 
 class CekKecukupanPakanScreen extends StatefulWidget {
-  const CekKecukupanPakanScreen({super.key});
+  const CekKecukupanPakanScreen({super.key, this.repository});
+
+  final BahanPakanRepository? repository;
 
   @override
   State<CekKecukupanPakanScreen> createState() =>
@@ -23,7 +27,7 @@ class CekKecukupanPakanScreen extends StatefulWidget {
 
 class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
   final _formKey = GlobalKey<FormState>();
-  final BahanPakanRepository _repository = BahanPakanRepository();
+  late final BahanPakanRepository _repository;
 
   final TextEditingController _beratBadanController = TextEditingController();
   final TextEditingController _produksiSusuController = TextEditingController();
@@ -33,15 +37,22 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
 
   List<BahanPakan> _semuaBahan = [];
   final List<CampuranPakanItem> _pemberianPakan = [];
+  final List<ValueKey<int>> _pakanRowKeys = [];
+  final Set<int> _jumlahPakanTidakValid = {};
+  int _nextPakanRowKey = 0;
 
   bool _isLoadingBahan = true;
   String? _errorBahan;
   KebutuhanNutrienSapi? _kebutuhanNutrien;
   _HasilEvaluasiRingkas? _hasilEvaluasi;
+  StatusPerhitungan _statusPerhitungan = StatusPerhitungan.belumDihitung;
+  String? _pesanPerhitungan;
+  int _tahapAktif = 0;
 
   @override
   void initState() {
     super.initState();
+    _repository = widget.repository ?? BahanPakanRepository();
     _beratBadanController.addListener(_perbaruiKebutuhanOtomatis);
     _produksiSusuController.addListener(_perbaruiKebutuhanOtomatis);
     _lemakSusuController.addListener(_perbaruiKebutuhanOtomatis);
@@ -91,19 +102,25 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
         lemakSusu > 0;
 
     if (bolehHitungDara || bolehHitungKeringKandang || bolehHitungLaktasi) {
-      final kebutuhan = PerhitunganKebutuhanNutrien.hitungKebutuhan(
-        fisiologi: _fisiologi,
-        beratBadan: beratBadan,
-        produksiSusuLiter: _fisiologi == FisiologiSapi.laktasi
-            ? produksiSusu
-            : null,
-        lemakSusuPersen: _fisiologi == FisiologiSapi.laktasi ? lemakSusu : null,
+      final kebutuhan = _validasiKebutuhan(
+        PerhitunganKebutuhanNutrien.hitungKebutuhan(
+          fisiologi: _fisiologi,
+          beratBadan: beratBadan,
+          produksiSusuLiter: _fisiologi == FisiologiSapi.laktasi
+              ? produksiSusu
+              : null,
+          lemakSusuPersen: _fisiologi == FisiologiSapi.laktasi
+              ? lemakSusu
+              : null,
+        ),
       );
 
       if (!mounted) return;
       setState(() {
         _kebutuhanNutrien = kebutuhan;
         _hasilEvaluasi = null;
+        _statusPerhitungan = StatusPerhitungan.belumDihitung;
+        _pesanPerhitungan = null;
       });
       return;
     }
@@ -112,6 +129,8 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
     setState(() {
       _kebutuhanNutrien = null;
       _hasilEvaluasi = null;
+      _statusPerhitungan = StatusPerhitungan.belumDihitung;
+      _pesanPerhitungan = null;
     });
   }
 
@@ -121,6 +140,8 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
     setState(() {
       _fisiologi = value;
       _hasilEvaluasi = null;
+      _statusPerhitungan = StatusPerhitungan.belumDihitung;
+      _pesanPerhitungan = null;
 
       if (_fisiologi != FisiologiSapi.laktasi) {
         _produksiSusuController.clear();
@@ -161,14 +182,30 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
           hargaPerKg: bahanBaru.hargaDefault,
         ),
       );
+      _pakanRowKeys.add(ValueKey(_nextPakanRowKey++));
       _hasilEvaluasi = null;
+      _statusPerhitungan = StatusPerhitungan.belumDihitung;
+      _pesanPerhitungan = null;
     });
   }
 
   void _hapusBahanPakan(int index) {
+    final invalidAfterRemove = _jumlahPakanTidakValid
+        .where((invalidIndex) => invalidIndex != index)
+        .map(
+          (invalidIndex) =>
+              invalidIndex > index ? invalidIndex - 1 : invalidIndex,
+        )
+        .toSet();
     setState(() {
       _pemberianPakan.removeAt(index);
+      _pakanRowKeys.removeAt(index);
+      _jumlahPakanTidakValid
+        ..clear()
+        ..addAll(invalidAfterRemove);
       _hasilEvaluasi = null;
+      _statusPerhitungan = StatusPerhitungan.belumDihitung;
+      _pesanPerhitungan = null;
     });
   }
 
@@ -192,51 +229,74 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
         hargaPerKg: bahanBaru.hargaDefault,
       );
       _hasilEvaluasi = null;
+      _statusPerhitungan = StatusPerhitungan.belumDihitung;
+      _pesanPerhitungan = null;
     });
   }
 
   void _ubahJumlahPakan(int index, String value) {
-    final parsed = _parseDouble(value);
+    final input = value.trim();
+    final parsed = IndonesianNumberFormatter.tryParse(input)?.toDouble();
+    final valid =
+        input.isEmpty ||
+        (parsed != null &&
+            IndonesianNumberFormatter.isSupportedMagnitude(parsed) &&
+            parsed >= 0);
     setState(() {
-      _pemberianPakan[index].jumlahKg = parsed < 0 ? 0 : parsed;
+      if (input.isEmpty) {
+        _pemberianPakan[index].jumlahKg = 0;
+        _jumlahPakanTidakValid.remove(index);
+      } else if (valid) {
+        _pemberianPakan[index].jumlahKg = parsed!;
+        _jumlahPakanTidakValid.remove(index);
+      } else {
+        _jumlahPakanTidakValid.add(index);
+      }
       _hasilEvaluasi = null;
+      _statusPerhitungan = StatusPerhitungan.belumDihitung;
+      _pesanPerhitungan = null;
     });
   }
 
   void _hitungEvaluasi() {
-    if (!_formKey.currentState!.validate()) return;
-
     if (_kebutuhanNutrien == null) {
       final pesan = _fisiologi == FisiologiSapi.dara
           ? 'Isi BB sapi yang valid untuk menghitung kebutuhan nutrien Dara.'
           : _fisiologi == FisiologiSapi.laktasi
           ? 'Lengkapi BB, produksi susu, dan % lemak susu untuk menghitung kebutuhan nutrien Laktasi.'
           : 'Isi BB sapi yang valid untuk menghitung kebutuhan nutrien Kering Kandang.';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(pesan),
-        ),
-      );
+      _gagalMenghitung(pesan);
       return;
     }
 
     if (_pemberianPakan.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Tambahkan minimal satu bahan pakan terlebih dahulu.'),
-        ),
+      _gagalMenghitung('Tambahkan minimal satu bahan pakan terlebih dahulu.');
+      return;
+    }
+
+    if (_jumlahPakanTidakValid.isNotEmpty) {
+      _gagalMenghitung('Jumlah pemberian pakan tidak valid.');
+      return;
+    }
+
+    if (_repository.semuaData.any((bahan) => !bahan.isValidForCalculation()) ||
+        _pemberianPakan.any(
+          (item) => !item.bahan.isValidForCalculation(requirePositiveBk: true),
+        )) {
+      _gagalMenghitung(
+        'Data bahan pakan tersimpan tidak valid. Periksa nilai nutrisi, harga, dan BK.',
       );
       return;
     }
 
     final hasilPakan = PerhitunganNutrisi.hitungSemua(_pemberianPakan);
+    if (!_hasilNutrisiValid(hasilPakan)) {
+      _gagalMenghitung('Hasil perhitungan nutrisi tidak valid.');
+      return;
+    }
     final totalBerat = hasilPakan.totalBerat;
     if (totalBerat <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Total pemberian pakan harus lebih dari 0 kg.'),
-        ),
-      );
+      _gagalMenghitung('Total pemberian pakan harus lebih dari 0 kg.');
       return;
     }
 
@@ -247,6 +307,23 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
     // sehingga evaluasi sementara membaca pemberian Ca/P sebagai 0.
     const caPemberianGram = 0.0;
     const pPemberianGram = 0.0;
+
+    final nilaiEvaluasi = [
+      _kebutuhanNutrien!.kebutuhanBkKg,
+      bkPemberianKg,
+      _kebutuhanNutrien!.kebutuhanProteinKg,
+      proteinPemberianKg,
+      _kebutuhanNutrien!.kebutuhanTdnKg,
+      tdnPemberianKg,
+      _kebutuhanNutrien!.kebutuhanCaGram,
+      caPemberianGram,
+      _kebutuhanNutrien!.kebutuhanPGram,
+      pPemberianGram,
+    ];
+    if (!_nilaiValid(nilaiEvaluasi)) {
+      _gagalMenghitung('Hasil evaluasi nutrisi tidak valid.');
+      return;
+    }
 
     final hasilEvaluasi = _HasilEvaluasiRingkas(
       bk: _DetailEvaluasi(
@@ -273,11 +350,142 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
 
     setState(() {
       _hasilEvaluasi = hasilEvaluasi;
+      _statusPerhitungan = StatusPerhitungan.berhasil;
+      _pesanPerhitungan = null;
     });
   }
 
+  void _gagalMenghitung(String pesan) {
+    setState(() {
+      _hasilEvaluasi = null;
+      _statusPerhitungan = StatusPerhitungan.gagal;
+      _pesanPerhitungan = pesan;
+    });
+  }
+
+  bool _validasiTahapSatu() {
+    final valid = _formKey.currentState?.validate() ?? false;
+    if (!valid) return false;
+
+    _perbaruiKebutuhanOtomatis();
+    return _kebutuhanNutrien != null;
+  }
+
+  bool _validasiTahapDua() {
+    if (_kebutuhanNutrien == null) {
+      _gagalMenghitung('Lengkapi Data Sapi terlebih dahulu.');
+      return false;
+    }
+    if (_pemberianPakan.isEmpty) {
+      _gagalMenghitung('Tambahkan minimal satu bahan pakan terlebih dahulu.');
+      return false;
+    }
+    if (_jumlahPakanTidakValid.isNotEmpty) {
+      _gagalMenghitung('Jumlah pemberian pakan tidak valid.');
+      return false;
+    }
+
+    if (_repository.semuaData.any((bahan) => !bahan.isValidForCalculation()) ||
+        _pemberianPakan.any(
+          (item) => !item.bahan.isValidForCalculation(requirePositiveBk: true),
+        )) {
+      _gagalMenghitung(
+        'Data bahan pakan tersimpan tidak valid. Periksa nilai nutrisi, harga, dan BK.',
+      );
+      return false;
+    }
+
+    final totalBerat = PerhitunganNutrisi.hitungSemua(
+      _pemberianPakan,
+    ).totalBerat;
+    if (totalBerat <= 0) {
+      _gagalMenghitung('Total pemberian pakan harus lebih dari 0 kg.');
+      return false;
+    }
+    return true;
+  }
+
+  void _lanjutTahap() {
+    if (_tahapAktif == 0) {
+      if (_validasiTahapSatu()) {
+        setState(() => _tahapAktif = 1);
+      }
+      return;
+    }
+
+    if (_tahapAktif == 1) {
+      if (_validasiTahapDua()) {
+        _hitungEvaluasi();
+        if (_statusPerhitungan == StatusPerhitungan.berhasil) {
+          setState(() => _tahapAktif = 2);
+        }
+      }
+    }
+  }
+
+  void _kembaliTahap() {
+    if (_tahapAktif == 0) {
+      Navigator.of(context).pop();
+      return;
+    }
+    setState(() => _tahapAktif--);
+  }
+
+  bool get _hasEnteredData =>
+      _beratBadanController.text.trim().isNotEmpty ||
+      _produksiSusuController.text.trim().isNotEmpty ||
+      _lemakSusuController.text.trim().isNotEmpty ||
+      _pemberianPakan.isNotEmpty;
+
+  Future<void> _handleSystemBack() async {
+    if (!_hasEnteredData) {
+      if (mounted) Navigator.of(context).pop();
+      return;
+    }
+    final shouldExit = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Keluar dari fitur?'),
+        content: const Text('Data yang sudah diisi akan hilang.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Keluar'),
+          ),
+        ],
+      ),
+    );
+    if (shouldExit == true && mounted) Navigator.of(context).pop();
+  }
+
   double _parseDouble(String value) {
-    return double.tryParse(value.replaceAll(',', '.')) ?? 0;
+    final parsed = IndonesianNumberFormatter.tryParse(value)?.toDouble();
+    return parsed != null &&
+            IndonesianNumberFormatter.isSupportedMagnitude(parsed)
+        ? parsed
+        : 0;
+  }
+
+  KebutuhanNutrienSapi? _validasiKebutuhan(KebutuhanNutrienSapi? kebutuhan) {
+    if (kebutuhan == null) return null;
+    final values = [
+      kebutuhan.kebutuhanBkKg,
+      kebutuhan.kebutuhanProteinKg,
+      kebutuhan.kebutuhanTdnKg,
+      kebutuhan.kebutuhanCaGram,
+      kebutuhan.kebutuhanPGram,
+    ];
+    return values.every(
+          (value) =>
+              IndonesianNumberFormatter.isSupportedMagnitude(value) &&
+              value >= 0,
+        )
+        ? kebutuhan
+        : null;
   }
 
   String _labelFisiologi(FisiologiSapi fisiologi) {
@@ -296,8 +504,8 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
       return 'BB wajib diisi';
     }
 
-    final parsed = double.tryParse(value.replaceAll(',', '.'));
-    if (parsed == null) {
+    final parsed = IndonesianNumberFormatter.tryParse(value)?.toDouble();
+    if (parsed == null || !parsed.isFinite) {
       return 'Angka tidak valid';
     }
     if (parsed <= 0) {
@@ -312,8 +520,8 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
       return 'Wajib diisi';
     }
 
-    final parsed = double.tryParse(value.replaceAll(',', '.'));
-    if (parsed == null) {
+    final parsed = IndonesianNumberFormatter.tryParse(value)?.toDouble();
+    if (parsed == null || !parsed.isFinite) {
       return 'Angka tidak valid';
     }
     if (parsed <= 0) {
@@ -328,8 +536,8 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
       return 'Wajib diisi';
     }
 
-    final parsed = double.tryParse(value.replaceAll(',', '.'));
-    if (parsed == null) {
+    final parsed = IndonesianNumberFormatter.tryParse(value)?.toDouble();
+    if (parsed == null || !parsed.isFinite) {
       return 'Angka tidak valid';
     }
     if (parsed <= 0) {
@@ -340,40 +548,200 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.backgroundCream,
-      body: _isLoadingBahan
-          ? const Center(child: CircularProgressIndicator())
-          : _errorBahan != null
-          ? Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Text(_errorBahan!, textAlign: TextAlign.center),
-              ),
-            )
-          : CustomScrollView(
-              slivers: [
-                const AppSliverHeader(
-                  title: 'Cek Kecukupan Pakan',
-                  subtitle:
-                      'Evaluasi kecukupan nutrien pada pemberian pakan ternak.',
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) _handleSystemBack();
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.backgroundCream,
+        bottomNavigationBar: !_isLoadingBahan && _errorBahan == null
+            ? SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                  child: _buildNavigationControls(),
                 ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
-                    child: Column(
-                      children: [
-                        _buildFormInput(),
-                        const SizedBox(height: 16),
-                        _buildOutputSection(),
-                        const SizedBox(height: 16),
-                        _buildPemberianPakanSection(),
-                      ],
-                    ),
+              )
+            : null,
+        body: _isLoadingBahan
+            ? const Center(child: CircularProgressIndicator())
+            : _errorBahan != null
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(_errorBahan!, textAlign: TextAlign.center),
+                ),
+              )
+: _buildStepperBody(),
+      ),
+    );
+  }
+
+  Widget _buildStepperBody() {
+    return Column(
+      children: [
+        AnimatedSize(
+          duration: const Duration(milliseconds: 275),
+          curve: Curves.easeInOut,
+          alignment: Alignment.topCenter,
+          child: _tahapAktif == 0
+              ? SizedBox(
+                  height: 210,
+                  child: CustomScrollView(
+                    slivers: [
+                      AppSliverHeader(
+                        title: 'Cek Kecukupan Pakan',
+                        subtitle: 'Cek kecukupan nutrien dan pemberian pakan.',
+                        onBackTap: _handleSystemBack,
+                      ),
+                    ],
                   ),
-                ),
+                )
+              : _buildCompactHeader(),
+        ),
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
+            child: Column(
+              children: [
+                _buildProgressIndicator(),
+                const SizedBox(height: 16),
+                _buildTahapAktif(),
               ],
             ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCompactHeader() {
+    return Container(
+      color: AppColors.primaryBlue,
+      padding: EdgeInsets.only(
+        top: MediaQuery.paddingOf(context).top,
+        left: 8,
+        right: 16,
+      ),
+      child: SizedBox(
+        height: 56,
+        child: Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: _kembaliTahap,
+            ),
+            Expanded(
+              child: const Text(
+                'Cek Kecukupan Pakan',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Text(
+              '${_tahapAktif + 1}/3',
+              style: const TextStyle(color: Colors.white),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProgressIndicator() {
+    final labels = [
+      'Data Sapi',
+      'Kebutuhan Nutrien dan Pemberian Pakan',
+      'Hasil Evaluasi Nutrisi',
+    ];
+
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Tahap ${_tahapAktif + 1} dari ${labels.length}',
+            style: const TextStyle(
+              color: AppColors.primaryBlue,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(labels[_tahapAktif]),
+          const SizedBox(height: 12),
+          LinearProgressIndicator(
+            value: (_tahapAktif + 1) / labels.length,
+            minHeight: 8,
+            borderRadius: BorderRadius.circular(8),
+            color: AppColors.primaryBlue,
+            backgroundColor: AppColors.backgroundCream,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTahapAktif() {
+    switch (_tahapAktif) {
+      case 0:
+        return _buildFormInput();
+      case 1:
+        return Column(
+          children: [
+            _buildOutputSection(),
+            const SizedBox(height: 16),
+            _buildPemberianPakanSection(),
+            if (_statusPerhitungan == StatusPerhitungan.gagal) ...[
+              const SizedBox(height: 12),
+              _buildStatusPerhitungan(),
+            ],
+          ],
+        );
+      case 2:
+        return _hasilEvaluasi == null
+            ? _buildOutputSection()
+            : _buildKartuHasilEvaluasi();
+    }
+    return const SizedBox.shrink();
+  }
+
+  Widget _buildStatusPerhitungan() {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Gagal menghitung',
+            style: TextStyle(
+              color: AppColors.errorRed,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          if (_pesanPerhitungan != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              _pesanPerhitungan!,
+              style: const TextStyle(color: AppColors.errorRed),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNavigationControls() {
+    if (_tahapAktif == 2) return const SizedBox.shrink();
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: _lanjutTahap,
+        child: const Text('Lanjut'),
+      ),
     );
   }
 
@@ -389,10 +757,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
             const SizedBox(height: 16),
             const Text(
               'Fisiologi Sapi',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
             ),
             const SizedBox(height: 8),
             DropdownButtonFormField<FisiologiSapi>(
@@ -437,11 +802,12 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
                 _parseDouble(_lemakSusuController.text) > 0 &&
                         (_parseDouble(_lemakSusuController.text) < 2.5 ||
                             _parseDouble(_lemakSusuController.text) > 4.0)
-                    ? 'Lemak susu di luar rentang normal (2.5%–4.0%). Perhitungan tetap dilakukan dengan ekstrapolasi.'
+                    ? 'Lemak susu di luar rentang normal (2,5%–4,0%). Perhitungan tetap dilakukan dengan ekstrapolasi.'
                     : 'Diisi sesuai dengan pengetahuan peternak, misalnya 3–3,5%.',
                 style: TextStyle(
                   fontSize: 12,
-                  color: _parseDouble(_lemakSusuController.text) > 0 &&
+                  color:
+                      _parseDouble(_lemakSusuController.text) > 0 &&
                           (_parseDouble(_lemakSusuController.text) < 2.5 ||
                               _parseDouble(_lemakSusuController.text) > 4.0)
                       ? AppColors.errorRed
@@ -506,7 +872,8 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
       );
     }
 
-    if (_fisiologi == FisiologiSapi.keringKandang && _kebutuhanNutrien == null) {
+    if (_fisiologi == FisiologiSapi.keringKandang &&
+        _kebutuhanNutrien == null) {
       return AppCard(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -532,7 +899,28 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
     return _buildKartuKebutuhan();
   }
 
-  String _format(double value) => value.toStringAsFixed(2);
+  String _format(double value) =>
+      IndonesianNumberFormatter.format(value, decimals: 2);
+
+  bool _nilaiValid(Iterable<double> values) => values.every(
+    (value) =>
+        IndonesianNumberFormatter.isSupportedMagnitude(value) && value >= 0,
+  );
+
+  bool _hasilNutrisiValid(HasilPerhitunganNutrisi hasil) => _nilaiValid([
+    hasil.totalBerat,
+    hasil.totalBiaya,
+    hasil.hargaRataRata,
+    hasil.bk,
+    hasil.abu,
+    hasil.lemak,
+    hasil.serat,
+    hasil.protein,
+    hasil.tdn,
+    hasil.ca,
+    hasil.p,
+    hasil.me,
+  ]);
 
   Widget _buildKartuKebutuhan() {
     final kebutuhan = _kebutuhanNutrien!;
@@ -543,9 +931,9 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
         children: [
           Text(
             'Kebutuhan Nutrien',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              color: AppColors.primaryBlue,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(color: AppColors.primaryBlue),
           ),
           const SizedBox(height: 16),
           GridView.count(
@@ -556,11 +944,26 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
             mainAxisSpacing: 8,
             childAspectRatio: 1.3,
             children: [
-              _buildNutrientMiniCard('BK (kg)', _format(kebutuhan.kebutuhanBkKg)),
-              _buildNutrientMiniCard('PK (kg)', _format(kebutuhan.kebutuhanProteinKg)),
-              _buildNutrientMiniCard('TDN (kg)', _format(kebutuhan.kebutuhanTdnKg)),
-              _buildNutrientMiniCard('Ca (g)', _format(kebutuhan.kebutuhanCaGram)),
-              _buildNutrientMiniCard('P (g)', _format(kebutuhan.kebutuhanPGram)),
+              _buildNutrientMiniCard(
+                'BK (kg)',
+                _format(kebutuhan.kebutuhanBkKg),
+              ),
+              _buildNutrientMiniCard(
+                'PK (kg)',
+                _format(kebutuhan.kebutuhanProteinKg),
+              ),
+              _buildNutrientMiniCard(
+                'TDN (kg)',
+                _format(kebutuhan.kebutuhanTdnKg),
+              ),
+              _buildNutrientMiniCard(
+                'Ca (g)',
+                _format(kebutuhan.kebutuhanCaGram),
+              ),
+              _buildNutrientMiniCard(
+                'P (g)',
+                _format(kebutuhan.kebutuhanPGram),
+              ),
             ],
           ),
         ],
@@ -630,6 +1033,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
                 padding: EdgeInsets.only(
                   bottom: index == _pemberianPakan.length - 1 ? 0 : 12,
                 ),
+                key: _pakanRowKeys[index],
                 child: _buildKartuPakan(index, _pemberianPakan[index]),
               ),
             ),
@@ -642,33 +1046,6 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
               label: const Text('Tambah Bahan Pakan'),
             ),
           ),
-          const SizedBox(height: 20),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _hitungEvaluasi,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.accentOrange,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 0,
-              ),
-              child: const Text(
-                'Hitung Evaluasi',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
-            ),
-          ),
-          if (_hasilEvaluasi != null) ...[
-            const SizedBox(height: 20),
-            _buildKartuHasilEvaluasi(),
-          ],
         ],
       ),
     );
@@ -746,10 +1123,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
             items: _semuaBahan.map((bahan) {
               return DropdownMenuItem<BahanPakan>(
                 value: bahan,
-                child: Text(
-                  bahan.nama,
-                  style: const TextStyle(fontSize: 14),
-                ),
+                child: Text(bahan.nama, style: const TextStyle(fontSize: 14)),
               );
             }).toList(),
             onChanged: (value) {
@@ -760,7 +1134,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
           AppTextField(
             initialValue: item.jumlahKg == 0
                 ? ''
-                : item.jumlahKg.toStringAsFixed(2),
+                : IndonesianNumberFormatter.format(item.jumlahKg, decimals: 2),
             label: 'Jumlah',
             suffix: 'kg',
             onChanged: (value) => _ubahJumlahPakan(index, value),
@@ -777,7 +1151,9 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
       margin: const EdgeInsets.symmetric(vertical: 24),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.expertPurple.withValues(alpha: 0.08), // Soft brand purple background
+        color: AppColors.expertPurple.withValues(
+          alpha: 0.08,
+        ), // Soft brand purple background
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: AppColors.expertPurple.withValues(alpha: 0.18),
@@ -923,10 +1299,7 @@ class _DetailEvaluasi {
   final double kebutuhan;
   final double pemberian;
 
-  const _DetailEvaluasi({
-    required this.kebutuhan,
-    required this.pemberian,
-  });
+  const _DetailEvaluasi({required this.kebutuhan, required this.pemberian});
 
   double get selisih => pemberian - kebutuhan;
 

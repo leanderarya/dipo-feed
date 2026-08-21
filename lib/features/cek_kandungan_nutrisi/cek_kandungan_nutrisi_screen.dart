@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../core/constants/app_colors.dart';
+import '../../core/models/status_perhitungan.dart';
 import '../../core/utils/currency_formatter.dart';
+import '../../core/utils/indonesian_number_formatter.dart';
 import '../../core/widgets/app_card.dart';
 import '../../core/widgets/app_sliver_header.dart';
 import '../../core/widgets/app_text_field.dart';
@@ -17,10 +19,12 @@ import 'widgets/evaluasi_standar_card.dart';
 
 class CekKandunganNutrisiScreen extends StatefulWidget {
   final bool modePilihUntukEvaluasi;
+  final BahanPakanRepository? repository;
 
   const CekKandunganNutrisiScreen({
     super.key,
     this.modePilihUntukEvaluasi = false,
+    this.repository,
   });
 
   @override
@@ -29,11 +33,16 @@ class CekKandunganNutrisiScreen extends StatefulWidget {
 }
 
 class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
-  final BahanPakanRepository _repository = BahanPakanRepository();
+  late final BahanPakanRepository _repository;
 
   List<BahanPakan> _semuaBahan = [];
   final List<CampuranPakanItem> _campuran = [];
   FisiologiSapi _fisiologi = FisiologiSapi.laktasi;
+  HasilPerhitunganNutrisi? _hasilTerhitung;
+  StatusPerhitungan _statusPerhitungan = StatusPerhitungan.belumDihitung;
+  String? _pesanPerhitungan;
+  final Set<CampuranPakanItem> _inputJumlahTidakValid = {};
+  final Set<CampuranPakanItem> _inputHargaTidakValid = {};
 
   bool _isLoading = true;
   String? _errorMessage;
@@ -41,17 +50,20 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
   @override
   void initState() {
     super.initState();
+    _repository = widget.repository ?? BahanPakanRepository();
     _muatBahanPakan();
   }
 
   Future<void> _muatBahanPakan() async {
     try {
       await _repository.initialize();
+      if (!mounted) return;
       setState(() {
         _semuaBahan = _repository.dataAktif;
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _errorMessage = 'Gagal memuat bahan pakan: $e';
         _isLoading = false;
@@ -62,13 +74,36 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
   Future<void> _bukaManajemenMaster() async {
     await Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const MasterPakanScreen()),
+      MaterialPageRoute(
+        builder: (_) => MasterPakanScreen(repository: _repository),
+      ),
     );
+    if (!mounted) return;
     await _repository.refresh();
     if (!mounted) return;
     setState(() {
       _semuaBahan = _repository.dataAktif;
+      _reconcileCampuran();
+      _invalidasiPerhitungan();
     });
+  }
+
+  void _reconcileCampuran() {
+    final bahanById = <int, BahanPakan>{
+      for (final bahan in _semuaBahan) bahan.id: bahan,
+    };
+    final campuranTersinkron = <CampuranPakanItem>[];
+    for (final item in _campuran) {
+      final bahanTerbaru = bahanById[item.bahan.id];
+      if (bahanTerbaru != null) {
+        campuranTersinkron.add(item.copyWith(bahan: bahanTerbaru));
+      }
+    }
+    _campuran
+      ..clear()
+      ..addAll(campuranTersinkron);
+    _inputJumlahTidakValid.clear();
+    _inputHargaTidakValid.clear();
   }
 
   void _tambahBahan() {
@@ -85,7 +120,9 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
 
     if (bahanBaru == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Semua bahan pakan aktif sudah ditambahkan.')),
+        const SnackBar(
+          content: Text('Semua bahan pakan aktif sudah ditambahkan.'),
+        ),
       );
       return;
     }
@@ -98,12 +135,16 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
           hargaPerKg: bahanBaru.hargaDefault,
         ),
       );
+      _invalidasiPerhitungan();
     });
   }
 
   void _hapusBahan(int index) {
     setState(() {
-      _campuran.removeAt(index);
+      final item = _campuran.removeAt(index);
+      _inputJumlahTidakValid.remove(item);
+      _inputHargaTidakValid.remove(item);
+      _invalidasiPerhitungan();
     });
   }
 
@@ -114,37 +155,149 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
 
     if (sudahDipakaiOlehItemLain) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bahan tersebut sudah dipilih pada item lain.')),
+        const SnackBar(
+          content: Text('Bahan tersebut sudah dipilih pada item lain.'),
+        ),
       );
       return;
     }
 
     setState(() {
-      _campuran[index] = _campuran[index].copyWith(
+      final itemLama = _campuran[index];
+      _inputJumlahTidakValid.remove(itemLama);
+      _inputHargaTidakValid.remove(itemLama);
+      _campuran[index] = itemLama.copyWith(
         bahan: bahanBaru,
         hargaPerKg: bahanBaru.hargaDefault,
       );
+      _invalidasiPerhitungan();
     });
   }
 
   void _ubahJumlahKg(int index, String value) {
-    final jumlah = double.tryParse(value.replaceAll(',', '.')) ?? 0;
+    final input = value.trim();
+    final jumlah = input.isEmpty
+        ? 0.0
+        : IndonesianNumberFormatter.tryParse(input)?.toDouble();
+    final item = _campuran[index];
     setState(() {
-      _campuran[index].jumlahKg = jumlah < 0 ? 0 : jumlah;
+      item.jumlahKg = jumlah ?? double.nan;
+      if (input.isNotEmpty &&
+          (jumlah == null ||
+            jumlah.isNegative ||
+            !IndonesianNumberFormatter.isSupportedMagnitude(jumlah))) {
+        _inputJumlahTidakValid.add(item);
+      } else {
+        _inputJumlahTidakValid.remove(item);
+      }
+      _invalidasiPerhitungan();
     });
   }
 
   void _ubahHargaPerKg(int index, String value) {
-    final harga = CurrencyFormatter.parseRupiah(value);
+    final input = value.trim();
+    final parsed = input.isEmpty
+        ? 0.0
+        : IndonesianNumberFormatter.tryParse(value);
+    final item = _campuran[index];
     setState(() {
-      _campuran[index].hargaPerKg = harga < 0 ? 0 : harga;
+      item.hargaPerKg = parsed?.toDouble() ?? double.nan;
+      if (input.isNotEmpty &&
+          (parsed == null ||
+            parsed.isNegative ||
+            !IndonesianNumberFormatter.isSupportedMagnitude(parsed))) {
+        _inputHargaTidakValid.add(item);
+      } else {
+        _inputHargaTidakValid.remove(item);
+      }
+      _invalidasiPerhitungan();
     });
   }
 
-  void _gunakanUntukEvaluasi(HasilPerhitunganNutrisi hasil) {
-    if (hasil.totalBerat <= 0) {
+  void _invalidasiPerhitungan() {
+    _hasilTerhitung = null;
+    _statusPerhitungan = StatusPerhitungan.belumDihitung;
+    _pesanPerhitungan = null;
+  }
+
+  void _hitungManual() {
+    try {
+      if (_campuran.isEmpty) {
+        throw const FormatException('Tambahkan minimal satu bahan pakan.');
+      }
+      if (_campuran.any(
+        (item) => !item.bahan.isValidForCalculation(requirePositiveBk: true),
+      )) {
+        throw const FormatException('Data bahan pakan yang dipilih tidak valid.');
+      }
+      if (_inputJumlahTidakValid.isNotEmpty ||
+          _inputHargaTidakValid.isNotEmpty ||
+          _campuran.any(
+            (item) =>
+                item.jumlahKg < 0 ||
+                !IndonesianNumberFormatter.isSupportedMagnitude(item.jumlahKg) ||
+                item.hargaPerKg < 0 ||
+                !IndonesianNumberFormatter.isSupportedMagnitude(item.hargaPerKg),
+          )) {
+        throw const FormatException('Jumlah atau harga pakan tidak valid.');
+      }
+
+      final hasil = PerhitunganNutrisi.hitungSemua(_campuran);
+      if (!_hasilPerhitunganValid(hasil)) {
+        throw const FormatException('Hasil perhitungan nutrisi tidak valid.');
+      }
+      if (hasil.totalBerat <= 0) {
+        throw const FormatException(
+          'Total campuran pakan harus lebih dari 0 kg.',
+        );
+      }
+
+      setState(() {
+        _hasilTerhitung = hasil;
+        _statusPerhitungan = StatusPerhitungan.berhasil;
+        _pesanPerhitungan = null;
+      });
+    } catch (error) {
+      setState(() {
+        _hasilTerhitung = null;
+        _statusPerhitungan = StatusPerhitungan.gagal;
+        _pesanPerhitungan = error is FormatException
+            ? error.message
+            : 'Perhitungan nutrisi gagal dilakukan.';
+      });
+    }
+  }
+
+  bool _hasilPerhitunganValid(HasilPerhitunganNutrisi hasil) {
+    final values = [
+      hasil.totalBerat,
+      hasil.totalBiaya,
+      hasil.hargaRataRata,
+      hasil.bk,
+      hasil.abu,
+      hasil.lemak,
+      hasil.serat,
+      hasil.protein,
+      hasil.tdn,
+      hasil.ca,
+      hasil.p,
+      hasil.me,
+    ];
+    return values.every(
+      (value) =>
+          IndonesianNumberFormatter.isSupportedMagnitude(value) && value >= 0,
+    );
+  }
+
+  void _gunakanUntukEvaluasi() {
+    final hasil = _hasilTerhitung;
+    if (_statusPerhitungan != StatusPerhitungan.berhasil || hasil == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Total campuran pakan harus lebih dari 0 kg.')),
+        const SnackBar(
+          content: Text(
+            'Hitung campuran pakan sebelum digunakan untuk evaluasi.',
+          ),
+        ),
       );
       return;
     }
@@ -162,13 +315,15 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final hasil = PerhitunganNutrisi.hitungSemua(_campuran);
-    final evaluasiStandar = hasil.totalBerat > 0
-        ? EvaluasiStandarNutrienHelper.evaluasi(
+    final hasil = _statusPerhitungan == StatusPerhitungan.berhasil
+        ? _hasilTerhitung
+        : null;
+    final evaluasiStandar = hasil == null
+        ? null
+        : EvaluasiStandarNutrienHelper.evaluasi(
             hasil: hasil,
             fisiologi: _fisiologi,
-          )
-        : null;
+          );
 
     return Scaffold(
       backgroundColor: AppColors.backgroundKrem,
@@ -181,20 +336,21 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
               IconButton(
                 tooltip: 'Database Pakan',
                 onPressed: _isLoading ? null : _bukaManajemenMaster,
-                icon: const Icon(Icons.inventory_2_outlined, color: Colors.white),
+                icon: const Icon(
+                  Icons.inventory_2_outlined,
+                  color: Colors.white,
+                ),
               ),
             ],
           ),
-          SliverToBoxAdapter(
-            child: _buildBody(hasil, evaluasiStandar),
-          ),
+          SliverToBoxAdapter(child: _buildBody(hasil, evaluasiStandar)),
         ],
       ),
-      bottomNavigationBar: widget.modePilihUntukEvaluasi && _campuran.isNotEmpty && hasil.totalBerat > 0
+      bottomNavigationBar: widget.modePilihUntukEvaluasi && _campuran.isNotEmpty
           ? Padding(
               padding: const EdgeInsets.all(16),
               child: FilledButton(
-                onPressed: () => _gunakanUntukEvaluasi(hasil),
+                onPressed: _gunakanUntukEvaluasi,
                 style: FilledButton.styleFrom(
                   backgroundColor: AppColors.accentOrange,
                   minimumSize: const Size(double.infinity, 48),
@@ -207,7 +363,7 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
   }
 
   Widget _buildBody(
-    HasilPerhitunganNutrisi hasil,
+    HasilPerhitunganNutrisi? hasil,
     HasilEvaluasiStandarNutrien? evaluasiStandar,
   ) {
     if (_isLoading) return const Center(child: CircularProgressIndicator());
@@ -225,36 +381,69 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-        _buildKartuStandarFisiologi(),
-        const SizedBox(height: 16),
-        if (_campuran.isEmpty)
-          _buildEmptyState()
-        else ...[
-          const Text(
-            'Bahan Campuran',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 12),
-          ..._campuran.asMap().entries.map((entry) => _buildKartuBahan(entry.key, entry.value)),
-          const SizedBox(height: 8),
-          OutlinedButton.icon(
-            onPressed: _tambahBahan,
-            icon: const Icon(Icons.add_circle_outline, size: 18),
-            label: const Text('Tambah Bahan Pakan'),
-          ),
-          if (evaluasiStandar != null) ...[
-            const SizedBox(height: 16),
-            EvaluasiStandarCard(
-              evaluasi: evaluasiStandar,
-              totalBeratKg: hasil.totalBerat,
-              totalBiaya: hasil.totalBiaya,
+          _buildKartuStandarFisiologi(),
+          const SizedBox(height: 16),
+          if (_campuran.isEmpty)
+            _buildEmptyState()
+          else ...[
+            const Text(
+              'Bahan Campuran',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
+            const SizedBox(height: 12),
+            ..._campuran.asMap().entries.map(
+              (entry) => _buildKartuBahan(entry.key, entry.value),
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: _tambahBahan,
+              icon: const Icon(Icons.add_circle_outline, size: 18),
+              label: const Text('Tambah Bahan Pakan'),
+            ),
+            if (evaluasiStandar != null && hasil != null) ...[
+              const SizedBox(height: 16),
+              EvaluasiStandarCard(
+                evaluasi: evaluasiStandar,
+                totalBeratKg: hasil.totalBerat,
+                totalBiaya: hasil.totalBiaya,
+              ),
+            ],
           ],
+          const SizedBox(height: 16),
+          _buildPerhitunganStatus(),
         ],
-      ],
-    ),
-  );
-}
+      ),
+    );
+  }
+
+  Widget _buildPerhitunganStatus() {
+    final statusText = switch (_statusPerhitungan) {
+      StatusPerhitungan.belumDihitung => 'Belum dihitung',
+      StatusPerhitungan.berhasil => 'Perhitungan berhasil',
+      StatusPerhitungan.gagal => 'Gagal menghitung',
+    };
+    final statusMessage = switch (_statusPerhitungan) {
+      StatusPerhitungan.belumDihitung =>
+        'Tekan Hitung untuk menghitung kandungan campuran.',
+      StatusPerhitungan.berhasil =>
+        'Hasil merupakan snapshot dari input terakhir.',
+      StatusPerhitungan.gagal =>
+        _pesanPerhitungan ?? 'Perhitungan nutrisi gagal dilakukan.',
+    };
+
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(statusText, style: const TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 6),
+          Text(statusMessage),
+          const SizedBox(height: 12),
+          FilledButton(onPressed: _hitungManual, child: const Text('Hitung')),
+        ],
+      ),
+    );
+  }
 
   Widget _buildKartuStandarFisiologi() {
     return AppCard(
@@ -293,6 +482,7 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
               if (value == null) return;
               setState(() {
                 _fisiologi = value;
+                _invalidasiPerhitungan();
               });
             },
             decoration: InputDecoration(
@@ -306,7 +496,6 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
       ),
     );
   }
-
 
   Widget _buildEmptyState() {
     return AppCard(
@@ -358,7 +547,10 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
                   items: _semuaBahan.map((bahan) {
                     return DropdownMenuItem<BahanPakan>(
                       value: bahan,
-                      child: Text(bahan.nama, style: const TextStyle(fontSize: 14)),
+                      child: Text(
+                        bahan.nama,
+                        style: const TextStyle(fontSize: 14),
+                      ),
                     );
                   }).toList(),
                   onChanged: (v) => v != null ? _ubahBahan(index, v) : null,
@@ -366,7 +558,11 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
               ),
               IconButton(
                 onPressed: () => _hapusBahan(index),
-                icon: const Icon(Icons.close, color: AppColors.errorRed, size: 20),
+                icon: const Icon(
+                  Icons.close,
+                  color: AppColors.errorRed,
+                  size: 20,
+                ),
               ),
             ],
           ),
@@ -375,7 +571,17 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
             children: [
               Expanded(
                 child: AppTextField(
-                  initialValue: item.jumlahKg == 0 ? '' : item.jumlahKg.toStringAsFixed(2),
+initialValue:
+                       item.jumlahKg == 0 ||
+                           !IndonesianNumberFormatter.isSupportedMagnitude(
+                             item.jumlahKg,
+                           )
+                       ? ''
+                      : IndonesianNumberFormatter.format(
+                          item.jumlahKg,
+                          decimals: 2,
+                        ),
+
                   label: 'Jumlah (kg)',
                   keyboardType: TextInputType.number,
                   onChanged: (v) => _ubahJumlahKg(index, v),
@@ -384,7 +590,11 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: AppTextField(
-                  initialValue: item.hargaPerKg == 0
+                  initialValue:
+                      item.hargaPerKg == 0 ||
+                          !IndonesianNumberFormatter.isSupportedMagnitude(
+                            item.hargaPerKg,
+                          )
                       ? ''
                       : CurrencyFormatter.formatRupiah(
                           item.hargaPerKg,
@@ -394,7 +604,6 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
                   label: 'Harga/kg',
                   prefixText: 'Rp ',
                   keyboardType: TextInputType.number,
-                  inputFormatters: [IndonesianCurrencyInputFormatter()],
                   onChanged: (v) => _ubahHargaPerKg(index, v),
                 ),
               ),
@@ -415,5 +624,4 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
         return 'Kering Kandang';
     }
   }
-
 }

@@ -1,5 +1,1 @@
-enum FisiologiSapi {
-  dara,
-  laktasi,
-  keringKandang,
-}
+enum FisiologiSapi { dara, laktasi, keringKandang }

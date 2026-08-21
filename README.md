@@ -1,104 +1,92 @@
 # DipoFeed
 
-DipoFeed adalah aplikasi berbasis seluler (Mobile App) yang dibangun menggunakan Flutter. Aplikasi ini dirancang untuk membantu peternak sapi perah atau ahli nutrisi hewan dalam menghitung, memformulasi, dan mengevaluasi ransum (pakan) sapi secara tepat berdasarkan profil sapi dan kandungan nutrisi bahan pakan. Fokus utama aplikasi adalah pada evaluasi kandungan nutrisi seperti Bahan Kering (BK), Protein Kasar, Total Digestible Nutrients (TDN), dan Energi Metabolisme (ME).
+DipoFeed adalah aplikasi mobile Flutter untuk membantu peternak sapi perah dan ahli nutrisi menghitung, memformulasi, dan mengevaluasi ransum berdasarkan profil sapi serta kandungan bahan pakan.
 
----
+## Ringkasan penggunaan
 
-## 🛠️ Sistem dan Teknologi
+- **Database Pakan:** impor CSV untuk mengganti seluruh database lokal setelah validasi penuh dan konfirmasi pengguna. Ekspor CSV memakai format kanonik yang dapat diimpor kembali: pemisah `;`, header tetap, angka Indonesia, nutrisi 2 desimal, dan harga 0 desimal.
+- **Kategori:** hanya kategori persis `hijauan` yang diklasifikasikan sebagai hijauan. `konsentrat` dan `lainnya` diperlakukan sebagai konsentrat pada fitur rekomendasi.
+- **Angka Indonesia:** titik adalah pemisah ribuan dan koma adalah pemisah desimal, misalnya `4.500` dan `1.234,50`. Angka finite dengan magnitudo `abs < 1e21` dapat diproses.
+- **Status:** layar perhitungan memakai `Belum dihitung`, `Perhitungan berhasil`, dan `Gagal menghitung`. Hasil tidak ditampilkan sebagai berhasil jika input tersimpan atau keluaran kalkulasi tidak valid.
+- **Stepper:** Cek Kecukupan Pakan dan Rekomendasi Pakan memiliki tiga tahap. Tahap berikutnya hanya terbuka setelah tahap aktif valid; kembali mempertahankan input dan perubahan input mengharuskan perhitungan ulang.
+- **Cek Kandungan Pakan:** tetap satu halaman tanpa stepper. Pengguna menyusun campuran lalu menekan `Hitung` secara manual. Hasil berhasil adalah snapshot input terakhir; perubahan bahan, jumlah, harga, atau fisiologi menghapus snapshot dan mengembalikan status ke `Belum dihitung`.
 
-- **Sistem Operasi**: Cross-platform (Dapat dikompilasi ke Android / iOS / Web)
-- **Framework Utama**: Flutter (Dart)
-- **Arsitektur Data**: Menggunakan pendekatan manipulasi state lokal melalui berbagai layar simulasi. Logic perhitungan dipisah ke dalam modul independen seperti class `PerhitunganKecukupanPakan` dan `PerhitunganFormulasi`.
+## Fitur utama
 
----
+### Cek Kecukupan Pakan
 
-## 📱 Penjelasan Fitur dan Alur Kerja
+Membandingkan kebutuhan nutrien sapi dengan nutrien dari pemberian pakan as-fed. Input terdiri dari fisiologi, berat badan, produksi susu dan lemak susu untuk laktasi, serta bahan pakan dan berat basahnya.
 
-Aplikasi DipoFeed memiliki 4 fitur utama. Berikut adalah penjelasan konsep, masukan (input), keluaran (output), beserta ilustrasi alur kerjanya:
+Stepper:
 
-### 1. Cek Kecukupan Pakan
-**Deskripsi:** evaluasi kecukupan nutrien pada pemberian pakan ternak. Fitur ini berfungsi untuk mengevaluasi apakah satu porsi pakan spesifik yang biasa diberikan peternak sudah memenuhi standar kebutuhan gizi seekor sapi atau belum.
+1. `Data Sapi`
+2. `Kebutuhan Nutrien dan Pemberian Pakan`
+3. `Hasil Evaluasi Nutrisi`
 
-**Logika & Alur Kerja:**
-Sistem memecah proses menjadi dua jalur: mengkalkulasi **"Apa yang dibutuhkan sapi"** dan **"Apa yang diberikan oleh pakan"**. Keduanya lalu diadu untuk mencari selisihnya (kurang/Cukup/Berlebih).
+Hasil membandingkan BK, protein, TDN, Ca, dan P. Status per komponen adalah `Kurang`, `Cukup`, atau `Berlebih`.
 
-```mermaid
-graph TD
-    A[Input Profil Sapi] --> C{Sistem Hitung Kebutuhan Minimal}
-    B[Input Jenis & Takaran Pakan] --> D{Sistem Hitung Sumbangan Nutrisi Pakan}
-    C --> E[Bandingkan & Evaluasi]
-    D --> E
-    E --> F[Hasil: Status Kurang/Cukup/Berlebih]
-```
+### Rekomendasi Pakan
 
-- **📝 Input:**
-  1. **Profil Sapi:** Berat Badan, Produksi Susu (liter), % Lemak Susu, Fisiologi (Dara/Laktasi/Kering Kandang).
-  2. **Pemberian Pakan:** Daftar bahan pakan beserta berat basahnya (kg).
-- **📤 Output:**
-  Tabel rincian evaluasi Nutrisi (BK, Protein, TDN, Ca, P). Jika asupan pakan lebih rendah dari kebutuhan sapi, statusnya merah (**Kurang**).
+Menghasilkan takaran as-fed untuk mencapai target BK dengan proporsi 60% hijauan dan 40% konsentrat, lalu mengevaluasi protein, TDN, Ca, P, dan LK.
 
-### 2. Rekomendasi Pakan
-**Deskripsi:** Rekomendasi pemberian pakan untuk mencukupi kebutuhan nutrisi ternak. Sistem akan mencari kombinasi terbaik dari bahan pakan yang dimiliki peternak.
+Stepper:
 
-**Logika & Alur Kerja:**
-Sistem menghitung kebutuhan sapi, lalu melakukan pencarian kombinasi pakan (Trial and Error) untuk memenuhi target Bahan Kering (60% Hijauan, 40% Konsentrat) dan target nutrien lainnya.
+1. `Data Sapi`
+2. `Bahan Pakan Tersedia`
+3. `Hasil Rekomendasi`
 
-- **📝 Input:**
-  1. **Profil Sapi** (Sama seperti fitur sebelumnya).
-  2. **Bahan yang Dimiliki:** Daftar hijauan dan konsentrat yang tersedia di kandang.
-- **📤 Output:**
-  Rekomendasi jumlah pemberian (kg) untuk setiap bahan pakan agar kebutuhan nutrien sapi terpenuhi secara optimal.
+Tahap bahan wajib memiliki sedikitnya satu hijauan dan satu bahan non-hijauan. Semua nilai nutrisi dan harga dari data tersimpan divalidasi sebelum pencarian kombinasi.
 
-### 3. Cek Kandungan Pakan
-**Deskripsi:** Cek kandungan nutrisi pada pakan. Memungkinkan peternak mensimulasikan "mencampur" berbagai macam bahan pakan dengan takaran berbeda-beda, lalu mengevaluasi kandungan gizi totalnya.
+### Cek Kandungan Pakan
 
-- **📝 Input:**
-  **Keranjang Pakan:** *List* atau daftar berbagai macam bahan pakan beserta berat masing-masing (kg).
-- **📤 Output:**
-  1. **Total Nutrisi Keseluruhan:** Akumulasi BK, Protein, TDN, dan ME dari *seluruh* pakan.
-  2. **Analisis Biaya:** Estimasi total biaya campuran pakan.
+Memungkinkan pengguna mencampur beberapa bahan dengan jumlah dan harga per kg, menghitung komposisi campuran, biaya, dan evaluasi terhadap standar fisiologi.
 
-### 4. Database Pakan
-**Deskripsi:** Database bahan pakan. Fitur referensi yang bertindak sebagai ensiklopedia mini untuk melihat profil nutrisi dari berbagai bahan pakan lokal.
-- **Konsep:** Pengguna dapat mencari, melihat, menambah, atau mengubah komposisi zat gizi dari berbagai bahan pakan.
-- **📝 Input:** Nama bahan pakan, Kategori, Kandungan Nutrisi (BK, PK, TDN, Harga, dll).
-- **📤 Output:** Katalog profil nutrisi pakan lokal yang digunakan sebagai basis perhitungan di seluruh fitur aplikasi.
+### Database Pakan
 
----
+Menyediakan katalog lokal bahan pakan untuk dilihat, ditambah, diubah, diaktifkan, dihapus, di-reset, diimpor, dan diekspor. Data ini menjadi sumber seluruh kalkulasi.
 
-## 🧮 Detail Perhitungan (Referensi Teknis)
-*Bagian ini memuat detail matematis di balik layar yang digunakan sistem untuk mengeksekusi fitur-fitur di atas. Seluruh perhitungan distandarisasi menggunakan basis **Bahan Kering (BK)**.*
+## Rumus dan referensi teknis
 
-### A. Rumus Kebutuhan Nutrisi Sapi
-Untuk mengevaluasi pakan, sistem menghitung angka baku minimal yang dibutuhkan sapi berdasarkan kondisi fisiologisnya:
+Seluruh persentase kandungan bahan dibaca sebagai nilai basis bahan kering (BK), kecuali komposisi campuran pada Cek Kandungan yang dihitung sebagai rata-rata tertimbang berdasarkan jumlah as-fed.
 
-| Komponen Gizi | Rumus / Estimasi Sistem |
-| :--- | :--- |
-| **Kebutuhan BK** | `((2.0% s/d 4.0% berdasarkan Laktasi) / 100) * Berat Badan` |
-| **Kebutuhan Protein** | `12% * Kebutuhan BK` |
-| **Kebutuhan TDN** | `65% * Kebutuhan BK` |
-| **Kebutuhan ME** | `(0.11 * B.Badan) + (Kandungan Susu * 7.5) + Tambahan Bunting` |
+### Kebutuhan sapi
 
-*(Catatan: Tambahan energi bunting diberikan bila usia kehamilan mencapai atau lebih dari 6 bulan: berturut-turut +6, +8, +15, dan +27 MCal per bulannya).*
+Implementasi memakai tabel dan worksheet yang dirujuk dari **National Research Council (NRC), *Nutrient Requirements of Dairy Cattle*, edisi revisi ke-5 (1978)** untuk Dara dan **edisi revisi ke-6 (1988)** untuk Laktasi. Nilai di antara titik tabel dihitung dengan interpolasi linear; di luar rentang tabel dicatat sebagai ekstrapolasi.
 
-### B. Rumus Konversi Sumbangan Pakan (As-Fed ke Nutrisi Aktual)
-Karena takaran pakan dari petani biasanya basah (*as-fed*), sistem mengonversinya ke bobot murni (Bahan Kering) terlebih dahulu sebelum menghitung protein dan energinya:
+- **Dara, NRC 1978:** kebutuhan BK, TDN, PK, Ca, dan P diambil dari tabel BB. PK tabel dalam gram dikonversi menjadi kg dengan `PK kg = PK gram / 1.000`.
+- **Laktasi, NRC 1988:**
+  - `FCM4 = (0,4 * produksi susu) + (15 * (lemak susu / 100) * produksi susu)`
+  - `BK kg = (BK %BB / 100) * BB`
+  - `TDN total = TDN hidup pokok + TDN produksi FCM`
+  - `PK total = (PK hidup pokok + PK produksi FCM) / 1.000`
+  - `Ca total = Ca hidup pokok + Ca produksi FCM`
+  - `P total = P hidup pokok + P produksi FCM`
+- **Kering Kandang:** `BK kg = 0,02 * BB`; TDN, PK, Ca, dan P diambil melalui interpolasi tabel BB. PK gram dikonversi menjadi kg.
 
-| Komponen Terkalkulasi | Rumus Konversi |
-| :--- | :--- |
-| **Bahan Kering (BK) Aktual** | `(% BK Pakan / 100) * Takaran Pakan Segar (kg)` |
-| **Sumbangan Protein** | `(% Protein Pakan / 100) * BK Aktual (kg)` |
-| **Sumbangan TDN** | `(% TDN Pakan / 100) * BK Aktual (kg)` |
-| **Sumbangan ME** | `Batas ME Pakan * BK Aktual (kg)` |
+### Kontribusi pakan
 
-### C. Logika Evaluasi & Penentuan Status
-Angka Asupan dari Pakan (Bagian B) dikurangi Angka Kebutuhan Sapi (Bagian A).
-- **Rumus:** `Selisih = Total Asupan Pakan - Total Kebutuhan Sapi`
-- Ambang Toleransi (Threshold): `+/- 0.0001`
-- **Kurang**: Jika selisih bernilai negatif (Asupan < Kebutuhan).
-- **Cukup**: Jika asupan tepat dan seimbang.
-- **Berlebih**: Jika selisih bernilai positif (Asupan > Kebutuhan).
+- `BK aktual = jumlah as-fed (kg) * BK (%) / 100`
+- `PK aktual = BK aktual * PK (%) / 100`
+- `TDN aktual = BK aktual * TDN (%) / 100`
+- `LK aktual = BK aktual * lemak (%) / 100`
+- `SK aktual = BK aktual * serat (%) / 100`
+- `BETN aktual = BK aktual * BETN (%) / 100`
+- `Ca aktual (gram) = BK aktual * Ca (%) / 100 * 1.000`
+- `P aktual (gram) = BK aktual * P (%) / 100 * 1.000`
 
-### D. Rasio Hijauan dan Konsentrat
-Setiap pakan memiliki label kategori spesifik. Sistem mengklasifikasikan pakan bertipe *Hijauan* dan *Limbah* ke dalam satu wadah Hijauan, sisanya sebagai Konsentrat.
-- **Rumus Persentase**: `(Total BK Kategori / Total Keseluruhan BK Semua Pakan) * 100%`
+Pada Cek Kecukupan Pakan, BK, PK, dan TDN pemberian dihitung dari total berat as-fed dikalikan persentase campuran tertimbang. Pemberian Ca dan P pada ringkasan fitur tersebut masih `0` karena jalur ringkasnya belum memakai data Ca/P bahan.
+
+Pada Rekomendasi Pakan, target BK dibagi `60%` untuk hijauan dan `40%` untuk konsentrat. Hanya kategori `hijauan` yang masuk kelompok hijauan.
+
+Pada Cek Kandungan Pakan:
+
+- `total berat = Σ jumlah bahan`
+- `total biaya = Σ (jumlah bahan * harga per kg)`
+- `nutrien campuran = Σ ((jumlah bahan / total berat) * nutrien bahan)`
+
+### Status dan ambang
+
+- Cek Kecukupan Pakan memakai `selisih = pemberian - kebutuhan` dengan toleransi `±0,0001`: di bawah batas `Kurang`, di atas batas `Berlebih`, dan di dalam batas `Cukup`.
+- Rekomendasi Pakan memakai toleransi relatif `±5%` terhadap target untuk status nutrien. LK aman jika `LK ≤ 5% BK`.
+- Cek Kandungan Pakan memakai standar fisiologi: BK maksimum `86%`, LK maksimum `7%`, protein target dengan toleransi `±1` poin persentase, TDN sesuai dari minimum sampai `minimum + 4` poin, serta Ca dan P sesuai di dalam rentang fisiologinya.
+- Semua hasil kalkulasi harus finite dan tidak negatif sebelum status berhasil diberikan.

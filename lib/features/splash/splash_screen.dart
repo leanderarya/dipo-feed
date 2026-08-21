@@ -23,7 +23,8 @@ class _SplashScreenState extends State<SplashScreen> {
     if (mounted) {
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => const HomeScreen(),
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const HomeScreen(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);
           },
@@ -41,12 +42,8 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-
             // DipoFeed Text
-            SvgPicture.asset(
-              'assets/images/logo.svg',
-              height: 140,
-            ),
+            SvgPicture.asset('assets/images/logo.svg', height: 140),
             const SizedBox(height: 40),
             // Loading Indicator
             const SizedBox(
@@ -54,7 +51,9 @@ class _SplashScreenState extends State<SplashScreen> {
               height: 24,
               child: CircularProgressIndicator(
                 strokeWidth: 3,
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryGreen),
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  AppColors.primaryGreen,
+                ),
               ),
             ),
           ],

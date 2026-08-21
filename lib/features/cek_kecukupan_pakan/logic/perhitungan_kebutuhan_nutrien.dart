@@ -25,8 +25,9 @@ class PerhitunganKebutuhanNutrien {
           lemakSusuPersen: lemakSusuPersen,
         );
       case FisiologiSapi.keringKandang:
-        return PerhitunganKebutuhanKeringKandang
-            .hitungKebutuhanKeringKandang(beratBadan);
+        return PerhitunganKebutuhanKeringKandang.hitungKebutuhanKeringKandang(
+          beratBadan,
+        );
     }
   }
 
@@ -92,10 +93,7 @@ class PerhitunganKebutuhanNutrien {
     double bb,
   ) {
     if (bb <= tabelKebutuhanDaraNrc1978.first.bb) {
-      return (
-        tabelKebutuhanDaraNrc1978[0],
-        tabelKebutuhanDaraNrc1978[1],
-      );
+      return (tabelKebutuhanDaraNrc1978[0], tabelKebutuhanDaraNrc1978[1]);
     }
 
     if (bb >= tabelKebutuhanDaraNrc1978.last.bb) {
@@ -114,10 +112,7 @@ class PerhitunganKebutuhanNutrien {
       }
     }
 
-    return (
-      tabelKebutuhanDaraNrc1978[0],
-      tabelKebutuhanDaraNrc1978[1],
-    );
+    return (tabelKebutuhanDaraNrc1978[0], tabelKebutuhanDaraNrc1978[1]);
   }
 
   static KebutuhanNutrienSapi _mapKeModel(DataKebutuhanDara data) {
@@ -137,12 +132,6 @@ class PerhitunganKebutuhanNutrien {
     required double x2,
     required double y2,
   }) {
-    return interpolasiLinear(
-      x: x,
-      x1: x1,
-      y1: y1,
-      x2: x2,
-      y2: y2,
-    );
+    return interpolasiLinear(x: x, x1: x1, y1: y1, x2: x2, y2: y2);
   }
 }

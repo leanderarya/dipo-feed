@@ -41,16 +41,15 @@ class MenuCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
+                  Text(title, style: Theme.of(context).textTheme.titleLarge),
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey,
-                        ),
+                      color:
+                          Theme.of(context).textTheme.bodySmall?.color ??
+                          Colors.grey,
+                    ),
                   ),
                 ],
               ),

@@ -2,10 +2,7 @@ class TitikLinear {
   final double x;
   final double y;
 
-  const TitikLinear({
-    required this.x,
-    required this.y,
-  });
+  const TitikLinear({required this.x, required this.y});
 }
 
 double interpolasiLinear({

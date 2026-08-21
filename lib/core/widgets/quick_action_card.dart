@@ -28,10 +28,10 @@ class QuickActionCard extends StatelessWidget {
         padding: const EdgeInsets.all(12), // Reduced from 16 for compact look
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20), // Slightly smaller radius for sleekness
-          border: Border.all(
-            color: Colors.black.withValues(alpha: 0.05),
-          ),
+          borderRadius: BorderRadius.circular(
+            20,
+          ), // Slightly smaller radius for sleekness
+          border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.02),
@@ -69,7 +69,8 @@ class QuickActionCard extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                fontSize: 14, // Slightly smaller from 16 to fit beautifully in 2 lines
+                fontSize:
+                    14, // Slightly smaller from 16 to fit beautifully in 2 lines
                 fontWeight: FontWeight.w800,
                 color: AppColors.textDark,
                 height: 1.1,

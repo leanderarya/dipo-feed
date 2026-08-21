@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/currency_formatter.dart';
+import '../../../core/utils/indonesian_number_formatter.dart';
 import '../logic/evaluasi_standar_nutrien.dart';
 
 class EvaluasiStandarCard extends StatelessWidget {
@@ -17,20 +18,8 @@ class EvaluasiStandarCard extends StatelessWidget {
   });
 
   /// Format angka ke format ribuan Indonesia (titik sebagai pemisah ribuan)
-  String _formatRibuan(double value) {
-    final intValue = value.round();
-    final str = intValue.toString();
-    final buffer = StringBuffer();
-    final length = str.length;
-    for (var i = 0; i < length; i++) {
-      buffer.write(str[i]);
-      final remaining = length - 1 - i;
-      if (remaining > 0 && remaining % 3 == 0) {
-        buffer.write('.');
-      }
-    }
-    return buffer.toString();
-  }
+  String _formatRibuan(double value) =>
+      IndonesianNumberFormatter.format(value, decimals: 0);
 
   /// Hitung biaya per kg campuran
   double get _biayaPerKg {
@@ -208,7 +197,7 @@ class EvaluasiStandarCard extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            '${totalBeratKg.toStringAsFixed(2)} kg',
+            '${IndonesianNumberFormatter.format(totalBeratKg, decimals: 2)} kg',
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w800,
@@ -407,7 +396,7 @@ class EvaluasiStandarCard extends StatelessWidget {
           ConstrainedBox(
             constraints: const BoxConstraints(minWidth: 74, maxWidth: 112),
             child: Text(
-              '${item.hasil.toStringAsFixed(2)}%',
+              '${IndonesianNumberFormatter.format(item.hasil, decimals: 2)}%',
               textAlign: TextAlign.end,
               style: const TextStyle(
                 fontWeight: FontWeight.w800,

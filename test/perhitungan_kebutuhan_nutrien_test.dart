@@ -6,8 +6,7 @@ import 'package:dipo_feed/features/cek_kecukupan_pakan/logic/perhitungan_kebutuh
 void main() {
   group('Perhitungan kebutuhan nutrien Dara NRC 1978', () {
     test('menggunakan nilai tabel saat BB sama persis', () {
-      final hasil =
-          PerhitunganKebutuhanNutrien.hitungKebutuhanDaraNrc1978(200);
+      final hasil = PerhitunganKebutuhanNutrien.hitungKebutuhanDaraNrc1978(200);
 
       expect(hasil.kebutuhanBkKg, 5.0);
       expect(hasil.kebutuhanTdnKg, 2.85);
@@ -17,8 +16,7 @@ void main() {
     });
 
     test('menggunakan interpolasi linear saat BB di antara tabel', () {
-      final hasil =
-          PerhitunganKebutuhanNutrien.hitungKebutuhanDaraNrc1978(175);
+      final hasil = PerhitunganKebutuhanNutrien.hitungKebutuhanDaraNrc1978(175);
 
       expect(hasil.kebutuhanBkKg, closeTo(4.5, 0.0001));
       expect(hasil.kebutuhanTdnKg, closeTo(2.575, 0.0001));
@@ -28,8 +26,7 @@ void main() {
     });
 
     test('menggunakan ekstrapolasi linear saat BB di bawah rentang', () {
-      final hasil =
-          PerhitunganKebutuhanNutrien.hitungKebutuhanDaraNrc1978(75);
+      final hasil = PerhitunganKebutuhanNutrien.hitungKebutuhanDaraNrc1978(75);
 
       expect(hasil.kebutuhanBkKg, closeTo(2.2, 0.0001));
       expect(hasil.kebutuhanTdnKg, closeTo(1.385, 0.0001));
@@ -39,8 +36,7 @@ void main() {
     });
 
     test('menggunakan ekstrapolasi linear saat BB di atas rentang', () {
-      final hasil =
-          PerhitunganKebutuhanNutrien.hitungKebutuhanDaraNrc1978(400);
+      final hasil = PerhitunganKebutuhanNutrien.hitungKebutuhanDaraNrc1978(400);
 
       expect(hasil.kebutuhanBkKg, closeTo(7.79, 0.0001));
       expect(hasil.kebutuhanTdnKg, closeTo(4.58, 0.0001));

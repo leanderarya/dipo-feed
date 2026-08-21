@@ -5,10 +5,7 @@ class _DataBkLaktasi {
   final double fcm;
   final Map<int, double?> persenBkByBb;
 
-  const _DataBkLaktasi({
-    required this.fcm,
-    required this.persenBkByBb,
-  });
+  const _DataBkLaktasi({required this.fcm, required this.persenBkByBb});
 }
 
 class _DataHidupPokok {
@@ -52,53 +49,23 @@ class PerhitunganKebutuhanLaktasiNrc1988 {
   static const List<_DataBkLaktasi> _tabelBk = [
     _DataBkLaktasi(
       fcm: 10,
-      persenBkByBb: {
-        300: 3.0,
-        350: 2.9,
-        400: 2.7,
-        500: 2.4,
-        600: 2.2,
-      },
+      persenBkByBb: {300: 3.0, 350: 2.9, 400: 2.7, 500: 2.4, 600: 2.2},
     ),
     _DataBkLaktasi(
       fcm: 15,
-      persenBkByBb: {
-        300: 3.6,
-        350: 3.4,
-        400: 3.2,
-        500: 2.8,
-        600: 2.6,
-      },
+      persenBkByBb: {300: 3.6, 350: 3.4, 400: 3.2, 500: 2.8, 600: 2.6},
     ),
     _DataBkLaktasi(
       fcm: 20,
-      persenBkByBb: {
-        300: null,
-        350: null,
-        400: 3.6,
-        500: 3.2,
-        600: 2.9,
-      },
+      persenBkByBb: {300: null, 350: null, 400: 3.6, 500: 3.2, 600: 2.9},
     ),
     _DataBkLaktasi(
       fcm: 25,
-      persenBkByBb: {
-        300: null,
-        350: null,
-        400: 4.0,
-        500: 3.5,
-        600: 3.2,
-      },
+      persenBkByBb: {300: null, 350: null, 400: 4.0, 500: 3.5, 600: 3.2},
     ),
     _DataBkLaktasi(
       fcm: 30,
-      persenBkByBb: {
-        300: null,
-        350: null,
-        400: 4.4,
-        500: 3.9,
-        600: 3.5,
-      },
+      persenBkByBb: {300: null, 350: null, 400: 4.4, 500: 3.9, 600: 3.5},
     ),
   ];
 
@@ -215,7 +182,7 @@ class PerhitunganKebutuhanLaktasiNrc1988 {
     if (lemakSusuPersen < 2.5 || lemakSusuPersen > 4.0) {
       _tambahCatatan(
         catatan,
-        'Lemak susu berada di luar rentang rekomendasi 2.5%–4.0%, hasil dihitung dengan ekstrapolasi.',
+        'Lemak susu berada di luar rentang rekomendasi 2,5%–4,0%, hasil dihitung dengan ekstrapolasi.',
       );
     }
 
@@ -280,10 +247,7 @@ class PerhitunganKebutuhanLaktasiNrc1988 {
   }) {
     final hasilPerKolom = _kolomBbIntiBk.map((bbKolom) {
       final titikFcm = _tabelBk.map((baris) {
-        return TitikLinear(
-          x: baris.fcm,
-          y: baris.persenBkByBb[bbKolom]!,
-        );
+        return TitikLinear(x: baris.fcm, y: baris.persenBkByBb[bbKolom]!);
       }).toList();
 
       if (fcm4 < titikFcm.first.x || fcm4 > titikFcm.last.x) {
@@ -295,24 +259,19 @@ class PerhitunganKebutuhanLaktasiNrc1988 {
 
       return TitikLinear(
         x: bbKolom.toDouble(),
-        y: interpolasiDariTitik(
-          titik: titikFcm,
-          xTarget: fcm4,
-        ),
+        y: interpolasiDariTitik(titik: titikFcm, xTarget: fcm4),
       );
     }).toList();
 
-    if (beratBadan < hasilPerKolom.first.x || beratBadan > hasilPerKolom.last.x) {
+    if (beratBadan < hasilPerKolom.first.x ||
+        beratBadan > hasilPerKolom.last.x) {
       _tambahCatatan(
         catatan,
         'BK %BB menggunakan ekstrapolasi terhadap BB dari kolom tabel inti karena berada di luar area data utama.',
       );
     }
 
-    return interpolasiDariTitik(
-      titik: hasilPerKolom,
-      xTarget: beratBadan,
-    );
+    return interpolasiDariTitik(titik: hasilPerKolom, xTarget: beratBadan);
   }
 
   static double _interpolasiHidupPokok(
@@ -351,12 +310,7 @@ class PerhitunganKebutuhanLaktasiNrc1988 {
 
     return interpolasiDariTitik(
       titik: _tabelProduksi
-          .map(
-            (item) => TitikLinear(
-              x: item.lemakPersen,
-              y: selector(item),
-            ),
-          )
+          .map((item) => TitikLinear(x: item.lemakPersen, y: selector(item)))
           .toList(),
       xTarget: lemakSusuPersen,
     );

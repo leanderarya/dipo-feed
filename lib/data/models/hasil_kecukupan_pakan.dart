@@ -44,12 +44,7 @@ class HasilEvaluasiKecukupan {
   });
 
   String get kesimpulanUmum {
-    final semuaStatus = [
-      bk.status,
-      protein.status,
-      tdn.status,
-      me.status,
-    ];
+    final semuaStatus = [bk.status, protein.status, tdn.status, me.status];
 
     if (semuaStatus.every((status) => status == 'Cukup')) {
       return 'Pakan yang diberikan sudah sesuai dengan kebutuhan sapi.';

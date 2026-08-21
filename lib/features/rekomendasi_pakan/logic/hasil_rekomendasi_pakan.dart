@@ -51,15 +51,15 @@ class KontribusiNutrien {
   });
 
   const KontribusiNutrien.zero()
-      : bkKg = 0,
-        pkKg = 0,
-        tdnKg = 0,
-        caGram = 0,
-        pGram = 0,
-        abuKg = 0,
-        lkKg = 0,
-        skKg = 0,
-        betnKg = 0;
+    : bkKg = 0,
+      pkKg = 0,
+      tdnKg = 0,
+      caGram = 0,
+      pGram = 0,
+      abuKg = 0,
+      lkKg = 0,
+      skKg = 0,
+      betnKg = 0;
 
   KontribusiNutrien operator +(KontribusiNutrien other) {
     return KontribusiNutrien(

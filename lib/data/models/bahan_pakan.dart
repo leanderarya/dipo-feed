@@ -1,3 +1,4 @@
+import 'package:dipo_feed/core/utils/indonesian_number_formatter.dart';
 import 'package:hive/hive.dart';
 
 part 'bahan_pakan.g.dart';
@@ -91,6 +92,28 @@ class BahanPakan {
       'ca': ca,
       'p': p,
     };
+  }
+
+  bool isValidForCalculation({bool requirePositiveBk = false}) {
+    final values = [
+      bk,
+      abu,
+      lemak,
+      serat,
+      protein,
+      betn,
+      tdn,
+      me,
+      hargaDefault,
+      ca,
+      p,
+    ];
+    return values.every(
+          (value) =>
+              IndonesianNumberFormatter.isSupportedMagnitude(value) &&
+              value >= 0,
+        ) &&
+        (!requirePositiveBk || bk > 0);
   }
 
   BahanPakan copyWith({

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../core/constants/app_colors.dart';
+import '../../core/utils/indonesian_number_formatter.dart';
+import '../../core/models/status_perhitungan.dart';
 import '../../core/widgets/app_sliver_header.dart';
 import '../../core/widgets/app_text_field.dart';
 import '../../data/models/bahan_pakan.dart';
@@ -18,15 +20,20 @@ class RekomendasiPakanScreen extends StatefulWidget {
   const RekomendasiPakanScreen({
     super.key,
     this.kebutuhanAwal,
+    this.repository,
   });
+
+  final BahanPakanRepository? repository;
 
   @override
   State<RekomendasiPakanScreen> createState() => _RekomendasiPakanScreenState();
 }
 
 class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
+  static const maxSelectedFeedsPerGroup = 4;
+
   final _formKey = GlobalKey<FormState>();
-  final BahanPakanRepository _repository = BahanPakanRepository();
+  late final BahanPakanRepository _repository;
 
   final TextEditingController _beratBadanController = TextEditingController();
   final TextEditingController _produksiSusuController = TextEditingController();
@@ -39,14 +46,21 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
   List<BahanPakan> _semuaBahan = [];
   List<BahanPakan?> _hijauanTerpilih = [];
   List<BahanPakan?> _konsentratTerpilih = [];
+  final List<ValueKey<int>> _hijauanRowKeys = [];
+  final List<ValueKey<int>> _konsentratRowKeys = [];
+  int _nextFeedRowKey = 0;
 
   KebutuhanNutrienSapi? _kebutuhanNutrien;
   HasilRekomendasiPakan? _hasilRekomendasi;
+  StatusPerhitungan _statusPerhitungan = StatusPerhitungan.belumDihitung;
+  String? _pesanPerhitungan;
+  int _tahapAktif = 0;
 
   @override
   void initState() {
     super.initState();
-    _kebutuhanNutrien = widget.kebutuhanAwal;
+    _repository = widget.repository ?? BahanPakanRepository();
+    _kebutuhanNutrien = _validasiKebutuhan(widget.kebutuhanAwal);
     _beratBadanController.addListener(_perbaruiPreviewKebutuhan);
     _produksiSusuController.addListener(_perbaruiPreviewKebutuhan);
     _lemakSusuController.addListener(_perbaruiPreviewKebutuhan);
@@ -87,18 +101,65 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     setState(() {
       _kebutuhanNutrien = kebutuhan;
       _hasilRekomendasi = null;
+      _statusPerhitungan = StatusPerhitungan.belumDihitung;
+      _pesanPerhitungan =
+          kebutuhan == null &&
+              (_beratBadanController.text.trim().isNotEmpty ||
+                  _produksiSusuController.text.trim().isNotEmpty ||
+                  _lemakSusuController.text.trim().isNotEmpty)
+          ? 'Target kebutuhan nutrien tidak valid.'
+          : null;
     });
   }
 
-  List<BahanPakan> get _opsiHijauan => _semuaBahan.where(_isHijauan).toList();
+  List<BahanPakan> get _opsiHijauan =>
+      _semuaBahan.where(isBahanHijauan).toList();
   List<BahanPakan> get _opsiKonsentrat =>
-      _semuaBahan.where(_isKonsentrat).toList();
+      _semuaBahan.where(isBahanKonsentrat).toList();
+
+  List<BahanPakan> _opsiHijauanUntuk(int index) {
+    final selectedIds = <int>{
+      ..._hijauanTerpilih
+          .asMap()
+          .entries
+          .where((entry) => entry.key != index)
+          .map((entry) => entry.value?.id)
+          .whereType<int>(),
+      ..._konsentratTerpilih.map((item) => item?.id).whereType<int>(),
+    };
+    final currentId = _hijauanTerpilih[index]?.id;
+    return _opsiHijauan
+        .where((item) => item.id == currentId || !selectedIds.contains(item.id))
+        .toList();
+  }
+
+  List<BahanPakan> _opsiKonsentratUntuk(int index) {
+    final selectedIds = <int>{
+      ..._konsentratTerpilih
+          .asMap()
+          .entries
+          .where((entry) => entry.key != index)
+          .map((entry) => entry.value?.id)
+          .whereType<int>(),
+      ..._hijauanTerpilih.map((item) => item?.id).whereType<int>(),
+    };
+    final currentId = _konsentratTerpilih[index]?.id;
+    return _opsiKonsentrat
+        .where((item) => item.id == currentId || !selectedIds.contains(item.id))
+        .toList();
+  }
+
+  void _invalidasiRekomendasi() {
+    _hasilRekomendasi = null;
+    _statusPerhitungan = StatusPerhitungan.belumDihitung;
+    _pesanPerhitungan = null;
+  }
 
   void _ubahFisiologi(FisiologiSapi? value) {
     if (value == null) return;
     setState(() {
       _fisiologi = value;
-      _hasilRekomendasi = null;
+      _invalidasiRekomendasi();
       if (_fisiologi != FisiologiSapi.laktasi) {
         _produksiSusuController.clear();
         _lemakSusuController.clear();
@@ -117,36 +178,48 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
       _beratBadanController.clear();
       _produksiSusuController.clear();
       _lemakSusuController.clear();
-      _kebutuhanNutrien = widget.kebutuhanAwal;
-      _hasilRekomendasi = null;
+      _kebutuhanNutrien = _validasiKebutuhan(widget.kebutuhanAwal);
+      _invalidasiRekomendasi();
     });
   }
 
   void _tambahHijauan() {
+    if (_hijauanTerpilih.length >= maxSelectedFeedsPerGroup) {
+      _showSnackBar('Maksimal $maxSelectedFeedsPerGroup bahan hijauan.');
+      return;
+    }
     setState(() {
       _hijauanTerpilih = [..._hijauanTerpilih, null];
-      _hasilRekomendasi = null;
+      _hijauanRowKeys.add(ValueKey(_nextFeedRowKey++));
+      _invalidasiRekomendasi();
     });
   }
 
   void _tambahKonsentrat() {
+    if (_konsentratTerpilih.length >= maxSelectedFeedsPerGroup) {
+      _showSnackBar('Maksimal $maxSelectedFeedsPerGroup bahan konsentrat.');
+      return;
+    }
     setState(() {
       _konsentratTerpilih = [..._konsentratTerpilih, null];
-      _hasilRekomendasi = null;
+      _konsentratRowKeys.add(ValueKey(_nextFeedRowKey++));
+      _invalidasiRekomendasi();
     });
   }
 
   void _hapusHijauan(int index) {
     setState(() {
       _hijauanTerpilih = List.of(_hijauanTerpilih)..removeAt(index);
-      _hasilRekomendasi = null;
+      _hijauanRowKeys.removeAt(index);
+      _invalidasiRekomendasi();
     });
   }
 
   void _hapusKonsentrat(int index) {
     setState(() {
       _konsentratTerpilih = List.of(_konsentratTerpilih)..removeAt(index);
-      _hasilRekomendasi = null;
+      _konsentratRowKeys.removeAt(index);
+      _invalidasiRekomendasi();
     });
   }
 
@@ -155,8 +228,9 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     final duplikatKelompok = _hijauanTerpilih.asMap().entries.any((entry) {
       return entry.key != index && entry.value?.id == value.id;
     });
-    final duplikatLintasKelompok =
-        _konsentratTerpilih.any((item) => item?.id == value.id);
+    final duplikatLintasKelompok = _konsentratTerpilih.any(
+      (item) => item?.id == value.id,
+    );
 
     if (duplikatKelompok || duplikatLintasKelompok) {
       _showSnackBar('Bahan pakan tersebut sudah dipilih.');
@@ -165,7 +239,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
 
     setState(() {
       _hijauanTerpilih[index] = value;
-      _hasilRekomendasi = null;
+      _invalidasiRekomendasi();
     });
   }
 
@@ -174,8 +248,9 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     final duplikatKelompok = _konsentratTerpilih.asMap().entries.any((entry) {
       return entry.key != index && entry.value?.id == value.id;
     });
-    final duplikatLintasKelompok =
-        _hijauanTerpilih.any((item) => item?.id == value.id);
+    final duplikatLintasKelompok = _hijauanTerpilih.any(
+      (item) => item?.id == value.id,
+    );
 
     if (duplikatKelompok || duplikatLintasKelompok) {
       _showSnackBar('Bahan pakan tersebut sudah dipilih.');
@@ -184,16 +259,21 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
 
     setState(() {
       _konsentratTerpilih[index] = value;
-      _hasilRekomendasi = null;
+      _invalidasiRekomendasi();
     });
   }
 
   void _hitungRekomendasi() {
-    if (!_formKey.currentState!.validate()) return;
-
     final kebutuhan = _hitungKebutuhanDariForm();
     if (kebutuhan == null) {
-      _showSnackBar('Lengkapi kebutuhan nutrien sapi terlebih dahulu.');
+      _gagalMenghitung('Lengkapi kebutuhan nutrien sapi terlebih dahulu.');
+      return;
+    }
+
+    if (_repository.semuaData.any((bahan) => !bahan.isValidForCalculation())) {
+      _gagalMenghitung(
+        'Data bahan pakan tersimpan tidak valid. Periksa nilai nutrisi, harga, dan BK.',
+      );
       return;
     }
 
@@ -201,42 +281,180 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     final konsentrat = _konsentratTerpilih.whereType<BahanPakan>().toList();
 
     if (hijauan.isEmpty) {
-      _showSnackBar('Tambahkan minimal satu hijauan.');
+      _gagalMenghitung('Tambahkan minimal satu hijauan.');
       return;
     }
 
     if (konsentrat.isEmpty) {
-      _showSnackBar('Tambahkan minimal satu konsentrat.');
+      _gagalMenghitung('Tambahkan minimal satu konsentrat.');
       return;
     }
 
     if (_hijauanTerpilih.any((item) => item == null) ||
         _konsentratTerpilih.any((item) => item == null)) {
-      _showSnackBar('Lengkapi semua pilihan bahan pakan terlebih dahulu.');
+      _gagalMenghitung('Lengkapi semua pilihan bahan pakan terlebih dahulu.');
       return;
     }
 
     final semuaBahan = [...hijauan, ...konsentrat];
     final adaBkKosong = semuaBahan.any((item) => item.bk <= 0);
     if (adaBkKosong) {
-      _showSnackBar('Semua bahan pakan harus memiliki nilai BK lebih dari 0.');
+      _gagalMenghitung(
+        'Semua bahan pakan harus memiliki nilai BK lebih dari 0.',
+      );
       return;
     }
 
-    final hasil = PerhitunganRekomendasiPakan.hitung(
-      kebutuhan: kebutuhan,
-      bahanHijauan: hijauan,
-      bahanKonsentrat: konsentrat,
-    );
+    try {
+      final hasil = PerhitunganRekomendasiPakan.hitung(
+        kebutuhan: kebutuhan,
+        bahanHijauan: hijauan,
+        bahanKonsentrat: konsentrat,
+      );
 
-    setState(() {
-      _kebutuhanNutrien = kebutuhan;
-      _hasilRekomendasi = hasil;
-    });
+      if (!_hasilRekomendasiValid(hasil)) {
+        _gagalMenghitung('Hasil rekomendasi pakan tidak valid.');
+        return;
+      }
 
-    if (!hasil.isLkAman) {
-      _showSnackBar('LK melebihi batas 5% BK.');
+      setState(() {
+        _kebutuhanNutrien = kebutuhan;
+        _hasilRekomendasi = hasil;
+        _statusPerhitungan = StatusPerhitungan.berhasil;
+        _pesanPerhitungan = null;
+      });
+
+      if (!hasil.isLkAman) {
+        _showSnackBar('LK melebihi batas 5% BK.');
+      }
+    } catch (_) {
+      _gagalMenghitung('Rekomendasi pakan gagal dihitung.');
     }
+  }
+
+  void _gagalMenghitung(String pesan) {
+    setState(() {
+      _hasilRekomendasi = null;
+      _statusPerhitungan = StatusPerhitungan.gagal;
+      _pesanPerhitungan = pesan;
+    });
+  }
+
+  bool _validasiTahapSatu() {
+    final valid = _formKey.currentState?.validate() ?? false;
+    if (!valid) return false;
+    return _hitungKebutuhanDariForm() != null;
+  }
+
+  bool _validasiTahapDua() {
+    if (_kebutuhanNutrien == null) {
+      _gagalMenghitung('Lengkapi Data Sapi terlebih dahulu.');
+      return false;
+    }
+
+    if (_repository.semuaData.any((bahan) => !bahan.isValidForCalculation())) {
+      _gagalMenghitung(
+        'Data bahan pakan tersimpan tidak valid. Periksa nilai nutrisi, harga, dan BK.',
+      );
+      return false;
+    }
+
+    if (_hijauanTerpilih.length > maxSelectedFeedsPerGroup) {
+      _gagalMenghitung('Maksimal $maxSelectedFeedsPerGroup bahan hijauan.');
+      return false;
+    }
+    if (_konsentratTerpilih.length > maxSelectedFeedsPerGroup) {
+      _gagalMenghitung('Maksimal $maxSelectedFeedsPerGroup bahan konsentrat.');
+      return false;
+    }
+
+    if (_hijauanTerpilih.isEmpty) {
+      _gagalMenghitung('Tambahkan minimal satu hijauan.');
+      return false;
+    }
+    if (_konsentratTerpilih.isEmpty) {
+      _gagalMenghitung('Tambahkan minimal satu konsentrat.');
+      return false;
+    }
+    if (_hijauanTerpilih.any((item) => item == null) ||
+        _konsentratTerpilih.any((item) => item == null)) {
+      _gagalMenghitung('Lengkapi semua pilihan bahan pakan terlebih dahulu.');
+      return false;
+    }
+
+    final hijauan = _hijauanTerpilih.whereType<BahanPakan>().toList();
+    final konsentrat = _konsentratTerpilih.whereType<BahanPakan>().toList();
+    if (!hijauan.any(isBahanHijauan)) {
+      _gagalMenghitung('Pilih minimal satu bahan kategori hijauan.');
+      return false;
+    }
+    if (!konsentrat.any(isBahanKonsentrat)) {
+      _gagalMenghitung('Pilih minimal satu bahan non-hijauan.');
+      return false;
+    }
+    if ([...hijauan, ...konsentrat].any((item) => item.bk <= 0)) {
+      _gagalMenghitung(
+        'Semua bahan pakan harus memiliki nilai BK lebih dari 0.',
+      );
+      return false;
+    }
+    return true;
+  }
+
+  void _lanjutTahap() {
+    if (_tahapAktif == 0) {
+      if (_validasiTahapSatu()) {
+        setState(() => _tahapAktif = 1);
+      }
+      return;
+    }
+
+    if (_tahapAktif == 1 && _validasiTahapDua()) {
+      _hitungRekomendasi();
+      if (_statusPerhitungan == StatusPerhitungan.berhasil) {
+        setState(() => _tahapAktif = 2);
+      }
+    }
+  }
+
+  void _kembaliTahap() {
+    if (_tahapAktif == 0) {
+      Navigator.of(context).pop();
+      return;
+    }
+    setState(() => _tahapAktif--);
+  }
+
+  bool get _hasEnteredData =>
+      _beratBadanController.text.trim().isNotEmpty ||
+      _produksiSusuController.text.trim().isNotEmpty ||
+      _lemakSusuController.text.trim().isNotEmpty ||
+      _hijauanTerpilih.isNotEmpty ||
+      _konsentratTerpilih.isNotEmpty;
+
+  Future<void> _handleSystemBack() async {
+    if (!_hasEnteredData) {
+      if (mounted) Navigator.of(context).pop();
+      return;
+    }
+    final shouldExit = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Keluar dari fitur?'),
+        content: const Text('Data yang sudah diisi akan hilang.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Keluar'),
+          ),
+        ],
+      ),
+    );
+    if (shouldExit == true && mounted) Navigator.of(context).pop();
   }
 
   KebutuhanNutrienSapi? _hitungKebutuhanDariForm() {
@@ -244,7 +462,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
         _beratBadanController.text.trim().isEmpty &&
         _produksiSusuController.text.trim().isEmpty &&
         _lemakSusuController.text.trim().isEmpty) {
-      return widget.kebutuhanAwal;
+      return _validasiKebutuhan(widget.kebutuhanAwal);
     }
 
     final beratBadan = _parseDouble(_beratBadanController.text);
@@ -257,21 +475,125 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
       return null;
     }
 
-    return PerhitunganKebutuhanNutrien.hitungKebutuhan(
-      fisiologi: _fisiologi,
-      beratBadan: beratBadan,
-      produksiSusuLiter:
-          _fisiologi == FisiologiSapi.laktasi ? produksiSusu : null,
-      lemakSusuPersen:
-          _fisiologi == FisiologiSapi.laktasi ? lemakSusu : null,
-    );
+    try {
+      final kebutuhan = PerhitunganKebutuhanNutrien.hitungKebutuhan(
+        fisiologi: _fisiologi,
+        beratBadan: beratBadan,
+        produksiSusuLiter: _fisiologi == FisiologiSapi.laktasi
+            ? produksiSusu
+            : null,
+        lemakSusuPersen: _fisiologi == FisiologiSapi.laktasi ? lemakSusu : null,
+      );
+      return _validasiKebutuhan(kebutuhan);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  KebutuhanNutrienSapi? _validasiKebutuhan(KebutuhanNutrienSapi? kebutuhan) {
+    if (kebutuhan == null) return null;
+    final nilai = [
+      kebutuhan.kebutuhanBkKg,
+      kebutuhan.kebutuhanProteinKg,
+      kebutuhan.kebutuhanTdnKg,
+      kebutuhan.kebutuhanCaGram,
+      kebutuhan.kebutuhanPGram,
+    ];
+    if (nilai.any(
+      (item) =>
+          !IndonesianNumberFormatter.isSupportedMagnitude(item) || item < 0,
+    )) {
+      return null;
+    }
+    return kebutuhan;
   }
 
   double _parseDouble(String value) {
-    return double.tryParse(value.replaceAll(',', '.')) ?? 0;
+    final parsed = IndonesianNumberFormatter.tryParse(value)?.toDouble();
+    return parsed != null &&
+            IndonesianNumberFormatter.isSupportedMagnitude(parsed)
+        ? parsed
+        : 0;
   }
 
-  String _format(double value) => value.toStringAsFixed(2);
+  String _format(double value) =>
+      IndonesianNumberFormatter.format(value, decimals: 2);
+
+  bool _nilaiValid(Iterable<double> values) => values.every(
+    (value) =>
+        IndonesianNumberFormatter.isSupportedMagnitude(value) && value >= 0,
+  );
+
+  bool _hasilRekomendasiValid(HasilRekomendasiPakan hasil) {
+    final nilai = [
+      hasil.kebutuhan.bkKg,
+      hasil.kebutuhan.pkKg,
+      hasil.kebutuhan.tdnKg,
+      hasil.kebutuhan.caGram,
+      hasil.kebutuhan.pGram,
+      hasil.targetBkHijauan,
+      hasil.targetBkKonsentrat,
+      hasil.totalHijauan.bkKg,
+      hasil.totalHijauan.pkKg,
+      hasil.totalHijauan.tdnKg,
+      hasil.totalHijauan.caGram,
+      hasil.totalHijauan.pGram,
+      hasil.totalHijauan.abuKg,
+      hasil.totalHijauan.lkKg,
+      hasil.totalHijauan.skKg,
+      hasil.totalHijauan.betnKg,
+      hasil.totalKonsentrat.bkKg,
+      hasil.totalKonsentrat.pkKg,
+      hasil.totalKonsentrat.tdnKg,
+      hasil.totalKonsentrat.caGram,
+      hasil.totalKonsentrat.pGram,
+      hasil.totalKonsentrat.abuKg,
+      hasil.totalKonsentrat.lkKg,
+      hasil.totalKonsentrat.skKg,
+      hasil.totalKonsentrat.betnKg,
+      hasil.totalGabungan.bkKg,
+      hasil.totalGabungan.pkKg,
+      hasil.totalGabungan.tdnKg,
+      hasil.totalGabungan.caGram,
+      hasil.totalGabungan.pGram,
+      hasil.totalGabungan.abuKg,
+      hasil.totalGabungan.lkKg,
+      hasil.totalGabungan.skKg,
+      hasil.totalGabungan.betnKg,
+      hasil.lkPersenDariBk,
+      ...hasil.rekomendasiHijauan.expand(
+        (item) => [
+          item.asFedKg,
+          item.bkKg,
+          item.kontribusi.bkKg,
+          item.kontribusi.pkKg,
+          item.kontribusi.tdnKg,
+          item.kontribusi.caGram,
+          item.kontribusi.pGram,
+          item.kontribusi.abuKg,
+          item.kontribusi.lkKg,
+          item.kontribusi.skKg,
+          item.kontribusi.betnKg,
+        ],
+      ),
+      ...hasil.rekomendasiKonsentrat.expand(
+        (item) => [
+          item.asFedKg,
+          item.bkKg,
+          item.kontribusi.bkKg,
+          item.kontribusi.pkKg,
+          item.kontribusi.tdnKg,
+          item.kontribusi.caGram,
+          item.kontribusi.pGram,
+          item.kontribusi.abuKg,
+          item.kontribusi.lkKg,
+          item.kontribusi.skKg,
+          item.kontribusi.betnKg,
+        ],
+      ),
+    ];
+    return _nilaiValid(nilai);
+  }
 
   String _labelFisiologi(FisiologiSapi fisiologi) {
     switch (fisiologi) {
@@ -284,37 +606,27 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     }
   }
 
-  bool _isHijauan(BahanPakan bahan) {
-    final kategori = bahan.kategori.toLowerCase();
-    return kategori.contains('hijauan') ||
-        kategori.contains('rumput') ||
-        kategori.contains('forage');
-  }
-
-  bool _isKonsentrat(BahanPakan bahan) {
-    final kategori = bahan.kategori.toLowerCase();
-    return kategori.contains('konsentrat') ||
-        kategori.contains('energi') ||
-        kategori.contains('protein') ||
-        kategori.contains('pellet') ||
-        kategori.contains('pollard') ||
-        kategori.contains('dedak') ||
-        kategori.contains('singkong');
-  }
-
   String? _validasiBeratBadan(String? value) {
     if (value == null || value.trim().isEmpty) return 'BB wajib diisi';
-    final parsed = double.tryParse(value.replaceAll(',', '.'));
-    if (parsed == null) return 'Angka tidak valid';
+    final parsed = IndonesianNumberFormatter.tryParse(value)?.toDouble();
+    if (parsed == null ||
+        !IndonesianNumberFormatter.isSupportedMagnitude(parsed)) {
+      return 'Angka tidak valid';
+    }
     if (parsed <= 0) return 'BB harus lebih dari 0';
     return null;
   }
 
   String? _validasiProduksiSusu(String? value) {
     if (_fisiologi != FisiologiSapi.laktasi) return null;
-    if (value == null || value.trim().isEmpty) return 'Produksi susu wajib diisi';
-    final parsed = double.tryParse(value.replaceAll(',', '.'));
-    if (parsed == null) return 'Angka tidak valid';
+    if (value == null || value.trim().isEmpty) {
+      return 'Produksi susu wajib diisi';
+    }
+    final parsed = IndonesianNumberFormatter.tryParse(value)?.toDouble();
+    if (parsed == null ||
+        !IndonesianNumberFormatter.isSupportedMagnitude(parsed)) {
+      return 'Angka tidak valid';
+    }
     if (parsed <= 0) return 'Produksi susu harus lebih dari 0';
     return null;
   }
@@ -322,19 +634,44 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
   String? _validasiLemakSusu(String? value) {
     if (_fisiologi != FisiologiSapi.laktasi) return null;
     if (value == null || value.trim().isEmpty) return 'Lemak susu wajib diisi';
-    final parsed = double.tryParse(value.replaceAll(',', '.'));
-    if (parsed == null) return 'Angka tidak valid';
+    final parsed = IndonesianNumberFormatter.tryParse(value)?.toDouble();
+    if (parsed == null ||
+        !IndonesianNumberFormatter.isSupportedMagnitude(parsed)) {
+      return 'Angka tidak valid';
+    }
     if (parsed <= 0) return 'Lemak susu harus lebih dari 0';
     return null;
+  }
+
+  Widget _buildStatusPerhitungan() {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Gagal menghitung',
+            style: TextStyle(
+              color: AppColors.errorRed,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          if (_pesanPerhitungan != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              _pesanPerhitungan!,
+              style: const TextStyle(color: AppColors.errorRed),
+            ),
+          ],
+        ],
+      ),
+    );
   }
 
   void _showSnackBar(String message) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        behavior: SnackBarBehavior.floating,
-      ),
+      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
     );
   }
 
@@ -344,135 +681,281 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.backgroundCream,
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _errorMessage != null
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Text(_errorMessage!, textAlign: TextAlign.center),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) _handleSystemBack();
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.backgroundCream,
+        bottomNavigationBar: !_isLoading && _errorMessage == null
+            ? SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                  child: _buildNavigationControls(),
+                ),
+              )
+            : null,
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _errorMessage != null
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(_errorMessage!, textAlign: TextAlign.center),
+                ),
+              )
+: _buildStepperBody(),
+      ),
+    );
+  }
+
+  Widget _buildStepperBody() {
+    return Column(
+      children: [
+        AnimatedSize(
+          duration: const Duration(milliseconds: 275),
+          curve: Curves.easeInOut,
+          alignment: Alignment.topCenter,
+          child: _tahapAktif == 0
+              ? SizedBox(
+                  height: 210,
+                  child: CustomScrollView(
+                    slivers: [
+                      AppSliverHeader(
+                        title: 'Rekomendasi Pakan',
+                        subtitle: 'Dapatkan rekomendasi pakan sesuai kebutuhan sapi.',
+                        onBackTap: _handleSystemBack,
+                      ),
+                    ],
                   ),
                 )
-              : CustomScrollView(
-                  slivers: [
-                    const AppSliverHeader(
-                      title: 'Rekomendasi Pakan',
-                      subtitle:
-                          'Rekomendasi pemberian pakan untuk mencukupi kebutuhan nutrisi ternak.',
-                    ),
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildProfilCard(),
-                        if (_kebutuhanNutrien != null) ...[
-                          const SizedBox(height: 16),
-                          _buildTargetBkPakanCard(_kebutuhanNutrien!),
-                        ],
-                        const SizedBox(height: 16),
-                        _buildFeedSelectionCard(
-                          title: 'Hijauan yang Dimiliki',
-                          subtitle:
-                              'Pilih bahan hijauan yang tersedia. Jumlah kg akan dihitung otomatis.',
-                          icon: Icons.grass_rounded,
-                          accentColor: const Color(0xFFB9E7C9),
-                          avatarColor: const Color(0xFFDFF5E7),
-                          items: _hijauanTerpilih,
-                          opsi: _opsiHijauan,
-                          onAdd: _tambahHijauan,
-                          onRemove: _hapusHijauan,
-                          onChanged: _ubahHijauan,
-                          buttonLabel: 'Tambah Hijauan',
-                          emptyTitle: 'Belum ada hijauan yang dipilih.',
-                          emptyIcon: Icons.park_outlined,
-                        ),
-                        const SizedBox(height: 16),
-                        _buildFeedSelectionCard(
-                          title: 'Konsentrat yang Dimiliki',
-                          subtitle:
-                              'Pilih bahan konsentrat yang tersedia. Sistem akan melakukan pencarian kombinasi terbaik.',
-                          icon: Icons.inventory_2_outlined,
-                          accentColor: const Color(0xFFF7D8A8),
-                          avatarColor: const Color(0xFFFFEBD1),
-                          items: _konsentratTerpilih,
-                          opsi: _opsiKonsentrat,
-                          onAdd: _tambahKonsentrat,
-                          onRemove: _hapusKonsentrat,
-                          onChanged: _ubahKonsentrat,
-                          buttonLabel: 'Tambah Konsentrat',
-                          emptyTitle: 'Belum ada konsentrat yang dipilih.',
-                          emptyIcon: Icons.food_bank_outlined,
-                        ),
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 52,
-                          child: FilledButton.icon(
-                            onPressed: _hitungRekomendasi,
-                            icon: const Icon(Icons.calculate_outlined),
-                            label: const Text('Hitung Rekomendasi'),
-                            style: FilledButton.styleFrom(
-                              backgroundColor: AppColors.accentOrange,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                            ),
-                          ),
-                        ),
-                        if (_hasilRekomendasi != null) ...[
-                          const SizedBox(height: 24),
-                          Container(
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              color: AppColors.expertPurple.withValues(alpha: 0.08), // Soft brand purple background
-                              borderRadius: BorderRadius.circular(24),
-                              border: Border.all(
-                                color: AppColors.expertPurple.withValues(alpha: 0.18),
-                                width: 1.5,
-                              ),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.auto_awesome_rounded,
-                                      color: AppColors.expertPurple,
-                                      size: 24,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      'Hasil Analisis Ransum Pakan',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w900,
-                                        color: AppColors.expertPurple,
-                                        letterSpacing: -0.5,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 20),
-                                _buildCombinedRecommendationCard(_hasilRekomendasi!),
-                                const SizedBox(height: 16),
-                                _buildTotalSummaryCard(_hasilRekomendasi!),
-                                const SizedBox(height: 16),
-                                _buildEvaluationCard(_hasilRekomendasi!),
-                              ],
-                            ),
-                          ),
-                        ],
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
+              : _buildCompactHeader(),
+        ),
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildProgressIndicator(),
+                const SizedBox(height: 16),
+                _buildTahapAktif(),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCompactHeader() {
+    const labels = ['Data Sapi', 'Bahan Pakan Tersedia', 'Hasil Rekomendasi'];
+
+    return Container(
+      color: AppColors.primaryBlue,
+      padding: EdgeInsets.only(
+        top: MediaQuery.paddingOf(context).top,
+        left: 8,
+        right: 16,
+      ),
+      child: SizedBox(
+        height: 56,
+        child: Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: _kembaliTahap,
+            ),
+            Expanded(
+              child: Text(
+                'Tahap ${_tahapAktif + 1} · ${labels[_tahapAktif]}',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
                 ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Text(
+              '${_tahapAktif + 1}/3',
+              style: const TextStyle(color: Colors.white),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProgressIndicator() {
+    const labels = ['Data Sapi', 'Bahan Pakan Tersedia', 'Hasil Rekomendasi'];
+
+    return _buildSectionCard(
+      title: 'Tahap ${_tahapAktif + 1} dari ${labels.length}',
+      icon: Icons.linear_scale_outlined,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            labels[_tahapAktif],
+            style: const TextStyle(
+              color: AppColors.primaryBlue,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 12),
+          LinearProgressIndicator(
+            value: (_tahapAktif + 1) / labels.length,
+            minHeight: 8,
+            borderRadius: BorderRadius.circular(8),
+            color: AppColors.primaryBlue,
+            backgroundColor: AppColors.backgroundCream,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTahapAktif() {
+    switch (_tahapAktif) {
+      case 0:
+        return Column(
+          children: [
+            _buildProfilCard(),
+            if (_pesanPerhitungan != null) ...[
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  _pesanPerhitungan!,
+                  style: const TextStyle(color: AppColors.errorRed),
+                ),
+              ),
+            ],
+          ],
+        );
+      case 1:
+        return Column(
+          children: [
+            if (_kebutuhanNutrien != null) ...[
+              _buildTargetBkPakanCard(_kebutuhanNutrien!),
+              const SizedBox(height: 16),
+            ],
+            _buildFeedSelectionCard(
+              title: 'Hijauan yang Dimiliki',
+              subtitle:
+                  'Pilih bahan hijauan yang tersedia. Jumlah kg akan dihitung otomatis.',
+              icon: Icons.grass_rounded,
+              accentColor: const Color(0xFFB9E7C9),
+              avatarColor: const Color(0xFFDFF5E7),
+              items: _hijauanTerpilih,
+              rowKeys: _hijauanRowKeys,
+              opsiForIndex: _opsiHijauanUntuk,
+              onAdd: _tambahHijauan,
+              onRemove: _hapusHijauan,
+              onChanged: _ubahHijauan,
+              buttonLabel: 'Tambah Hijauan',
+              emptyTitle: 'Belum ada hijauan yang dipilih.',
+              emptyIcon: Icons.park_outlined,
+            ),
+            const SizedBox(height: 16),
+            _buildFeedSelectionCard(
+              title: 'Konsentrat yang Dimiliki',
+              subtitle:
+                  'Pilih bahan konsentrat yang tersedia. Sistem akan melakukan pencarian kombinasi terbaik.',
+              icon: Icons.inventory_2_outlined,
+              accentColor: const Color(0xFFF7D8A8),
+              avatarColor: const Color(0xFFFFEBD1),
+              items: _konsentratTerpilih,
+              rowKeys: _konsentratRowKeys,
+              opsiForIndex: _opsiKonsentratUntuk,
+              onAdd: _tambahKonsentrat,
+              onRemove: _hapusKonsentrat,
+              onChanged: _ubahKonsentrat,
+              buttonLabel: 'Tambah Konsentrat',
+              emptyTitle: 'Belum ada konsentrat yang dipilih.',
+              emptyIcon: Icons.food_bank_outlined,
+            ),
+            if (_statusPerhitungan == StatusPerhitungan.gagal) ...[
+              const SizedBox(height: 12),
+              _buildStatusPerhitungan(),
+            ],
+          ],
+        );
+      case 2:
+        return _hasilRekomendasi == null
+            ? _buildSectionCard(
+                title: 'Hasil Rekomendasi',
+                icon: Icons.auto_awesome_rounded,
+                child: Text(
+                  _pesanPerhitungan ??
+                      'Lengkapi tahap sebelumnya untuk melihat hasil rekomendasi.',
+                ),
+              )
+            : Column(
+                children: [
+                  _buildSectionCard(
+                    title: 'Hasil Rekomendasi',
+                    icon: Icons.auto_awesome_rounded,
+                    child: _buildRecommendationResult(),
+                  ),
+                ],
+              );
+    }
+    return const SizedBox.shrink();
+  }
+
+  Widget _buildNavigationControls() {
+    if (_tahapAktif == 2) return const SizedBox.shrink();
+    return SizedBox(
+      width: double.infinity,
+      child: FilledButton(onPressed: _lanjutTahap, child: const Text('Lanjut')),
+    );
+  }
+
+  Widget _buildRecommendationResult() {
+    final hasil = _hasilRekomendasi!;
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.expertPurple.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: AppColors.expertPurple.withValues(alpha: 0.18),
+          width: 1.5,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.auto_awesome_rounded,
+                color: AppColors.expertPurple,
+                size: 24,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Hasil Analisis Ransum Pakan',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.expertPurple,
+                  letterSpacing: -0.5,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          _buildCombinedRecommendationCard(hasil),
+          const SizedBox(height: 16),
+          _buildTotalSummaryCard(hasil),
+          const SizedBox(height: 16),
+          _buildEvaluationCard(hasil),
+        ],
+      ),
     );
   }
 
@@ -543,7 +1026,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
 
   Widget _buildProfilCard() {
     return _buildSectionCard(
-      title: 'Profil Sapi / Kebutuhan Nutrien',
+      title: 'Data Sapi',
       icon: Icons.pets_outlined,
       subtitle:
           'Isi profil sapi atau gunakan data dari Cek Kecukupan untuk menampilkan kebutuhan nutrien.',
@@ -590,7 +1073,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                 label: '% Lemak Susu',
                 suffix: '%',
                 validator: _validasiLemakSusu,
-                hintText: 'Misal: 3.5',
+                hintText: 'Misal: 3,5',
               ),
               const SizedBox(height: 8),
               Row(
@@ -642,11 +1125,26 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                 mainAxisSpacing: 8,
                 childAspectRatio: 1.3,
                 children: [
-                  _buildNutrientMiniCard('BK (kg)', _format(_kebutuhanNutrien!.kebutuhanBkKg)),
-                  _buildNutrientMiniCard('PK (kg)', _format(_kebutuhanNutrien!.kebutuhanProteinKg)),
-                  _buildNutrientMiniCard('TDN (kg)', _format(_kebutuhanNutrien!.kebutuhanTdnKg)),
-                  _buildNutrientMiniCard('Ca (g)', _format(_kebutuhanNutrien!.kebutuhanCaGram)),
-                  _buildNutrientMiniCard('P (g)', _format(_kebutuhanNutrien!.kebutuhanPGram)),
+                  _buildNutrientMiniCard(
+                    'BK (kg)',
+                    _format(_kebutuhanNutrien!.kebutuhanBkKg),
+                  ),
+                  _buildNutrientMiniCard(
+                    'PK (kg)',
+                    _format(_kebutuhanNutrien!.kebutuhanProteinKg),
+                  ),
+                  _buildNutrientMiniCard(
+                    'TDN (kg)',
+                    _format(_kebutuhanNutrien!.kebutuhanTdnKg),
+                  ),
+                  _buildNutrientMiniCard(
+                    'Ca (g)',
+                    _format(_kebutuhanNutrien!.kebutuhanCaGram),
+                  ),
+                  _buildNutrientMiniCard(
+                    'P (g)',
+                    _format(_kebutuhanNutrien!.kebutuhanPGram),
+                  ),
                 ],
               ),
             ],
@@ -696,7 +1194,8 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     required Color accentColor,
     required Color avatarColor,
     required List<BahanPakan?> items,
-    required List<BahanPakan> opsi,
+    required List<ValueKey<int>> rowKeys,
+    required List<BahanPakan> Function(int index) opsiForIndex,
     required VoidCallback onAdd,
     required void Function(int index) onRemove,
     required void Function(int index, BahanPakan? value) onChanged,
@@ -715,17 +1214,21 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
             _buildEmptyState(
               icon: emptyIcon,
               title: emptyTitle,
-              subtitle: 'Tambahkan bahan untuk mulai menghitung rekomendasi otomatis.',
+              subtitle:
+                  'Tambahkan bahan untuk mulai menghitung rekomendasi otomatis.',
             )
           else
             ...List.generate(
               items.length,
               (index) => Padding(
-                padding: EdgeInsets.only(bottom: index == items.length - 1 ? 0 : 12),
+                padding: EdgeInsets.only(
+                  bottom: index == items.length - 1 ? 0 : 12,
+                ),
                 child: _buildFeedSelectionItem(
+                  key: rowKeys[index],
                   index: index,
                   item: items[index],
-                  opsi: opsi,
+                  opsi: opsiForIndex(index),
                   onRemove: () => onRemove(index),
                   onChanged: (value) => onChanged(index, value),
                   avatarColor: avatarColor,
@@ -748,6 +1251,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
   }
 
   Widget _buildFeedSelectionItem({
+    required Key key,
     required int index,
     required BahanPakan? item,
     required List<BahanPakan> opsi,
@@ -757,6 +1261,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     required Color accentColor,
   }) {
     return Container(
+      key: key,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -808,26 +1313,29 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
             items: opsi.map((bahan) {
               return DropdownMenuItem<BahanPakan>(
                 value: bahan,
-                child: Text(
-                  bahan.nama,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                child: Text(bahan.nama, overflow: TextOverflow.ellipsis),
               );
             }).toList(),
             onChanged: onChanged,
           ),
           if (item != null) ...[
             const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                _buildInfoChip('BK ${_format(item.bk)}%'),
-                _buildInfoChip('PK ${_format(item.protein)}%'),
-                _buildInfoChip('TDN ${_format(item.tdn)}%'),
-                _buildInfoChip('LK ${_format(item.lemak)}%'),
-              ],
-            ),
+            if (!item.isValidForCalculation(requirePositiveBk: true))
+              const Text(
+                'Data bahan pakan tidak valid.',
+                style: TextStyle(color: AppColors.errorRed),
+              )
+            else
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _buildInfoChip('BK ${_format(item.bk)}%'),
+                  _buildInfoChip('PK ${_format(item.protein)}%'),
+                  _buildInfoChip('TDN ${_format(item.tdn)}%'),
+                  _buildInfoChip('LK ${_format(item.lemak)}%'),
+                ],
+              ),
           ],
         ],
       ),
@@ -841,14 +1349,19 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     return _buildSectionCard(
       title: 'Rencana Ransum Pakan',
       icon: Icons.assignment_outlined,
-      subtitle: 'Proporsi pemberian pakan rekomendasi untuk memenuhi kebutuhan ternak.',
+      subtitle:
+          'Proporsi pemberian pakan rekomendasi untuk memenuhi kebutuhan ternak.',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Sub-bagian Hijauan
           Row(
             children: [
-              const Icon(Icons.grass_rounded, color: AppColors.secondaryGreen, size: 20),
+              const Icon(
+                Icons.grass_rounded,
+                color: AppColors.secondaryGreen,
+                size: 20,
+              ),
               const SizedBox(width: 8),
               Text(
                 'Hijauan',
@@ -889,7 +1402,11 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
           // Sub-bagian Konsentrat
           Row(
             children: [
-              const Icon(Icons.restaurant_menu_outlined, color: AppColors.accentOrange, size: 20),
+              const Icon(
+                Icons.restaurant_menu_outlined,
+                color: AppColors.accentOrange,
+                size: 20,
+              ),
               const SizedBox(width: 8),
               Text(
                 'Konsentrat',
@@ -943,10 +1460,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
         children: [
           Text(
             item.bahan.nama,
-            style: const TextStyle(
-              fontWeight: FontWeight.w800,
-              fontSize: 16,
-            ),
+            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
           ),
           const SizedBox(height: 10),
           Text(
@@ -961,10 +1475,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
           const SizedBox(height: 4),
           Text(
             'BK: ${_format(item.bkKg)} kg',
-            style: const TextStyle(
-              fontSize: 12,
-              color: AppColors.textLight,
-            ),
+            style: const TextStyle(fontSize: 12, color: AppColors.textLight),
           ),
         ],
       ),
@@ -973,7 +1484,8 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
 
   Widget _buildTotalSummaryCard(HasilRekomendasiPakan hasil) {
     final total = hasil.totalGabungan;
-    final totalAsFed = _hitungTotalAsFed(hasil.rekomendasiHijauan) +
+    final totalAsFed =
+        _hitungTotalAsFed(hasil.rekomendasiHijauan) +
         _hitungTotalAsFed(hasil.rekomendasiKonsentrat);
 
     return _buildSectionCard(
@@ -987,13 +1499,19 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
         mainAxisSpacing: 12,
         childAspectRatio: 1.55,
         children: [
-          _buildNutrientMiniCard('Total As Fed', '${_format(totalAsFed)} kg/ekor/hari'),
+          _buildNutrientMiniCard(
+            'Total As Fed',
+            '${_format(totalAsFed)} kg/ekor/hari',
+          ),
           _buildNutrientMiniCard('Total BK', '${_format(total.bkKg)} kg'),
           _buildNutrientMiniCard('Total PK', '${_format(total.pkKg)} kg'),
           _buildNutrientMiniCard('Total TDN', '${_format(total.tdnKg)} kg'),
           _buildNutrientMiniCard('Total Ca', '${_format(total.caGram)} gram'),
           _buildNutrientMiniCard('Total P', '${_format(total.pGram)} gram'),
-          _buildNutrientMiniCard('LK', '${_format(hasil.lkPersenDariBk)}% dari BK'),
+          _buildNutrientMiniCard(
+            'LK',
+            '${_format(hasil.lkPersenDariBk)}% dari BK',
+          ),
           _buildNutrientMiniCard('LK Total', '${_format(total.lkKg)} kg'),
         ],
       ),
@@ -1125,8 +1643,8 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     final statusColor = status == 'Pas'
         ? AppColors.primaryGreen
         : status == 'Kurang'
-            ? AppColors.errorRed
-            : const Color(0xFFB8571B);
+        ? AppColors.errorRed
+        : const Color(0xFFB8571B);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -1178,10 +1696,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
             ),
             child: Text(
               status,
-              style: TextStyle(
-                color: statusColor,
-                fontWeight: FontWeight.w700,
-              ),
+              style: TextStyle(color: statusColor, fontWeight: FontWeight.w700),
             ),
           ),
         ],
@@ -1336,10 +1851,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
   Widget _buildFieldLabel(String label) {
     return Text(
       label,
-      style: const TextStyle(
-        fontWeight: FontWeight.w700,
-        fontSize: 14,
-      ),
+      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
     );
   }
 

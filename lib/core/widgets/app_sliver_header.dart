@@ -37,9 +37,7 @@ class AppSliverHeader extends StatelessWidget {
       elevation: 0,
       backgroundColor: AppColors.primaryBlue,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          bottom: Radius.circular(20),
-        ),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
       ),
       leading: showBackButton
           ? IconButton(
@@ -61,10 +59,7 @@ class AppSliverHeader extends StatelessWidget {
               left: 24,
               right: 24,
               bottom: 32, // Adjusted padding for smaller radius
-              child: _ExpandedContent(
-                title: title,
-                subtitle: subtitle,
-              ),
+              child: _ExpandedContent(title: title, subtitle: subtitle),
             ),
           ],
         ),
@@ -80,8 +75,8 @@ class _CollapsedTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final settings =
-        context.dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
+    final settings = context
+        .dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
     if (settings == null) return const SizedBox.shrink();
 
     final deltaExtent = settings.maxExtent - settings.minExtent;
@@ -114,8 +109,8 @@ class _ExpandedContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final settings =
-        context.dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
+    final settings = context
+        .dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
     if (settings == null) return const SizedBox.shrink();
 
     final deltaExtent = settings.maxExtent - settings.minExtent;

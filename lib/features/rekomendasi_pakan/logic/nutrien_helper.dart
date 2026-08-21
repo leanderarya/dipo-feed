@@ -1,6 +1,11 @@
 import '../../../data/models/bahan_pakan.dart';
 import 'hasil_rekomendasi_pakan.dart';
 
+bool isBahanHijauan(BahanPakan bahan) =>
+    bahan.kategori.trim().toLowerCase() == 'hijauan';
+
+bool isBahanKonsentrat(BahanPakan bahan) => !isBahanHijauan(bahan);
+
 class NutrienHelper {
   static KontribusiNutrien hitungKontribusi({
     required BahanPakan bahan,
@@ -43,10 +48,7 @@ class NutrienHelper {
     return (hasil - target).abs() / denominator;
   }
 
-  static String statusNutrien({
-    required double hasil,
-    required double target,
-  }) {
+  static String statusNutrien({required double hasil, required double target}) {
     if (target == 0) return 'Pas';
     final selisihRelatif = (hasil - target) / target;
     if (selisihRelatif.abs() <= 0.05) return 'Pas';

@@ -1,3 +1,4 @@
+import '../../../core/utils/indonesian_number_formatter.dart';
 import '../../../data/models/fisiologi_sapi.dart';
 import 'narasi_evaluasi_standar.dart';
 import 'perhitungan_nutrisi.dart';
@@ -47,7 +48,8 @@ class EvaluasiStandarNutrienHelper {
       EvaluasiStandarNutrienItem(
         label: 'BK',
         hasil: hasil.bk,
-        standar: 'maks ${standar.bkMaks.toStringAsFixed(0)}%',
+        standar:
+            'maks ${IndonesianNumberFormatter.format(standar.bkMaks, decimals: 0)}%',
         status: hasil.bk > standar.bkMaks
             ? StatusStandarNutrien.berlebih
             : StatusStandarNutrien.sesuai,
@@ -55,7 +57,8 @@ class EvaluasiStandarNutrienHelper {
       EvaluasiStandarNutrienItem(
         label: 'Protein',
         hasil: hasil.protein,
-        standar: '${standar.proteinTarget.toStringAsFixed(0)}%',
+        standar:
+            '${IndonesianNumberFormatter.format(standar.proteinTarget, decimals: 0)}%',
         status: _nilaiTarget(
           hasil.protein,
           target: standar.proteinTarget,
@@ -65,7 +68,8 @@ class EvaluasiStandarNutrienHelper {
       EvaluasiStandarNutrienItem(
         label: 'Lemak',
         hasil: hasil.lemak,
-        standar: 'maks ${standar.lemakMaks.toStringAsFixed(0)}%',
+        standar:
+            'maks ${IndonesianNumberFormatter.format(standar.lemakMaks, decimals: 0)}%',
         status: hasil.lemak > standar.lemakMaks
             ? StatusStandarNutrien.berlebih
             : StatusStandarNutrien.sesuai,
@@ -73,7 +77,8 @@ class EvaluasiStandarNutrienHelper {
       EvaluasiStandarNutrienItem(
         label: 'TDN',
         hasil: hasil.tdn,
-        standar: 'min ${standar.tdnMin.toStringAsFixed(0)}%',
+        standar:
+            'min ${IndonesianNumberFormatter.format(standar.tdnMin, decimals: 0)}%',
         status: _nilaiMinimum(
           hasil.tdn,
           min: standar.tdnMin,
@@ -84,23 +89,15 @@ class EvaluasiStandarNutrienHelper {
         label: 'Ca',
         hasil: hasil.ca,
         standar:
-            '${standar.caMin.toStringAsFixed(1)}–${standar.caMax.toStringAsFixed(1)}%',
-        status: _nilaiRentang(
-          hasil.ca,
-          min: standar.caMin,
-          max: standar.caMax,
-        ),
+            '${IndonesianNumberFormatter.format(standar.caMin, decimals: 1)}–${IndonesianNumberFormatter.format(standar.caMax, decimals: 1)}%',
+        status: _nilaiRentang(hasil.ca, min: standar.caMin, max: standar.caMax),
       ),
       EvaluasiStandarNutrienItem(
         label: 'P',
         hasil: hasil.p,
         standar:
-            '${standar.pMin.toStringAsFixed(1)}–${standar.pMax.toStringAsFixed(1)}%',
-        status: _nilaiRentang(
-          hasil.p,
-          min: standar.pMin,
-          max: standar.pMax,
-        ),
+            '${IndonesianNumberFormatter.format(standar.pMin, decimals: 1)}–${IndonesianNumberFormatter.format(standar.pMax, decimals: 1)}%',
+        status: _nilaiRentang(hasil.p, min: standar.pMin, max: standar.pMax),
       ),
     ];
 

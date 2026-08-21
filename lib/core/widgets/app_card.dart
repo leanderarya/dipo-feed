@@ -31,7 +31,9 @@ class AppCard extends StatelessWidget {
         padding: padding ?? const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Theme.of(context).cardTheme.color,
-          borderRadius: (Theme.of(context).cardTheme.shape as RoundedRectangleBorder).borderRadius,
+          borderRadius:
+              (Theme.of(context).cardTheme.shape as RoundedRectangleBorder)
+                  .borderRadius,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.05),

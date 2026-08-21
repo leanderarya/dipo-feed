@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-
 import '../../core/constants/app_colors.dart';
 import '../../core/widgets/app_header.dart';
 import '../../core/widgets/app_bottom_nav.dart';
@@ -33,7 +32,9 @@ class _HomeScreenState extends State<HomeScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          index == 1 ? 'Fitur Panduan segera hadir.' : 'Fitur Pengaturan segera hadir.',
+          index == 1
+              ? 'Fitur Panduan segera hadir.'
+              : 'Fitur Pengaturan segera hadir.',
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
         behavior: SnackBarBehavior.floating,
@@ -80,8 +81,14 @@ class _HomeScreenState extends State<HomeScreen> {
         const end = Offset.zero;
         const curve = Curves.easeOutCubic;
 
-        var slideTween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-        var fadeTween = Tween<double>(begin: 0.0, end: 1.0).chain(CurveTween(curve: curve));
+        var slideTween = Tween(
+          begin: begin,
+          end: end,
+        ).chain(CurveTween(curve: curve));
+        var fadeTween = Tween<double>(
+          begin: 0.0,
+          end: 1.0,
+        ).chain(CurveTween(curve: curve));
 
         return FadeTransition(
           opacity: animation.drive(fadeTween),
@@ -99,13 +106,16 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.backgroundCream,
-      appBar: const AppHeader(
-        isHome: true,
-      ),
+      appBar: const AppHeader(isHome: true),
       body: Stack(
         children: [
           SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 110), // Optimized padding for iOS and screen viewports
+            padding: const EdgeInsets.fromLTRB(
+              20,
+              16,
+              20,
+              110,
+            ), // Optimized padding for iOS and screen viewports
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -163,8 +173,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    const Color(0xFF0F172A).withValues(alpha: 0.2), // Light at the top
-                    const Color(0xFF0F172A).withValues(alpha: 0.8), // Dark at the bottom
+                    const Color(
+                      0xFF0F172A,
+                    ).withValues(alpha: 0.2), // Light at the top
+                    const Color(
+                      0xFF0F172A,
+                    ).withValues(alpha: 0.8), // Dark at the bottom
                   ],
                 ),
               ),
@@ -176,10 +190,15 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF004AAD), // Solid Royal Blue for high visibility
+                    color: const Color(
+                      0xFF004AAD,
+                    ), // Solid Royal Blue for high visibility
                     borderRadius: BorderRadius.circular(100),
                   ),
                   child: const Row(
@@ -222,7 +241,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: TextStyle(
                     fontSize: 13,
                     color: Colors.white,
-                    fontWeight: FontWeight.w600, // Thicker weight for premium contrast
+                    fontWeight:
+                        FontWeight.w600, // Thicker weight for premium contrast
                     height: 1.4,
                     shadows: [
                       Shadow(
@@ -248,7 +268,8 @@ class _HomeScreenState extends State<HomeScreen> {
       crossAxisCount: 2,
       crossAxisSpacing: 12,
       mainAxisSpacing: 12,
-      childAspectRatio: 1.12, // Slightly wider and shorter for a modern, compact look
+      childAspectRatio:
+          1.12, // Slightly wider and shorter for a modern, compact look
       children: [
         QuickActionCard(
           title: 'Cek Kecukupan Pakan',
@@ -273,7 +294,8 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         QuickActionCard(
           title: 'Rekomendasi Pakan',
-          description: 'Rekomendasi pemberian pakan untuk mencukupi kebutuhan nutrisi ternak',
+          description:
+              'Rekomendasi pemberian pakan untuk mencukupi kebutuhan nutrisi ternak',
           svgAsset: 'assets/icons/ic_rekomendasi.svg',
           baseColor: AppColors.accentOrange,
           onTap: _bukaFormulasi,

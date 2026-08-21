@@ -52,9 +52,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
         left: 20,
         right: 20,
       ),
-      decoration: const BoxDecoration(
-        color: AppColors.backgroundCream,
-      ),
+      decoration: const BoxDecoration(color: AppColors.backgroundCream),
       child: Center(
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -114,7 +112,8 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                 leading: shouldShowBack
                     ? IconButton(
                         icon: const Icon(Icons.arrow_back, color: Colors.white),
-                        onPressed: onBackTap ?? () => Navigator.of(context).pop(),
+                        onPressed:
+                            onBackTap ?? () => Navigator.of(context).pop(),
                       )
                     : null,
                 centerMiddle: true,
@@ -128,7 +127,9 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                 ),
                 trailing: actions != null
                     ? Row(mainAxisSize: MainAxisSize.min, children: actions!)
-                    : const SizedBox(width: 48), // Spacer to keep title centered
+                    : const SizedBox(
+                        width: 48,
+                      ), // Spacer to keep title centered
               ),
             ),
           ),

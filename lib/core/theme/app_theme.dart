@@ -21,9 +21,7 @@ class AppTheme {
         color: AppColors.cardWhite,
         elevation: 2,
         shadowColor: Colors.black.withValues(alpha: 0.05),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
       textTheme: const TextTheme(
         headlineLarge: TextStyle(
@@ -41,14 +39,8 @@ class AppTheme {
           fontWeight: FontWeight.w600,
           color: AppColors.textDark,
         ),
-        bodyLarge: TextStyle(
-          fontSize: 16,
-          color: AppColors.textDark,
-        ),
-        bodyMedium: TextStyle(
-          fontSize: 14,
-          color: AppColors.textDark,
-        ),
+        bodyLarge: TextStyle(fontSize: 16, color: AppColors.textDark),
+        bodyMedium: TextStyle(fontSize: 14, color: AppColors.textDark),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -58,10 +50,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          textStyle: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -79,7 +68,10 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.primaryGreen, width: 2),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
       ),
     );
   }

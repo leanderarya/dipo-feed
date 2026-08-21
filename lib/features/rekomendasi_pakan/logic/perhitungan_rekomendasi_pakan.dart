@@ -153,7 +153,8 @@ class PerhitunganRekomendasiPakan {
         }
 
         final kombinasiTotal = existingKontribusi + kontribusi;
-        final isLkAman = NutrienHelper.hitungLkPersenDariBk(kombinasiTotal) <=
+        final isLkAman =
+            NutrienHelper.hitungLkPersenDariBk(kombinasiTotal) <=
             _batasLkPersen;
         final score = _hitungScore(
           hasilKelompok: kontribusi,
@@ -194,12 +195,18 @@ class PerhitunganRekomendasiPakan {
     required double stepKg,
     required bool allowZero,
   }) {
-    final multipliers = allowZero ? _multipliers : _multipliers.where((item) => item > 0);
-    final kandidat = multipliers.map((multiplier) {
-      final nilai = estimasiAsFed * multiplier;
-      return _bulatkanKeStep(nilai, stepKg);
-    }).toSet().toList()
-      ..sort();
+    final multipliers = allowZero
+        ? _multipliers
+        : _multipliers.where((item) => item > 0);
+    final kandidat =
+        multipliers
+            .map((multiplier) {
+              final nilai = estimasiAsFed * multiplier;
+              return _bulatkanKeStep(nilai, stepKg);
+            })
+            .toSet()
+            .toList()
+          ..sort();
 
     if (allowZero && !kandidat.contains(0)) {
       kandidat.insert(0, 0);
@@ -261,7 +268,8 @@ class PerhitunganRekomendasiPakan {
       targetKelompok.pGram,
     );
 
-    var score = (_bobotBk * errorBk) +
+    var score =
+        (_bobotBk * errorBk) +
         (_bobotPk * errorPk) +
         (_bobotTdn * errorTdn) +
         (_bobotCa * errorCa) +
