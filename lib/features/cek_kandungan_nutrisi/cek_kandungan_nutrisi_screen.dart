@@ -544,6 +544,7 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
 
   Widget _buildKartuBahan(int index, CampuranPakanItem item) {
     return AppCard(
+      key: ValueKey('kartu_bahan_${item.bahan.id}'),
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       child: Column(
@@ -619,6 +620,7 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
             children: [
               Expanded(
                 child: AppTextField(
+                  key: ValueKey('jumlah_${item.bahan.id}'),
                   initialValue:
                       item.jumlahKg == 0 ||
                           !IndonesianNumberFormatter.isSupportedMagnitude(
@@ -637,6 +639,7 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
               const SizedBox(width: 8),
               Expanded(
                 child: AppTextField(
+                  key: ValueKey('harga_${item.bahan.id}'),
                   initialValue:
                       item.hargaPerKg == 0 ||
                           !IndonesianNumberFormatter.isSupportedMagnitude(
