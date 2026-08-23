@@ -16,6 +16,7 @@ import '../master_pakan/master_pakan_screen.dart';
 import 'logic/evaluasi_standar_nutrien.dart';
 import 'logic/perhitungan_nutrisi.dart';
 import 'widgets/evaluasi_standar_card.dart';
+import 'widgets/searchable_bahan_pakan_dialog.dart';
 
 class CekKandunganNutrisiScreen extends StatefulWidget {
   final bool modePilihUntukEvaluasi;
@@ -106,22 +107,23 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
     _inputHargaTidakValid.clear();
   }
 
-  void _tambahBahan() {
+  Future<void> _tambahBahan() async {
     if (_semuaBahan.isEmpty) return;
 
-    final bahanSudahDipakai = _campuran.map((item) => item.bahan.id).toSet();
-    BahanPakan? bahanBaru;
-    for (final bahan in _semuaBahan) {
-      if (!bahanSudahDipakai.contains(bahan.id)) {
-        bahanBaru = bahan;
-        break;
-      }
-    }
+    final bahanTerpilihIds = _campuran.map((item) => item.bahan.id).toSet();
+    final bahanBaru = await SearchableBahanPakanDialog.show(
+      context: context,
+      semuaBahan: _semuaBahan,
+      bahanTerpilihIds: bahanTerpilihIds,
+    );
 
-    if (bahanBaru == null) {
+    if (bahanBaru == null) return;
+
+    if (!mounted) return;
+    if (bahanTerpilihIds.contains(bahanBaru.id)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Semua bahan pakan aktif sudah ditambahkan.'),
+        SnackBar(
+          content: Text('Bahan "${bahanBaru.nama}" sudah ada dalam campuran.'),
         ),
       );
       return;
@@ -130,7 +132,7 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
     setState(() {
       _campuran.add(
         CampuranPakanItem(
-          bahan: bahanBaru!,
+          bahan: bahanBaru,
           jumlahKg: 0,
           hargaPerKg: bahanBaru.hargaDefault,
         ),
@@ -148,22 +150,36 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
     });
   }
 
-  void _ubahBahan(int index, BahanPakan bahanBaru) {
+  Future<void> _pilihAtauUbahBahan(int index) async {
+    final bahanTerpilihIds = _campuran.map((item) => item.bahan.id).toSet();
+    final itemLama = _campuran[index];
+
+    final bahanBaru = await SearchableBahanPakanDialog.show(
+      context: context,
+      semuaBahan: _semuaBahan,
+      bahanTerpilihIds: bahanTerpilihIds,
+      bahanSaatIni: itemLama.bahan,
+    );
+
+    if (bahanBaru == null || bahanBaru.id == itemLama.bahan.id) return;
+
+    if (!mounted) return;
     final sudahDipakaiOlehItemLain = _campuran.asMap().entries.any((entry) {
       return entry.key != index && entry.value.bahan.id == bahanBaru.id;
     });
 
     if (sudahDipakaiOlehItemLain) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Bahan tersebut sudah dipilih pada item lain.'),
+        SnackBar(
+          content: Text(
+            'Bahan "${bahanBaru.nama}" sudah dipilih pada item lain.',
+          ),
         ),
       );
       return;
     }
 
     setState(() {
-      final itemLama = _campuran[index];
       _inputJumlahTidakValid.remove(itemLama);
       _inputHargaTidakValid.remove(itemLama);
       _campuran[index] = itemLama.copyWith(
@@ -528,66 +544,97 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
 
   Widget _buildKartuBahan(int index, CampuranPakanItem item) {
     return AppCard(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Expanded(
-                child: DropdownButtonFormField<BahanPakan>(
-                  initialValue: item.bahan,
-                  isExpanded: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Bahan Pakan',
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                  items: _semuaBahan.map((bahan) {
-                    return DropdownMenuItem<BahanPakan>(
-                      value: bahan,
-                      child: Text(
-                        bahan.nama,
-                        style: const TextStyle(fontSize: 14),
+                child: InkWell(
+                  onTap: () => _pilihAtauUbahBahan(index),
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.backgroundKrem,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: AppColors.textLight.withValues(alpha: 0.2),
                       ),
-                    );
-                  }).toList(),
-                  onChanged: (v) => v != null ? _ubahBahan(index, v) : null,
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item.bahan.nama,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  color: AppColors.textDark,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                '${item.bahan.kategori} • BK: ${IndonesianNumberFormatter.format(item.bahan.bk, decimals: 1)}%',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.textGrey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(
+                          Icons.arrow_drop_down,
+                          color: AppColors.primaryBlue,
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
+              const SizedBox(width: 4),
               IconButton(
                 onPressed: () => _hapusBahan(index),
+                visualDensity: VisualDensity.compact,
                 icon: const Icon(
                   Icons.close,
                   color: AppColors.errorRed,
-                  size: 20,
+                  size: 18,
                 ),
               ),
             ],
           ),
-          const Divider(height: 16),
+          const SizedBox(height: 8),
           Row(
             children: [
               Expanded(
                 child: AppTextField(
-initialValue:
-                       item.jumlahKg == 0 ||
-                           !IndonesianNumberFormatter.isSupportedMagnitude(
-                             item.jumlahKg,
-                           )
-                       ? ''
+                  initialValue:
+                      item.jumlahKg == 0 ||
+                          !IndonesianNumberFormatter.isSupportedMagnitude(
+                            item.jumlahKg,
+                          )
+                      ? ''
                       : IndonesianNumberFormatter.format(
                           item.jumlahKg,
                           decimals: 2,
                         ),
-
                   label: 'Jumlah (kg)',
                   keyboardType: TextInputType.number,
                   onChanged: (v) => _ubahJumlahKg(index, v),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 8),
               Expanded(
                 child: AppTextField(
                   initialValue:
