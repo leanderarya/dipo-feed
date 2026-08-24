@@ -1,6 +1,69 @@
+import 'package:flutter/material.dart';
+
+import '../../../data/models/campuran_pakan_item.dart';
 import '../../../data/models/fisiologi_sapi.dart';
 import '../../../data/models/kebutuhan_nutrien_sapi.dart';
 import '../../cek_kandungan_nutrisi/logic/perhitungan_nutrisi.dart';
+
+const List<Color> feedPaletteColors = [
+  Color(0xFF2E7D32), // Green
+  Color(0xFFF57F17), // Amber / Yellow
+  Color(0xFF1976D2), // Blue
+  Color(0xFFD84315), // Deep Orange
+  Color(0xFF7B1FA2), // Purple
+  Color(0xFF00838F), // Teal / Cyan
+  Color(0xFFC2185B), // Pink
+  Color(0xFF5D4037), // Brown
+];
+
+Color getFeedColor(int index) =>
+    feedPaletteColors[index % feedPaletteColors.length];
+
+class KontribusiNutrisiBahanPakan {
+  final CampuranPakanItem item;
+  final double bkKg;
+  final double pkKg;
+  final double tdnKg;
+  final Color warna;
+
+  const KontribusiNutrisiBahanPakan({
+    required this.item,
+    required this.bkKg,
+    required this.pkKg,
+    required this.tdnKg,
+    required this.warna,
+  });
+
+  factory KontribusiNutrisiBahanPakan.fromItem(
+    CampuranPakanItem item, {
+    int index = 0,
+  }) {
+    final asFed = item.jumlahKg;
+    final bkKg = asFed * (item.bahan.bk / 100);
+    final pkKg = asFed * (item.bahan.protein / 100);
+    final tdnKg = asFed * (item.bahan.tdn / 100);
+
+    return KontribusiNutrisiBahanPakan(
+      item: item,
+      bkKg: bkKg,
+      pkKg: pkKg,
+      tdnKg: tdnKg,
+      warna: getFeedColor(index),
+    );
+  }
+}
+
+class SegmenKontribusiNutrien {
+  final String namaBahan;
+  final double nilaiKg;
+  final Color warna;
+
+  const SegmenKontribusiNutrien({
+    required this.namaBahan,
+    required this.nilaiKg,
+    required this.warna,
+  });
+}
 
 enum StatusKecukupanNutrien {
   kurang,
@@ -25,6 +88,7 @@ class EvaluasiKecukupanItem {
   final double kebutuhan;
   final double pemberian;
   final String satuan;
+  final List<SegmenKontribusiNutrien> segmen;
 
   const EvaluasiKecukupanItem({
     required this.nama,
@@ -32,6 +96,7 @@ class EvaluasiKecukupanItem {
     required this.kebutuhan,
     required this.pemberian,
     required this.satuan,
+    this.segmen = const [],
   });
 
   String get labelLengkap => '$singkatan ($nama)';
@@ -65,6 +130,7 @@ class HasilEvaluasiKecukupanNutrien {
   final EvaluasiKecukupanItem tdn;
   final EvaluasiKecukupanItem ca;
   final EvaluasiKecukupanItem p;
+  final List<KontribusiNutrisiBahanPakan> kontribusiBahan;
 
   const HasilEvaluasiKecukupanNutrien({
     required this.fisiologi,
@@ -74,6 +140,7 @@ class HasilEvaluasiKecukupanNutrien {
     required this.tdn,
     required this.ca,
     required this.p,
+    this.kontribusiBahan = const [],
   });
 
   String get kesimpulanUmum {
@@ -94,6 +161,7 @@ class HasilEvaluasiKecukupanNutrien {
     required FisiologiSapi fisiologi,
     required KebutuhanNutrienSapi kebutuhan,
     required HasilPerhitunganNutrisi nutrisiPemberian,
+    List<CampuranPakanItem>? daftarPemberian,
   }) {
     final totalBerat = nutrisiPemberian.totalBerat;
     final bkKg = totalBerat * (nutrisiPemberian.bk / 100);
@@ -103,12 +171,56 @@ class HasilEvaluasiKecukupanNutrien {
     const caGram = 0.0;
     const pGram = 0.0;
 
+    final kontribusiList = <KontribusiNutrisiBahanPakan>[];
+    final segmenBk = <SegmenKontribusiNutrien>[];
+    final segmenPk = <SegmenKontribusiNutrien>[];
+    final segmenTdn = <SegmenKontribusiNutrien>[];
+
+    if (daftarPemberian != null) {
+      for (var i = 0; i < daftarPemberian.length; i++) {
+        final item = daftarPemberian[i];
+        if (item.jumlahKg > 0) {
+          final kontribusi = KontribusiNutrisiBahanPakan.fromItem(item, index: i);
+          kontribusiList.add(kontribusi);
+
+          if (kontribusi.bkKg > 0) {
+            segmenBk.add(
+              SegmenKontribusiNutrien(
+                namaBahan: item.bahan.nama,
+                nilaiKg: kontribusi.bkKg,
+                warna: kontribusi.warna,
+              ),
+            );
+          }
+          if (kontribusi.pkKg > 0) {
+            segmenPk.add(
+              SegmenKontribusiNutrien(
+                namaBahan: item.bahan.nama,
+                nilaiKg: kontribusi.pkKg,
+                warna: kontribusi.warna,
+              ),
+            );
+          }
+          if (kontribusi.tdnKg > 0) {
+            segmenTdn.add(
+              SegmenKontribusiNutrien(
+                namaBahan: item.bahan.nama,
+                nilaiKg: kontribusi.tdnKg,
+                warna: kontribusi.warna,
+              ),
+            );
+          }
+        }
+      }
+    }
+
     final bkItem = EvaluasiKecukupanItem(
       nama: 'Bahan Kering',
       singkatan: 'BK',
       kebutuhan: kebutuhan.kebutuhanBkKg,
       pemberian: bkKg,
       satuan: 'kg',
+      segmen: segmenBk,
     );
 
     final pkItem = EvaluasiKecukupanItem(
@@ -117,6 +229,7 @@ class HasilEvaluasiKecukupanNutrien {
       kebutuhan: kebutuhan.kebutuhanProteinKg,
       pemberian: pkKg,
       satuan: 'kg',
+      segmen: segmenPk,
     );
 
     final tdnItem = EvaluasiKecukupanItem(
@@ -125,6 +238,7 @@ class HasilEvaluasiKecukupanNutrien {
       kebutuhan: kebutuhan.kebutuhanTdnKg,
       pemberian: tdnKg,
       satuan: 'kg',
+      segmen: segmenTdn,
     );
 
     final caItem = EvaluasiKecukupanItem(
@@ -151,6 +265,7 @@ class HasilEvaluasiKecukupanNutrien {
       tdn: tdnItem,
       ca: caItem,
       p: pItem,
+      kontribusiBahan: kontribusiList,
     );
   }
 }

@@ -296,6 +296,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
       fisiologi: _fisiologi,
       kebutuhan: _kebutuhanNutrien!,
       nutrisiPemberian: hasilPakan,
+      daftarPemberian: _pemberianPakan,
     );
 
     final nilaiEvaluasi = [
@@ -372,6 +373,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
       fisiologi: _fisiologi,
       kebutuhan: _kebutuhanNutrien!,
       nutrisiPemberian: hasilPakan,
+      daftarPemberian: _pemberianPakan,
     );
 
     final nilaiEvaluasi = [
