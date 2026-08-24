@@ -20,7 +20,7 @@ class AppComparisonBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final double percentage = limit > 0 ? (current / limit).clamp(0.0, 1.2) : 0;
     final isOver = current >= limit;
-    final color = isOver ? AppColors.accentGreen : AppColors.errorRed;
+    final color = isOver ? AppColors.statusPas : AppColors.statusKurang;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -32,7 +32,7 @@ class AppComparisonBar extends StatelessWidget {
             Text(
               '${IndonesianNumberFormatter.format(current, decimals: 2)} / ${IndonesianNumberFormatter.format(limit, decimals: 2)} $unit',
               style: TextStyle(
-                color: isOver ? AppColors.primaryGreen : AppColors.errorRed,
+                color: isOver ? AppColors.statusPas : AppColors.statusKurang,
                 fontWeight: FontWeight.w600,
                 fontSize: 13,
               ),
