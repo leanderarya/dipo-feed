@@ -744,7 +744,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
     return AppCard(
       child: Form(
         key: _formKey,
-        autovalidateMode: AutovalidateMode.onUserInteraction,
+        autovalidateMode: AutovalidateMode.always,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
