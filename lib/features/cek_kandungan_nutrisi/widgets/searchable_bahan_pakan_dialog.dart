@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_colors.dart';
+import '../../../core/utils/app_toast.dart';
 import '../../../data/models/bahan_pakan.dart';
 
 class SearchableBahanPakanDialog extends StatefulWidget {
@@ -202,12 +203,9 @@ class _SearchableBahanPakanDialogState
                                 : const Icon(Icons.chevron_right, size: 18),
                         onTap: () {
                           if (isAlreadyUsed) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Bahan pakan "${bahan.nama}" sudah dipilih dalam campuran.',
-                                ),
-                              ),
+                            AppToast.showWarning(
+                              context,
+                              'Bahan pakan "${bahan.nama}" sudah dipilih dalam campuran.',
                             );
                             return;
                           }

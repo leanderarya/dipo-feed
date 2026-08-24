@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../core/constants/app_colors.dart';
+import '../../core/utils/app_toast.dart';
 import '../../core/utils/indonesian_number_formatter.dart';
 import '../../core/widgets/app_card.dart';
 import '../../core/widgets/app_text_field.dart';
@@ -167,23 +168,18 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
       _tampilkanPesanImpor(hasil);
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Gagal mengimpor CSV: $error')));
+      AppToast.showError(context, 'Gagal mengimpor CSV: $error');
     } finally {
       if (mounted) setState(() => _isProcessing = false);
     }
   }
 
   void _tampilkanPesanImpor(HasilImportBahanPakan hasil) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Impor berhasil. Ditambah: ${hasil.ditambah}. '
-          'Diperbarui: ${hasil.diperbarui}. '
-          'Dihapus: ${hasil.dihapus}.',
-        ),
-      ),
+    AppToast.showSuccess(
+      context,
+      'Impor berhasil. Ditambah: ${hasil.ditambah}. '
+      'Diperbarui: ${hasil.diperbarui}. '
+      'Dihapus: ${hasil.dihapus}.',
     );
   }
 
@@ -203,9 +199,7 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
       await _shareCsv(_repository.dataAktif, _sharePositionOrigin());
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Gagal mengekspor CSV: $error')));
+      AppToast.showError(context, 'Gagal mengekspor CSV: $error');
     } finally {
       if (mounted) setState(() => _isProcessing = false);
     }
@@ -230,25 +224,17 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
       if (bahan == null) {
         await _repository.addBahan(hasil);
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Bahan pakan baru berhasil disimpan.')),
-        );
+        AppToast.showSuccess(context, 'Bahan pakan baru berhasil disimpan.');
       } else {
         await _repository.updateBahan(bahan.id, hasil);
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Perubahan bahan pakan berhasil disimpan.'),
-          ),
-        );
+        AppToast.showSuccess(context, 'Perubahan bahan pakan berhasil disimpan.');
       }
 
       if (mounted) setState(() {});
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal menyimpan bahan pakan: $error')),
-      );
+      AppToast.showError(context, 'Gagal menyimpan bahan pakan: $error');
     } finally {
       if (mounted) setState(() => _isProcessing = false);
     }
@@ -282,14 +268,10 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
       if (!mounted) return;
 
       setState(() {});
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bahan pakan berhasil dihapus.')),
-      );
+      AppToast.showSuccess(context, 'Bahan pakan berhasil dihapus.');
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal menghapus bahan pakan: $error')),
-      );
+      AppToast.showError(context, 'Gagal menghapus bahan pakan: $error');
     } finally {
       if (mounted) setState(() => _isProcessing = false);
     }
@@ -308,9 +290,7 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
       setState(() {});
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal mengubah status bahan pakan: $error')),
-      );
+      AppToast.showError(context, 'Gagal mengubah status bahan pakan: $error');
     } finally {
       if (mounted) setState(() => _isProcessing = false);
     }
@@ -346,16 +326,10 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
       if (!mounted) return;
 
       setState(() {});
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Master pakan dikembalikan ke data awal.'),
-        ),
-      );
+      AppToast.showInfo(context, 'Master pakan dikembalikan ke data awal.');
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal mereset master pakan: $error')),
-      );
+      AppToast.showError(context, 'Gagal mereset master pakan: $error');
     } finally {
       if (mounted) setState(() => _isProcessing = false);
     }

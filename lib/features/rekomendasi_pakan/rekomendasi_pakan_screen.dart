@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/constants/app_colors.dart';
+import '../../core/utils/app_toast.dart';
 import '../../core/utils/indonesian_number_formatter.dart';
 import '../../core/models/status_perhitungan.dart';
 import '../../core/widgets/app_sliver_header.dart';
@@ -670,9 +671,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
 
   void _showSnackBar(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
-    );
+    AppToast.showWarning(context, message);
   }
 
   double _hitungTotalAsFed(List<RekomendasiPakanItem> items) {

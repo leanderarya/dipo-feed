@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/constants/app_colors.dart';
+import '../../core/utils/app_toast.dart';
 import '../../core/utils/indonesian_number_formatter.dart';
 import '../../core/models/status_perhitungan.dart';
 import '../../core/widgets/app_card.dart';
@@ -166,10 +167,9 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
     }
 
     if (bahanBaru == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Semua bahan pakan aktif sudah ditambahkan.'),
-        ),
+      AppToast.showWarning(
+        context,
+        'Semua bahan pakan aktif sudah ditambahkan.',
       );
       return;
     }
@@ -215,10 +215,9 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
     });
 
     if (sudahDipakai) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Bahan tersebut sudah dipilih pada item lain.'),
-        ),
+      AppToast.showWarning(
+        context,
+        'Bahan tersebut sudah dipilih pada item lain.',
       );
       return;
     }
