@@ -1172,6 +1172,9 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
   }
 
   Widget _buildKartuPakan(int index, CampuranPakanItem item) {
+    final kontribusi = KontribusiNutrisiBahanPakan.fromItem(item, index: index);
+    final feedColor = getFeedColor(index);
+
     return AppCard(
       padding: const EdgeInsets.all(12),
       width: double.infinity,
@@ -1180,6 +1183,15 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
         children: [
           Row(
             children: [
+              Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: feedColor,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 8),
               Text(
                 'Bahan ${index + 1}',
                 style: const TextStyle(
@@ -1214,7 +1226,21 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
               if (value != null) _ubahBahanPakan(index, value);
             },
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 6),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 2),
+            child: Text(
+              item.jumlahKg > 0
+                  ? 'BK: ${_format(kontribusi.bkKg)} kg  •  PK: ${_format(kontribusi.pkKg)} kg  •  TDN: ${_format(kontribusi.tdnKg)} kg'
+                  : 'BK: ${IndonesianNumberFormatter.format(item.bahan.bk, decimals: 1)}%  •  PK: ${IndonesianNumberFormatter.format(item.bahan.protein, decimals: 1)}%  •  TDN: ${IndonesianNumberFormatter.format(item.bahan.tdn, decimals: 1)}%',
+              style: TextStyle(
+                fontSize: 11.5,
+                fontWeight: item.jumlahKg > 0 ? FontWeight.w600 : FontWeight.normal,
+                color: item.jumlahKg > 0 ? AppColors.textDark : AppColors.textLight,
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
           AppTextField(
             initialValue: item.jumlahKg == 0
                 ? ''
