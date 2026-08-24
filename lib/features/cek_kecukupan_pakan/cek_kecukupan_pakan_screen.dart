@@ -327,95 +327,6 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
     });
   }
 
-  void _hitungEvaluasi() {
-    if (_kebutuhanNutrien == null) {
-      final pesan = _fisiologi == FisiologiSapi.dara
-          ? 'Isi BB sapi yang valid untuk menghitung kebutuhan nutrien Dara.'
-          : _fisiologi == FisiologiSapi.laktasi
-          ? 'Lengkapi BB, produksi susu, dan % lemak susu untuk menghitung kebutuhan nutrien Laktasi.'
-          : 'Isi BB sapi yang valid untuk menghitung kebutuhan nutrien Kering Kandang.';
-      _gagalMenghitung(pesan);
-      return;
-    }
-
-    if (_pemberianPakan.isEmpty) {
-      _gagalMenghitung('Tambahkan minimal satu bahan pakan terlebih dahulu.');
-      return;
-    }
-
-    if (_jumlahPakanTidakValid.isNotEmpty) {
-      _gagalMenghitung('Jumlah pemberian pakan tidak valid.');
-      return;
-    }
-
-    if (_repository.semuaData.any((bahan) => !bahan.isValidForCalculation()) ||
-        _pemberianPakan.any(
-          (item) => !item.bahan.isValidForCalculation(requirePositiveBk: true),
-        )) {
-      _gagalMenghitung(
-        'Data bahan pakan tersimpan tidak valid. Periksa nilai nutrisi, harga, dan BK.',
-      );
-      return;
-    }
-
-    final hasilPakan = PerhitunganNutrisi.hitungSemua(_pemberianPakan);
-    if (!_hasilNutrisiValid(hasilPakan)) {
-      _gagalMenghitung('Hasil perhitungan nutrisi tidak valid.');
-      return;
-    }
-    final totalBerat = hasilPakan.totalBerat;
-    if (totalBerat <= 0) {
-      _gagalMenghitung('Total pemberian pakan harus lebih dari 0 kg.');
-      return;
-    }
-
-    final hasilEvaluasi = HasilEvaluasiKecukupanNutrien.hitung(
-      fisiologi: _fisiologi,
-      kebutuhan: _kebutuhanNutrien!,
-      nutrisiPemberian: hasilPakan,
-      daftarPemberian: _pemberianPakan,
-    );
-
-    final nilaiEvaluasi = [
-      hasilEvaluasi.bk.kebutuhan,
-      hasilEvaluasi.bk.pemberian,
-      hasilEvaluasi.protein.kebutuhan,
-      hasilEvaluasi.protein.pemberian,
-      hasilEvaluasi.tdn.kebutuhan,
-      hasilEvaluasi.tdn.pemberian,
-      hasilEvaluasi.ca.kebutuhan,
-      hasilEvaluasi.ca.pemberian,
-      hasilEvaluasi.p.kebutuhan,
-      hasilEvaluasi.p.pemberian,
-    ];
-    if (!_nilaiValid(nilaiEvaluasi)) {
-      _gagalMenghitung('Hasil evaluasi nutrisi tidak valid.');
-      return;
-    }
-
-    setState(() {
-      _hasilEvaluasi = hasilEvaluasi;
-      _statusPerhitungan = StatusPerhitungan.berhasil;
-    });
-    if (mounted) {
-      AppToast.showSuccess(
-        context,
-        'Evaluasi kecukupan pakan berhasil dihitung.',
-        title: 'Perhitungan Berhasil',
-      );
-    }
-  }
-
-  void _gagalMenghitung(String pesan) {
-    setState(() {
-      _hasilEvaluasi = null;
-      _statusPerhitungan = StatusPerhitungan.gagal;
-    });
-    if (mounted) {
-      AppToast.showError(context, pesan, title: 'Gagal menghitung');
-    }
-  }
-
   bool _validasiTahapSatu() {
     final valid = _formKey.currentState?.validate() ?? false;
     if (!valid) return false;
@@ -424,54 +335,10 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
     return _kebutuhanNutrien != null;
   }
 
-  bool _validasiTahapDua() {
-    if (_kebutuhanNutrien == null) {
-      _gagalMenghitung('Lengkapi Data Sapi terlebih dahulu.');
-      return false;
-    }
-    if (_pemberianPakan.isEmpty) {
-      _gagalMenghitung('Tambahkan minimal satu bahan pakan terlebih dahulu.');
-      return false;
-    }
-    if (_jumlahPakanTidakValid.isNotEmpty) {
-      _gagalMenghitung('Jumlah pemberian pakan tidak valid.');
-      return false;
-    }
-
-    if (_repository.semuaData.any((bahan) => !bahan.isValidForCalculation()) ||
-        _pemberianPakan.any(
-          (item) => !item.bahan.isValidForCalculation(requirePositiveBk: true),
-        )) {
-      _gagalMenghitung(
-        'Data bahan pakan tersimpan tidak valid. Periksa nilai nutrisi, harga, dan BK.',
-      );
-      return false;
-    }
-
-    final totalBerat = PerhitunganNutrisi.hitungSemua(
-      _pemberianPakan,
-    ).totalBerat;
-    if (totalBerat <= 0) {
-      _gagalMenghitung('Total pemberian pakan harus lebih dari 0 kg.');
-      return false;
-    }
-    return true;
-  }
-
   void _lanjutTahap() {
     if (_tahapAktif == 0) {
       if (_validasiTahapSatu()) {
         setState(() => _tahapAktif = 1);
-      }
-      return;
-    }
-
-    if (_tahapAktif == 1) {
-      if (_validasiTahapDua()) {
-        _hitungEvaluasi();
-        if (_statusPerhitungan == StatusPerhitungan.berhasil) {
-          setState(() => _tahapAktif = 2);
-        }
       }
     }
   }
@@ -745,7 +612,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
               ),
             ),
             Text(
-              '${_tahapAktif + 1}/3',
+              '${_tahapAktif + 1}/2',
               style: const TextStyle(color: Colors.white),
             ),
           ],
@@ -756,9 +623,8 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
 
   Widget _buildProgressIndicator() {
     final labels = [
-      'Data Sapi',
-      'Kebutuhan Nutrien dan Pemberian Pakan',
-      'Hasil Evaluasi Nutrisi',
+      'Data Sapi & Kebutuhan Nutrien',
+      'Evaluasi & Pemberian Pakan',
     ];
 
     return AppCard(
@@ -805,10 +671,6 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
             _buildPemberianPakanSection(),
           ],
         );
-      case 2:
-        return _hasilEvaluasi == null
-            ? _buildOutputSection()
-            : EvaluasiKecukupanCard(hasil: _hasilEvaluasi!);
     }
     return const SizedBox.shrink();
   }
@@ -896,12 +758,12 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
   }
 
   Widget _buildNavigationControls() {
-    if (_tahapAktif == 2) return const SizedBox.shrink();
+    if (_tahapAktif >= 1) return const SizedBox.shrink();
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
         onPressed: _lanjutTahap,
-        child: const Text('Lanjut'),
+        child: const Text('Lanjut ke Pemberian Pakan'),
       ),
     );
   }
