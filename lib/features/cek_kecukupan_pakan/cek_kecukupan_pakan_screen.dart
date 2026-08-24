@@ -726,6 +726,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
               controller: _beratBadanController,
               label: 'BB Sapi',
               suffix: 'kg',
+              hintText: '100 – 600',
               validator: _validasiBeratBadan,
             ),
             if (_fisiologi == FisiologiSapi.laktasi) ...[
@@ -734,6 +735,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
                 controller: _produksiSusuController,
                 label: 'Produksi Susu',
                 suffix: 'liter/ekor/hari',
+                hintText: '10 – 30',
                 validator: _validasiProduksiSusu,
               ),
               const SizedBox(height: 12),
@@ -741,24 +743,8 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
                 controller: _lemakSusuController,
                 label: '% Lemak Susu',
                 suffix: '%',
+                hintText: '2,5 – 4,0',
                 validator: _validasiLemakSusu,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                _parseDouble(_lemakSusuController.text) > 0 &&
-                        (_parseDouble(_lemakSusuController.text) < 2.5 ||
-                            _parseDouble(_lemakSusuController.text) > 4.0)
-                    ? 'Lemak susu di luar rentang normal (2,5%–4,0%). Perhitungan tetap dilakukan dengan ekstrapolasi.'
-                    : 'Diisi sesuai persentase lemak susu sapi (rentang normal: 2,5%–4,0%, misal: 3,5%).',
-                style: TextStyle(
-                  fontSize: 12,
-                  color:
-                      _parseDouble(_lemakSusuController.text) > 0 &&
-                          (_parseDouble(_lemakSusuController.text) < 2.5 ||
-                              _parseDouble(_lemakSusuController.text) > 4.0)
-                      ? AppColors.errorRed
-                      : AppColors.textLight,
-                ),
               ),
             ],
           ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../constants/app_colors.dart';
 
 class AppTextField extends StatelessWidget {
   final TextEditingController? controller;
@@ -78,8 +79,28 @@ class AppTextField extends StatelessWidget {
               },
           decoration: InputDecoration(
             hintText: hintText ?? '0',
-            suffixText: suffix,
             prefixText: prefixText,
+            suffixIcon: suffix != null
+                ? Padding(
+                    padding: const EdgeInsets.only(right: 16),
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      widthFactor: 1.0,
+                      child: Text(
+                        suffix!,
+                        style: TextStyle(
+                          color: AppColors.textLight.withValues(alpha: 0.85),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  )
+                : null,
+            suffixIconConstraints: const BoxConstraints(
+              minWidth: 0,
+              minHeight: 0,
+            ),
           ),
         ),
       ],
