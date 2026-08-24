@@ -119,9 +119,8 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
       if (!mounted) return;
       setState(() {
         _kebutuhanNutrien = kebutuhan;
-        _hasilEvaluasi = null;
-        _statusPerhitungan = StatusPerhitungan.belumDihitung;
       });
+      _perbaruiEvaluasiRealtime();
       return;
     }
 
@@ -180,9 +179,8 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
         ),
       );
       _pakanRowKeys.add(ValueKey(_nextPakanRowKey++));
-      _hasilEvaluasi = null;
-      _statusPerhitungan = StatusPerhitungan.belumDihitung;
     });
+    _perbaruiEvaluasiRealtime();
   }
 
   void _hapusBahanPakan(int index) {
@@ -199,9 +197,8 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
       _jumlahPakanTidakValid
         ..clear()
         ..addAll(invalidAfterRemove);
-      _hasilEvaluasi = null;
-      _statusPerhitungan = StatusPerhitungan.belumDihitung;
     });
+    _perbaruiEvaluasiRealtime();
   }
 
   void _ubahBahanPakan(int index, BahanPakan bahanBaru) {
@@ -222,9 +219,8 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
         bahan: bahanBaru,
         hargaPerKg: bahanBaru.hargaDefault,
       );
-      _hasilEvaluasi = null;
-      _statusPerhitungan = StatusPerhitungan.belumDihitung;
     });
+    _perbaruiEvaluasiRealtime();
   }
 
   void _ubahJumlahPakan(int index, String value) {
@@ -245,8 +241,88 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
       } else {
         _jumlahPakanTidakValid.add(index);
       }
-      _hasilEvaluasi = null;
-      _statusPerhitungan = StatusPerhitungan.belumDihitung;
+    });
+    _perbaruiEvaluasiRealtime();
+  }
+
+  void _perbaruiEvaluasiRealtime() {
+    if (_kebutuhanNutrien == null) {
+      if (_hasilEvaluasi != null || _statusPerhitungan != StatusPerhitungan.belumDihitung) {
+        setState(() {
+          _hasilEvaluasi = null;
+          _statusPerhitungan = StatusPerhitungan.belumDihitung;
+        });
+      }
+      return;
+    }
+
+    if (_pemberianPakan.isEmpty ||
+        _jumlahPakanTidakValid.isNotEmpty ||
+        _pemberianPakan.every((item) => item.jumlahKg <= 0)) {
+      if (_hasilEvaluasi != null || _statusPerhitungan != StatusPerhitungan.belumDihitung) {
+        setState(() {
+          _hasilEvaluasi = null;
+          _statusPerhitungan = StatusPerhitungan.belumDihitung;
+        });
+      }
+      return;
+    }
+
+    if (_repository.semuaData.any((bahan) => !bahan.isValidForCalculation()) ||
+        _pemberianPakan.any(
+          (item) => !item.bahan.isValidForCalculation(requirePositiveBk: true),
+        )) {
+      if (_statusPerhitungan != StatusPerhitungan.gagal) {
+        setState(() {
+          _hasilEvaluasi = null;
+          _statusPerhitungan = StatusPerhitungan.gagal;
+        });
+      }
+      return;
+    }
+
+    final hasilPakan = PerhitunganNutrisi.hitungSemua(_pemberianPakan);
+    if (!_hasilNutrisiValid(hasilPakan) || hasilPakan.totalBerat <= 0) {
+      if (_statusPerhitungan != StatusPerhitungan.gagal) {
+        setState(() {
+          _hasilEvaluasi = null;
+          _statusPerhitungan = StatusPerhitungan.gagal;
+        });
+      }
+      return;
+    }
+
+    final hasilEvaluasi = HasilEvaluasiKecukupanNutrien.hitung(
+      fisiologi: _fisiologi,
+      kebutuhan: _kebutuhanNutrien!,
+      nutrisiPemberian: hasilPakan,
+    );
+
+    final nilaiEvaluasi = [
+      hasilEvaluasi.bk.kebutuhan,
+      hasilEvaluasi.bk.pemberian,
+      hasilEvaluasi.protein.kebutuhan,
+      hasilEvaluasi.protein.pemberian,
+      hasilEvaluasi.tdn.kebutuhan,
+      hasilEvaluasi.tdn.pemberian,
+      hasilEvaluasi.ca.kebutuhan,
+      hasilEvaluasi.ca.pemberian,
+      hasilEvaluasi.p.kebutuhan,
+      hasilEvaluasi.p.pemberian,
+    ];
+    if (!_nilaiValid(nilaiEvaluasi)) {
+      if (_statusPerhitungan != StatusPerhitungan.gagal) {
+        setState(() {
+          _hasilEvaluasi = null;
+          _statusPerhitungan = StatusPerhitungan.gagal;
+        });
+      }
+      return;
+    }
+
+    setState(() {
+      _hasilEvaluasi = hasilEvaluasi;
+      _statusPerhitungan = StatusPerhitungan.berhasil;
     });
   }
 
