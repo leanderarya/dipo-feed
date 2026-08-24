@@ -920,8 +920,15 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
     return _buildKartuKebutuhan();
   }
 
-  String _format(double value) =>
-      IndonesianNumberFormatter.format(value, decimals: 2);
+  String _format(double value) {
+    if (!IndonesianNumberFormatter.isSupportedMagnitude(value)) return '-';
+    return IndonesianNumberFormatter.format(value, decimals: 2);
+  }
+
+  String _formatPersen(double value) {
+    if (!IndonesianNumberFormatter.isSupportedMagnitude(value)) return '-';
+    return IndonesianNumberFormatter.format(value, decimals: 1);
+  }
 
   bool _nilaiValid(Iterable<double> values) => values.every(
     (value) =>
@@ -1174,6 +1181,8 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
   Widget _buildKartuPakan(int index, CampuranPakanItem item) {
     final kontribusi = KontribusiNutrisiBahanPakan.fromItem(item, index: index);
     final feedColor = getFeedColor(index);
+    final isBahanValid =
+        item.bahan.isValidForCalculation(requirePositiveBk: true);
 
     return AppCard(
       padding: const EdgeInsets.all(12),
@@ -1230,13 +1239,21 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 2),
             child: Text(
-              item.jumlahKg > 0
+              !isBahanValid
+                  ? 'Data bahan pakan tidak valid'
+                  : item.jumlahKg > 0
                   ? 'BK: ${_format(kontribusi.bkKg)} kg  •  PK: ${_format(kontribusi.pkKg)} kg  •  TDN: ${_format(kontribusi.tdnKg)} kg'
-                  : 'BK: ${IndonesianNumberFormatter.format(item.bahan.bk, decimals: 1)}%  •  PK: ${IndonesianNumberFormatter.format(item.bahan.protein, decimals: 1)}%  •  TDN: ${IndonesianNumberFormatter.format(item.bahan.tdn, decimals: 1)}%',
+                  : 'BK: ${_formatPersen(item.bahan.bk)}%  •  PK: ${_formatPersen(item.bahan.protein)}%  •  TDN: ${_formatPersen(item.bahan.tdn)}%',
               style: TextStyle(
                 fontSize: 11.5,
-                fontWeight: item.jumlahKg > 0 ? FontWeight.w600 : FontWeight.normal,
-                color: item.jumlahKg > 0 ? AppColors.textDark : AppColors.textLight,
+                fontWeight: item.jumlahKg > 0 && isBahanValid
+                    ? FontWeight.w600
+                    : FontWeight.normal,
+                color: !isBahanValid
+                    ? AppColors.errorRed
+                    : item.jumlahKg > 0
+                    ? AppColors.textDark
+                    : AppColors.textLight,
               ),
             ),
           ),
@@ -1244,7 +1261,9 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
           AppTextField(
             initialValue: item.jumlahKg == 0
                 ? ''
-                : IndonesianNumberFormatter.format(item.jumlahKg, decimals: 2),
+                : IndonesianNumberFormatter.isSupportedMagnitude(item.jumlahKg)
+                ? IndonesianNumberFormatter.format(item.jumlahKg, decimals: 2)
+                : '',
             label: 'Jumlah',
             suffix: 'kg',
             onChanged: (value) => _ubahJumlahPakan(index, value),
