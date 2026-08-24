@@ -19,7 +19,7 @@ class AppComparisonBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double percentage = limit > 0 ? (current / limit).clamp(0.0, 1.2) : 0;
-    final bool isKurang = current < limit;
+    final bool isKurang = current < limit * 0.95;
     final bool isBerlebih = limit > 0 && current > limit * 1.05;
 
     final color = isKurang
@@ -28,7 +28,7 @@ class AppComparisonBar extends StatelessWidget {
 
     final statusText = isKurang
         ? 'Kurang'
-        : (isBerlebih ? 'Berlebih' : 'Tercukupi');
+        : (isBerlebih ? 'Berlebih' : 'Tercukupi (Pas)');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
