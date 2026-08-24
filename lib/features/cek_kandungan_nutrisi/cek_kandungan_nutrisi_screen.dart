@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/constants/app_colors.dart';
 import '../../core/models/status_perhitungan.dart';
+import '../../core/utils/app_toast.dart';
 import '../../core/utils/currency_formatter.dart';
 import '../../core/utils/indonesian_number_formatter.dart';
 import '../../core/widgets/app_card.dart';
@@ -65,10 +66,12 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
       });
     } catch (e) {
       if (!mounted) return;
+      final errorMsg = 'Gagal memuat bahan pakan: $e';
       setState(() {
-        _errorMessage = 'Gagal memuat bahan pakan: $e';
+        _errorMessage = errorMsg;
         _isLoading = false;
       });
+      AppToast.showError(context, errorMsg);
     }
   }
 
@@ -273,14 +276,25 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
         _statusPerhitungan = StatusPerhitungan.berhasil;
         _pesanPerhitungan = null;
       });
+      if (mounted) {
+        AppToast.showSuccess(
+          context,
+          'Kandungan nutrisi pakan berhasil dihitung.',
+          title: 'Perhitungan Berhasil',
+        );
+      }
     } catch (error) {
+      final pesan = error is FormatException
+          ? error.message
+          : 'Perhitungan nutrisi gagal dilakukan.';
       setState(() {
         _hasilTerhitung = null;
         _statusPerhitungan = StatusPerhitungan.gagal;
-        _pesanPerhitungan = error is FormatException
-            ? error.message
-            : 'Perhitungan nutrisi gagal dilakukan.';
+        _pesanPerhitungan = pesan;
       });
+      if (mounted) {
+        AppToast.showError(context, pesan, title: 'Perhitungan Gagal');
+      }
     }
   }
 
@@ -308,12 +322,9 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
   void _gunakanUntukEvaluasi() {
     final hasil = _hasilTerhitung;
     if (_statusPerhitungan != StatusPerhitungan.berhasil || hasil == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Hitung campuran pakan sebelum digunakan untuk evaluasi.',
-          ),
-        ),
+      AppToast.showWarning(
+        context,
+        'Hitung campuran pakan sebelum digunakan untuk evaluasi.',
       );
       return;
     }

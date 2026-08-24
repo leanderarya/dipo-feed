@@ -352,6 +352,13 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
       _statusPerhitungan = StatusPerhitungan.berhasil;
       _pesanPerhitungan = null;
     });
+    if (mounted) {
+      AppToast.showSuccess(
+        context,
+        'Evaluasi kecukupan pakan berhasil dihitung.',
+        title: 'Perhitungan Berhasil',
+      );
+    }
   }
 
   void _gagalMenghitung(String pesan) {
@@ -360,6 +367,9 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
       _statusPerhitungan = StatusPerhitungan.gagal;
       _pesanPerhitungan = pesan;
     });
+    if (mounted) {
+      AppToast.showError(context, pesan, title: 'Perhitungan Gagal');
+    }
   }
 
   bool _validasiTahapSatu() {
