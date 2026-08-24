@@ -798,7 +798,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
       case 1:
         return Column(
           children: [
-            _buildOutputSection(),
+            _buildEvaluasiScoreboard(),
             const SizedBox(height: 16),
             _buildPemberianPakanSection(),
           ],
@@ -809,6 +809,88 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
             : EvaluasiKecukupanCard(hasil: _hasilEvaluasi!);
     }
     return const SizedBox.shrink();
+  }
+
+  Widget _buildEvaluasiScoreboard() {
+    if (_pemberianPakan.isEmpty) {
+      return _buildScoreboardPlaceholder(
+        icon: Icons.eco_outlined,
+        title: 'Tambahkan pakan untuk melihat evaluasi',
+        subtitle:
+            'Pilih bahan pakan di bawah untuk memulai perbandingan nutrisi secara realtime.',
+      );
+    }
+
+    final semuaJumlahNol = _pemberianPakan.every((item) => item.jumlahKg <= 0);
+    if (semuaJumlahNol) {
+      return _buildScoreboardPlaceholder(
+        icon: Icons.edit_note_rounded,
+        title: 'Isi jumlah pakan untuk memulai evaluasi',
+        subtitle:
+            'Masukkan jumlah pemberian (kg) pada bahan pakan untuk melihat evaluasi realtime.',
+      );
+    }
+
+    if (_hasilEvaluasi != null) {
+      return EvaluasiKecukupanCard(hasil: _hasilEvaluasi!);
+    }
+
+    return const SizedBox.shrink();
+  }
+
+  Widget _buildScoreboardPlaceholder({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.primaryBlue.withValues(alpha: 0.08),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 30, color: AppColors.primaryBlue),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontWeight: FontWeight.w800,
+              fontSize: 15,
+              color: AppColors.textDark,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            subtitle,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.textLight,
+              height: 1.4,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildNavigationControls() {
