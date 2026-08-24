@@ -27,7 +27,7 @@ class EvaluasiKecukupanCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 16),
+      margin: EdgeInsets.zero,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppColors.expertPurple.withValues(alpha: 0.08),
