@@ -983,45 +983,20 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-            childAspectRatio: 2.3,
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
             children: [
-              _buildNutrientMiniCard(
-                singkatan: 'BK',
-                nama: 'Bahan Kering',
-                value: _format(kebutuhan.kebutuhanBkKg),
-                satuan: 'kg',
-              ),
-              _buildNutrientMiniCard(
-                singkatan: 'PK',
-                nama: 'Protein Kasar',
-                value: _format(kebutuhan.kebutuhanProteinKg),
-                satuan: 'kg',
-              ),
-              _buildNutrientMiniCard(
-                singkatan: 'TDN',
-                nama: 'Energi Pakan',
-                value: _format(kebutuhan.kebutuhanTdnKg),
-                satuan: 'kg',
-              ),
-              _buildNutrientMiniCard(
-                singkatan: 'Ca',
-                nama: 'Kalsium',
-                value: _format(kebutuhan.kebutuhanCaGram),
-                satuan: 'g',
-              ),
-              _buildNutrientMiniCard(
-                singkatan: 'P',
-                nama: 'Fosfor',
-                value: _format(kebutuhan.kebutuhanPGram),
-                satuan: 'g',
-              ),
+              _buildNutrientChip('BK', _format(kebutuhan.kebutuhanBkKg), 'kg'),
+              _buildNutrientChip(
+                  'PK', _format(kebutuhan.kebutuhanProteinKg), 'kg'),
+              _buildNutrientChip(
+                  'TDN', _format(kebutuhan.kebutuhanTdnKg), 'kg'),
+              _buildNutrientChip(
+                  'Ca', _format(kebutuhan.kebutuhanCaGram), 'g'),
+              _buildNutrientChip(
+                  'P', _format(kebutuhan.kebutuhanPGram), 'g'),
             ],
           ),
         ],
@@ -1029,67 +1004,42 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
     );
   }
 
-  Widget _buildNutrientMiniCard({
-    required String singkatan,
-    required String nama,
-    required String value,
-    required String satuan,
-  }) {
+  Widget _buildNutrientChip(String label, String value, String satuan) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: AppColors.backgroundCream,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  singkatan,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primaryBlue,
-                  ),
-                ),
-                Text(
-                  nama,
-                  style: const TextStyle(
-                    fontSize: 10.5,
-                    color: AppColors.textLight,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: AppColors.primaryBlue,
             ),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.textDark,
-                ),
-              ),
-              Text(
-                satuan,
-                style: const TextStyle(
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textLight,
-                ),
-              ),
-            ],
+          const SizedBox(width: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              color: AppColors.textDark,
+            ),
+          ),
+          const SizedBox(width: 2),
+          Text(
+            satuan,
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textLight,
+            ),
           ),
         ],
       ),
