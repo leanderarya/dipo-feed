@@ -788,7 +788,13 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
   Widget _buildTahapAktif() {
     switch (_tahapAktif) {
       case 0:
-        return _buildFormInput();
+        return Column(
+          children: [
+            _buildFormInput(),
+            const SizedBox(height: 16),
+            _buildOutputSection(),
+          ],
+        );
       case 1:
         return Column(
           children: [
