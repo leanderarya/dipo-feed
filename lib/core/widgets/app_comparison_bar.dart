@@ -19,8 +19,16 @@ class AppComparisonBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double percentage = limit > 0 ? (current / limit).clamp(0.0, 1.2) : 0;
-    final isOver = current >= limit;
-    final color = isOver ? AppColors.statusPas : AppColors.statusKurang;
+    final bool isKurang = current < limit;
+    final bool isBerlebih = limit > 0 && current > limit * 1.05;
+
+    final color = isKurang
+        ? AppColors.statusKurang
+        : (isBerlebih ? AppColors.statusBerlebih : AppColors.statusPas);
+
+    final statusText = isKurang
+        ? 'Kurang'
+        : (isBerlebih ? 'Berlebih' : 'Tercukupi');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -32,7 +40,7 @@ class AppComparisonBar extends StatelessWidget {
             Text(
               '${IndonesianNumberFormatter.format(current, decimals: 2)} / ${IndonesianNumberFormatter.format(limit, decimals: 2)} $unit',
               style: TextStyle(
-                color: isOver ? AppColors.statusPas : AppColors.statusKurang,
+                color: color,
                 fontWeight: FontWeight.w600,
                 fontSize: 13,
               ),
@@ -77,16 +85,24 @@ class AppComparisonBar extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              isOver ? 'Tercukupi' : 'Kurang',
+              statusText,
               style: TextStyle(
                 fontSize: 11,
                 color: color,
                 fontWeight: FontWeight.w500,
               ),
             ),
-            if (!isOver)
+            if (isKurang)
               Text(
                 'Butuh ${IndonesianNumberFormatter.format(limit - current, decimals: 2)} lagi',
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: AppColors.textLight,
+                ),
+              )
+            else if (isBerlebih)
+              Text(
+                'Kelebihan ${IndonesianNumberFormatter.format(current - limit, decimals: 2)} $unit',
                 style: const TextStyle(
                   fontSize: 11,
                   color: AppColors.textLight,
