@@ -1645,10 +1645,10 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     );
     final selisih = hasilValue - target;
     final statusColor = status == 'Pas'
-        ? AppColors.primaryGreen
+        ? AppColors.statusPas
         : status == 'Kurang'
-        ? AppColors.errorRed
-        : const Color(0xFFB8571B);
+        ? AppColors.statusKurang
+        : AppColors.statusBerlebih;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
