@@ -360,7 +360,7 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
                 onPressed: _isLoading || _isProcessing ? null : _imporCsv,
                 icon: const Icon(
                   Icons.file_upload_outlined,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                 ),
               ),
               if (defaultTargetPlatform != TargetPlatform.linux)
@@ -370,18 +370,18 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
                   onPressed: _isLoading || _isProcessing ? null : _eksporCsv,
                   icon: const Icon(
                     Icons.file_download_outlined,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                   ),
                 ),
               if (_isProcessing)
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 12),
-                  child: Icon(Icons.hourglass_top, color: Colors.white),
+                  child: Icon(Icons.hourglass_top, color: AppColors.textPrimary),
                 ),
               IconButton(
                 tooltip: 'Reset Data',
                 onPressed: _isLoading || _isProcessing ? null : _resetDataAwal,
-                icon: const Icon(Icons.refresh_rounded, color: Colors.white),
+                icon: const Icon(Icons.refresh_rounded, color: AppColors.textPrimary),
               ),
             ],
           ),

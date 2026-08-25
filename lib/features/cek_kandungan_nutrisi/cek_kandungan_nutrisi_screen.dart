@@ -365,7 +365,7 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
                 onPressed: _isLoading ? null : _bukaManajemenMaster,
                 icon: const Icon(
                   Icons.inventory_2_outlined,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                 ),
               ),
             ],
@@ -596,7 +596,7 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
                                 overflow: TextOverflow.ellipsis,
                               ),
                               Text(
-                                '${item.bahan.kategori} • BK: ${IndonesianNumberFormatter.format(item.bahan.bk, decimals: 1)}%',
+                                '${item.bahan.kategori} • BK: ${IndonesianNumberFormatter.isSupportedMagnitude(item.bahan.bk) ? IndonesianNumberFormatter.format(item.bahan.bk, decimals: 1) : '-'}%',
                                 style: const TextStyle(
                                   fontSize: 11,
                                   color: AppColors.textGrey,

@@ -205,14 +205,14 @@ class _HomeScreenState extends State<HomeScreen> {
       childAspectRatio: 0.95,
       children: [
         QuickActionCard(
-          title: 'Cek Kecukupan',
+          title: 'Cek Kecukupan Pakan',
           description: 'Evaluasi kebutuhan vs asupan pakan ternak',
           svgAsset: 'assets/icons/ic_evaluasi.svg',
           baseColor: AppColors.primaryBlue,
           onTap: _bukaCekKecukupan,
         ),
         QuickActionCard(
-          title: 'Cek Kandungan',
+          title: 'Cek Kandungan Nutrisi',
           description: 'Kalkulasi nutrisi campuran bahan pakan',
           icon: Icons.analytics_rounded,
           baseColor: AppColors.secondaryGreen,

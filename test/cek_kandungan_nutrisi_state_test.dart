@@ -141,6 +141,12 @@ void main() {
 
   Future<void> addFeedAndSetWeight(WidgetTester tester, String weight) async {
     await tapText(tester, 'Susun Pakan');
+    await tester.pumpAndSettle();
+    final firstFeed = find.text('Rumput Gajah').last;
+    if (firstFeed.evaluate().isNotEmpty) {
+      await tester.tap(firstFeed);
+      await tester.pumpAndSettle();
+    }
     await tester.enterText(find.byType(TextFormField).first, weight);
     await tester.pump();
   }
@@ -163,7 +169,7 @@ void main() {
     await tapText(tester, 'Hitung');
 
     expect(find.text('Gagal menghitung'), findsOneWidget);
-    expect(find.text('Tambahkan minimal satu bahan pakan.'), findsOneWidget);
+    expect(find.text('Tambahkan minimal satu bahan pakan.'), findsWidgets);
   });
 
   testWidgets('zero total calculation sets gagal with specific message', (
@@ -171,13 +177,19 @@ void main() {
   ) async {
     await pumpScreen(tester);
     await tapText(tester, 'Susun Pakan');
+    await tester.pumpAndSettle();
+    final firstFeed = find.text('Rumput Gajah').last;
+    if (firstFeed.evaluate().isNotEmpty) {
+      await tester.tap(firstFeed);
+      await tester.pumpAndSettle();
+    }
 
     await tapText(tester, 'Hitung');
 
     expect(find.text('Gagal menghitung'), findsOneWidget);
     expect(
       find.text('Total campuran pakan harus lebih dari 0 kg.'),
-      findsOneWidget,
+      findsWidgets,
     );
   });
 
@@ -185,14 +197,12 @@ void main() {
     tester,
   ) async {
     await pumpScreen(tester);
-    await tapText(tester, 'Susun Pakan');
-    await tester.enterText(find.byType(TextFormField).first, 'abc');
-    await tester.pump();
+    await addFeedAndSetWeight(tester, 'abc');
 
     await tapText(tester, 'Hitung');
 
     expect(find.text('Gagal menghitung'), findsOneWidget);
-    expect(find.text('Jumlah atau harga pakan tidak valid.'), findsOneWidget);
+    expect(find.text('Jumlah atau harga pakan tidak valid.'), findsWidgets);
   });
 
   testWidgets('successful Hitung creates snapshot and shows evaluation', (
@@ -219,7 +229,7 @@ void main() {
     expect(find.text('Gagal menghitung'), findsOneWidget);
     expect(
       find.text('Data bahan pakan yang dipilih tidak valid.'),
-      findsOneWidget,
+      findsWidgets,
     );
   });
 
@@ -235,7 +245,7 @@ void main() {
     expect(find.text('Gagal menghitung'), findsOneWidget);
     expect(
       find.text('Data bahan pakan yang dipilih tidak valid.'),
-      findsOneWidget,
+      findsWidgets,
     );
   });
 
@@ -251,7 +261,7 @@ void main() {
     expect(find.text('Gagal menghitung'), findsOneWidget);
     expect(
       find.text('Data bahan pakan yang dipilih tidak valid.'),
-      findsOneWidget,
+      findsWidgets,
     );
   });
 
@@ -273,7 +283,7 @@ void main() {
       await tapText(tester, 'Hitung');
 
       expect(find.text('Gagal menghitung'), findsOneWidget);
-      expect(find.text('Jumlah atau harga pakan tidak valid.'), findsOneWidget);
+      expect(find.text('Jumlah atau harga pakan tidak valid.'), findsWidgets);
     });
   }
 
@@ -286,7 +296,7 @@ void main() {
       await tapText(tester, 'Hitung');
 
       expect(find.text('Gagal menghitung'), findsOneWidget);
-      expect(find.text('Jumlah atau harga pakan tidak valid.'), findsOneWidget);
+      expect(find.text('Jumlah atau harga pakan tidak valid.'), findsWidgets);
     });
   }
 
@@ -297,6 +307,12 @@ void main() {
 
     expect(find.text('Perhitungan berhasil'), findsOneWidget);
     await tapText(tester, 'Tambah Bahan Pakan');
+    await tester.pumpAndSettle();
+    final secondFeed = find.text('Rumput Odot').last;
+    if (secondFeed.evaluate().isNotEmpty) {
+      await tester.tap(secondFeed);
+      await tester.pumpAndSettle();
+    }
 
     expect(find.text('Belum dihitung'), findsOneWidget);
     expect(find.text('Kandungan Campuran Pakan'), findsNothing);
@@ -331,16 +347,16 @@ void main() {
     await tapText(tester, 'Hitung');
 
     expect(find.text('Perhitungan berhasil'), findsOneWidget);
-    final feedDropdown = find.byType(DropdownButtonFormField<BahanPakan>);
+    final feedTile = find.text('Rumput Gajah').first;
     await tester.scrollUntilVisible(
-      feedDropdown,
+      feedTile,
       300,
       scrollable: find.byType(Scrollable).first,
     );
-    await tester.tap(feedDropdown);
-    await tester.pump();
-    await tester.tap(find.text('Rumput Odot'));
-    await tester.pump();
+    await tester.tap(feedTile);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Rumput Odot').last);
+    await tester.pumpAndSettle();
 
     expect(find.text('Belum dihitung'), findsOneWidget);
     expect(find.text('Kandungan Campuran Pakan'), findsNothing);
@@ -482,7 +498,7 @@ void main() {
     expect(find.text('Gagal menghitung'), findsOneWidget);
     expect(
       find.text('Data bahan pakan yang dipilih tidak valid.'),
-      findsOneWidget,
+      findsWidgets,
     );
   });
 

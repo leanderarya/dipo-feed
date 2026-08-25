@@ -599,10 +599,10 @@ void main() {
       expect(find.text('Edit'), findsOneWidget);
       expect(
         tester
-            .widget<TextButton>(
+            .widget<ButtonStyleButton>(
               find.ancestor(
                 of: find.text('Edit'),
-                matching: find.byType(TextButton),
+                matching: find.byWidgetPredicate((w) => w is ButtonStyleButton),
               ),
             )
             .onPressed,
@@ -610,10 +610,10 @@ void main() {
       );
       expect(
         tester
-            .widget<TextButton>(
+            .widget<ButtonStyleButton>(
               find.ancestor(
                 of: find.text('Hapus'),
-                matching: find.byType(TextButton),
+                matching: find.byWidgetPredicate((w) => w is ButtonStyleButton),
               ),
             )
             .onPressed,
