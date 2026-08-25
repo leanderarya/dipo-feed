@@ -261,7 +261,7 @@ class QuickActionCard extends StatelessWidget {
             ),
           ],
         ),
-        const Spacer(),
+        const SizedBox(height: 20),
         // Title
         Text(
           title,
