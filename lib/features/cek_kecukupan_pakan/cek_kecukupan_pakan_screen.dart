@@ -582,25 +582,41 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
   }
 
   Widget _buildTahapAktif() {
-    switch (_tahapAktif) {
-      case 0:
-        return Column(
-          children: [
-            _buildFormInput(),
-            const SizedBox(height: 16),
-            _buildOutputSection(),
-          ],
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      switchInCurve: Curves.easeOutCubic,
+      switchOutCurve: Curves.easeInCubic,
+      transitionBuilder: (child, animation) {
+        return FadeTransition(
+          opacity: animation,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0.03, 0),
+              end: Offset.zero,
+            ).animate(animation),
+            child: child,
+          ),
         );
-      case 1:
-        return Column(
-          children: [
-            _buildEvaluasiScoreboard(),
-            const SizedBox(height: 16),
-            _buildPemberianPakanSection(),
-          ],
-        );
-    }
-    return const SizedBox.shrink();
+      },
+      child: KeyedSubtree(
+        key: ValueKey<int>(_tahapAktif),
+        child: _tahapAktif == 0
+            ? Column(
+                children: [
+                  _buildFormInput(),
+                  const SizedBox(height: 16),
+                  _buildOutputSection(),
+                ],
+              )
+            : Column(
+                children: [
+                  _buildEvaluasiScoreboard(),
+                  const SizedBox(height: 16),
+                  _buildPemberianPakanSection(),
+                ],
+              ),
+      ),
+    );
   }
 
   Widget _buildEvaluasiScoreboard() {
