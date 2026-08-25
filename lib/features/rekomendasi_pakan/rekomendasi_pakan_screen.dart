@@ -511,6 +511,38 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     return kebutuhan;
   }
 
+  String? get _warningLemakSusu {
+    if (_fisiologi != FisiologiSapi.laktasi) return null;
+    final val = _parseDouble(_lemakSusuController.text);
+    if (val <= 0) return null;
+    if (val < 2.5) return 'Kadar lemak susu terlalu rendah (< 2,5%)';
+    if (val > 4.0) return 'Kadar lemak susu melebihi standar (> 4,0%)';
+    return null;
+  }
+
+  Widget _buildRangeWarning(String message) {
+    return Row(
+      children: [
+        const Icon(
+          Icons.info_outline,
+          size: 13,
+          color: AppColors.accentOrange,
+        ),
+        const SizedBox(width: 4),
+        Expanded(
+          child: Text(
+            message,
+            style: const TextStyle(
+              fontSize: 11,
+              color: AppColors.accentOrange,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   double _parseDouble(String value) {
     final parsed = IndonesianNumberFormatter.tryParse(value)?.toDouble();
     return parsed != null &&
@@ -1103,6 +1135,10 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                   ),
                 ],
               ),
+              if (_warningLemakSusu != null) ...[
+                const SizedBox(height: 6),
+                _buildRangeWarning(_warningLemakSusu!),
+              ],
             ],
             if (widget.kebutuhanAwal != null) ...[
               const SizedBox(height: 16),
