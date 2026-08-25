@@ -5,7 +5,7 @@ import '../../core/models/status_perhitungan.dart';
 import '../../core/utils/app_toast.dart';
 import '../../core/utils/indonesian_number_formatter.dart';
 import '../../core/widgets/app_card.dart';
-import '../../core/widgets/app_sliver_header.dart';
+import '../../core/widgets/app_header.dart';
 import '../../core/widgets/app_text_field.dart';
 import '../../data/models/bahan_pakan.dart';
 import '../../data/models/campuran_pakan_item.dart';
@@ -534,27 +534,41 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
   Widget _buildStepperBody() {
     return Column(
       children: [
-        AnimatedSize(
-          duration: const Duration(milliseconds: 275),
-          curve: Curves.easeInOut,
-          alignment: Alignment.topCenter,
-          child: _tahapAktif == 0
-              ? SizedBox(
-                  height: 210,
-                  child: CustomScrollView(
-                    slivers: [
-                      AppSliverHeader(
-                        title: 'Cek Kecukupan Pakan',
-                        subtitle: 'Cek kecukupan nutrien dan pemberian pakan.',
-                        onBackTap: _handleSystemBack,
-                      ),
-                    ],
-                  ),
-                )
-              : _buildCompactHeader(),
+        AppHeader(
+          title: 'Cek Kecukupan Pakan',
+          showBackButton: true,
+          onBackTap: () {
+            if (_tahapAktif == 0) {
+              _handleSystemBack();
+            } else {
+              _kembaliTahap();
+            }
+          },
+          actions: [
+            Container(
+              margin: const EdgeInsets.only(right: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: AppColors.primaryBlue.withValues(alpha: 0.15),
+                ),
+              ),
+              child: Text(
+                'Tahap ${_tahapAktif + 1}/2',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primaryBlue,
+                ),
+              ),
+            ),
+          ],
         ),
         Expanded(
           child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
             child: Column(
               children: [
@@ -569,42 +583,6 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
     );
   }
 
-  Widget _buildCompactHeader() {
-    return Container(
-      color: AppColors.primaryBlue,
-      padding: EdgeInsets.only(
-        top: MediaQuery.paddingOf(context).top,
-        left: 8,
-        right: 16,
-      ),
-      child: SizedBox(
-        height: 56,
-        child: Row(
-          children: [
-            IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.white),
-              onPressed: _kembaliTahap,
-            ),
-            Expanded(
-              child: const Text(
-                'Cek Kecukupan Pakan',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            Text(
-              '${_tahapAktif + 1}/2',
-              style: const TextStyle(color: Colors.white),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget _buildProgressIndicator() {
     final labels = [
