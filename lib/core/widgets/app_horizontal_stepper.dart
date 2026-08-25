@@ -45,17 +45,44 @@ class AppHorizontalStepper extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Header info: Current Step Description Label
-          Text(
-            steps[safeStep],
-            style: GoogleFonts.inter(
-              fontSize: 13.5,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
-              letterSpacing: -0.2,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+          // Header info: Current Step Description Label with Step Count
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 250),
+                  child: Text(
+                    steps[safeStep],
+                    key: ValueKey<int>(safeStep),
+                    style: GoogleFonts.inter(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                      letterSpacing: -0.2,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryLight,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  'Tahap ${safeStep + 1} dari $totalSteps',
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primaryBlue,
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
           // Pill Track Stepper (Circles & Connecting Lines)
@@ -69,9 +96,9 @@ class AppHorizontalStepper extends StatelessWidget {
 
                 Widget circle = AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
-                  width: 32,
-                  height: 32,
+                  curve: Curves.easeOutBack,
+                  width: isActive ? 34 : 30,
+                  height: isActive ? 34 : 30,
                   decoration: BoxDecoration(
                     color: isCompleted
                         ? AppColors.secondaryGreen
@@ -85,18 +112,28 @@ class AppHorizontalStepper extends StatelessWidget {
                     boxShadow: isActive
                         ? [
                             BoxShadow(
-                              color: AppColors.accentOrange.withValues(alpha: 0.38),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
+                              color:
+                                  AppColors.accentOrange.withValues(alpha: 0.38),
+                              blurRadius: 10,
+                              offset: const Offset(0, 3),
                             ),
                           ]
-                        : null,
+                        : (isCompleted
+                            ? [
+                                BoxShadow(
+                                  color: AppColors.secondaryGreen
+                                      .withValues(alpha: 0.25),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ]
+                            : null),
                   ),
                   alignment: Alignment.center,
                   child: isCompleted
                       ? const Icon(
                           Icons.check_rounded,
-                          size: 18,
+                          size: 17,
                           color: Colors.white,
                         )
                       : Text(
@@ -105,7 +142,7 @@ class AppHorizontalStepper extends StatelessWidget {
                             color: isActive
                                 ? Colors.white
                                 : AppColors.textSecondary,
-                            fontSize: 13,
+                            fontSize: 12.5,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
@@ -128,7 +165,7 @@ class AppHorizontalStepper extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4),
                     child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
+                      duration: const Duration(milliseconds: 350),
                       curve: Curves.easeInOut,
                       height: 3.5,
                       decoration: BoxDecoration(
