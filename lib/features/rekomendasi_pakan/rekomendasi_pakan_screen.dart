@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/constants/app_colors.dart';
 import '../../core/utils/app_toast.dart';
@@ -889,7 +890,23 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     if (_tahapAktif == 2) return const SizedBox.shrink();
     return SizedBox(
       width: double.infinity,
-      child: FilledButton(onPressed: _lanjutTahap, child: const Text('Lanjut')),
+      child: FilledButton(
+        onPressed: _lanjutTahap,
+        style: FilledButton.styleFrom(
+          backgroundColor: AppColors.accentOrange,
+          foregroundColor: Colors.white,
+          elevation: 2,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          textStyle: GoogleFonts.inter(
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        child: const Text('Lanjut'),
+      ),
     );
   }
 
@@ -943,14 +960,22 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     required IconData icon,
     String? subtitle,
     required Widget child,
+    Widget? trailing,
   }) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.grey.shade200),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x060F172A),
+            blurRadius: 12,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -959,13 +984,13 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 34,
-                height: 34,
+                width: 36,
+                height: 36,
                 decoration: BoxDecoration(
                   color: AppColors.surfaceLow,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(icon, size: 18, color: AppColors.secondaryGreen),
+                child: Icon(icon, size: 20, color: AppColors.secondaryGreen),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -974,26 +999,28 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
-                        fontSize: 18,
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
                         fontWeight: FontWeight.w800,
-                        color: AppColors.textDark,
+                        color: AppColors.textPrimary,
+                        letterSpacing: -0.3,
                       ),
                     ),
                     if (subtitle != null) ...[
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 3),
                       Text(
                         subtitle,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: AppColors.textLight,
-                          height: 1.45,
+                        style: GoogleFonts.inter(
+                          fontSize: 12.5,
+                          color: AppColors.textSecondary,
+                          height: 1.4,
                         ),
                       ),
                     ],
                   ],
                 ),
               ),
+              ?trailing,
             ],
           ),
           const SizedBox(height: 16),
