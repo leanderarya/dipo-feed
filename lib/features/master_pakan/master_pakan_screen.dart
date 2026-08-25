@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../core/constants/app_colors.dart';
@@ -355,33 +356,104 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
             title: 'Database Pakan',
             subtitle: 'Database bahan pakan.',
             actions: [
-              IconButton(
-                tooltip: 'Impor CSV',
-                onPressed: _isLoading || _isProcessing ? null : _imporCsv,
-                icon: const Icon(
-                  Icons.file_upload_outlined,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              if (defaultTargetPlatform != TargetPlatform.linux)
-                IconButton(
-                  key: _exportButtonKey,
-                  tooltip: 'Ekspor CSV',
-                  onPressed: _isLoading || _isProcessing ? null : _eksporCsv,
-                  icon: const Icon(
-                    Icons.file_download_outlined,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
               if (_isProcessing)
                 const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 12),
+                  padding: EdgeInsets.symmetric(horizontal: 8),
                   child: Icon(Icons.hourglass_top, color: AppColors.textPrimary),
                 ),
-              IconButton(
-                tooltip: 'Reset Data',
-                onPressed: _isLoading || _isProcessing ? null : _resetDataAwal,
-                icon: const Icon(Icons.refresh_rounded, color: AppColors.textPrimary),
+              PopupMenuButton<String>(
+                tooltip: 'Menu Aksi',
+                icon: const Icon(
+                  Icons.more_vert_rounded,
+                  color: AppColors.textPrimary,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  side: const BorderSide(color: AppColors.border),
+                ),
+                color: AppColors.surface,
+                elevation: 4,
+                enabled: !_isLoading && !_isProcessing,
+                onSelected: (aksi) {
+                  switch (aksi) {
+                    case 'impor':
+                      _imporCsv();
+                      break;
+                    case 'ekspor':
+                      _eksporCsv();
+                      break;
+                    case 'reset':
+                      _resetDataAwal();
+                      break;
+                  }
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'impor',
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.file_upload_outlined,
+                          size: 20,
+                          color: AppColors.primaryBlue,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Impor CSV',
+                          style: GoogleFonts.inter(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (defaultTargetPlatform != TargetPlatform.linux)
+                    PopupMenuItem(
+                      key: _exportButtonKey,
+                      value: 'ekspor',
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.file_download_outlined,
+                            size: 20,
+                            color: AppColors.secondaryGreen,
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            'Ekspor CSV',
+                            style: GoogleFonts.inter(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  PopupMenuItem(
+                    value: 'reset',
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.refresh_rounded,
+                          size: 20,
+                          color: AppColors.accentOrange,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Reset Data Awal',
+                          style: GoogleFonts.inter(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
