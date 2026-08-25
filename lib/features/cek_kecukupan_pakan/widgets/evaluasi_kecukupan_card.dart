@@ -601,6 +601,8 @@ class StackedNutrientProgressBar extends StatelessWidget {
     final maxScale = (pemberian > baseMax) ? pemberian * 1.05 : baseMax;
     final targetFraction =
         kebutuhan > 0 ? (kebutuhan / maxScale).clamp(0.0, 1.0) : 0.0;
+    final targetFillFactor =
+        pemberian > 0 ? (pemberian / maxScale).clamp(0.0, 1.0) : 0.0;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -619,38 +621,49 @@ class StackedNutrientProgressBar extends StatelessWidget {
                 border: Border.all(color: Colors.grey.shade200, width: 0.5),
               ),
             ),
-            // Segmented items or fallback
-            if (segmen.isNotEmpty && pemberian > 0)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(6),
-                child: SizedBox(
-                  height: 11,
-                  width: (pemberian / maxScale).clamp(0.0, 1.0) * totalWidth,
-                  child: Row(
-                    children: segmen.map((s) {
-                      if (s.nilaiKg <= 0) return const SizedBox.shrink();
-                      final segmentFraction =
-                          (s.nilaiKg / pemberian).clamp(0.0, 1.0);
-                      return Expanded(
-                        flex: (segmentFraction * 1000).round().clamp(1, 1000),
-                        child: Container(
-                          color: s.warna,
-                          height: 11,
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              )
-            else if (pemberian > 0)
-              Container(
-                height: 11,
-                width: (pemberian / maxScale).clamp(0.0, 1.0) * totalWidth,
-                decoration: BoxDecoration(
-                  color: fallbackColor,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-              ),
+            // Animated Segmented items or fallback
+            TweenAnimationBuilder<double>(
+              tween: Tween<double>(begin: 0.0, end: targetFillFactor),
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.easeOutCubic,
+              builder: (context, animatedFill, child) {
+                final animatedWidth = animatedFill * totalWidth;
+                if (segmen.isNotEmpty && pemberian > 0) {
+                  return ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: SizedBox(
+                      height: 11,
+                      width: animatedWidth,
+                      child: Row(
+                        children: segmen.map((s) {
+                          if (s.nilaiKg <= 0) return const SizedBox.shrink();
+                          final segmentFraction =
+                              (s.nilaiKg / pemberian).clamp(0.0, 1.0);
+                          return Expanded(
+                            flex:
+                                (segmentFraction * 1000).round().clamp(1, 1000),
+                            child: Container(
+                              color: s.warna,
+                              height: 11,
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  );
+                } else if (pemberian > 0) {
+                  return Container(
+                    height: 11,
+                    width: animatedWidth,
+                    decoration: BoxDecoration(
+                      color: fallbackColor,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
             // Target 100% threshold line
             if (kebutuhan > 0)
               Positioned(
