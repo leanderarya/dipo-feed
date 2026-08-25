@@ -670,18 +670,56 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
   }
 
   Widget _buildMetric(String label, String value) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(fontSize: 10, color: AppColors.textGrey),
-        ),
-        Text(
-          value,
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-        ),
-      ],
+    final Color bgColor;
+    final Color textColor;
+
+    switch (label) {
+      case 'BK':
+        bgColor = AppColors.secondaryLight;
+        textColor = AppColors.secondaryGreen;
+        break;
+      case 'PK':
+        bgColor = AppColors.primaryLight;
+        textColor = AppColors.primaryBlue;
+        break;
+      case 'TDN':
+        bgColor = AppColors.accentLight;
+        textColor = AppColors.accentOrange;
+        break;
+      default:
+        bgColor = AppColors.surfaceLow;
+        textColor = AppColors.textDark;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: textColor.withValues(alpha: 0.15), width: 0.8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 9.5,
+              fontWeight: FontWeight.w600,
+              color: textColor.withValues(alpha: 0.8),
+            ),
+          ),
+          const SizedBox(height: 1),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w800,
+              color: textColor,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
