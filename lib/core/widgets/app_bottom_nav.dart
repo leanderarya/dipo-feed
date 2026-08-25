@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../constants/app_colors.dart';
 
 class AppBottomNav extends StatelessWidget {
@@ -16,25 +17,34 @@ class AppBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.fromLTRB(24, 0, 24, 30),
-      height: 75,
+      margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+      height: 70,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.85),
-        borderRadius: BorderRadius.circular(30),
+        color: Colors.white.withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(
+          color: AppColors.border.withValues(alpha: 0.8),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+            color: const Color(0xFF0F172A).withValues(alpha: 0.08),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: AppColors.primaryBlue.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(28),
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
@@ -55,42 +65,65 @@ class AppBottomNav extends StatelessWidget {
 
   Widget _buildNavItem(int index, String svgAsset, String label) {
     final bool isActive = currentIndex == index;
+
     return GestureDetector(
       onTap: () => onTap(index),
       behavior: HitTestBehavior.opaque,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: isActive
-                  ? AppColors.primaryGreen.withValues(alpha: 0.1)
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: SvgPicture.asset(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutCubic,
+        padding: EdgeInsets.symmetric(
+          horizontal: isActive ? 16 : 12,
+          vertical: 8,
+        ),
+        decoration: BoxDecoration(
+          color: isActive
+              ? AppColors.primaryBlue.withValues(alpha: 0.08)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SvgPicture.asset(
               svgAsset,
-              width: 26,
-              height: 26,
+              width: 22,
+              height: 22,
               colorFilter: ColorFilter.mode(
-                isActive ? AppColors.primaryGreen : AppColors.textGrey,
+                isActive ? AppColors.primaryBlue : AppColors.textSecondary,
                 BlendMode.srcIn,
               ),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
-              color: isActive ? AppColors.primaryGreen : AppColors.textGrey,
-              letterSpacing: 0.5,
+            const SizedBox(height: 3),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (isActive) ...[
+                  Container(
+                    width: 4,
+                    height: 4,
+                    margin: const EdgeInsets.only(right: 4),
+                    decoration: const BoxDecoration(
+                      color: AppColors.secondaryGreen,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ],
+                Text(
+                  label,
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                    color: isActive
+                        ? AppColors.primaryBlue
+                        : AppColors.textSecondary,
+                    letterSpacing: -0.1,
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
