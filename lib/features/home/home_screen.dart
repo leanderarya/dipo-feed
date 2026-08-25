@@ -9,6 +9,8 @@ import '../../data/sources/bahan_pakan_repository.dart';
 import '../cek_kandungan_nutrisi/cek_kandungan_nutrisi_screen.dart';
 import '../cek_kecukupan_pakan/cek_kecukupan_pakan_screen.dart';
 import '../master_pakan/master_pakan_screen.dart';
+import '../panduan/panduan_screen.dart';
+import '../pengaturan/pengaturan_screen.dart';
 import '../rekomendasi_pakan/rekomendasi_pakan_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -42,29 +44,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onTapBottomNav(int index) {
-    if (index == 0) {
-      setState(() {
-        _selectedIndex = index;
-      });
-      return;
-    }
-
-    // Show "Under Development" for Panduan and Pengaturan
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          index == 1
-              ? 'Fitur Panduan segera hadir.'
-              : 'Fitur Pengaturan segera hadir.',
-          style: const TextStyle(fontWeight: FontWeight.w600),
-        ),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        backgroundColor: AppColors.primaryBlue,
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 
   void _bukaCekKecukupan() {
@@ -134,17 +116,13 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: const AppHeader(isHome: true),
       body: Stack(
         children: [
-          SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 110),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildGreetingHeader(),
-                const SizedBox(height: 20),
-                _buildBentoGrid(),
-              ],
-            ),
+          IndexedStack(
+            index: _selectedIndex,
+            children: [
+              _buildHomeContent(),
+              const PanduanScreen(isTab: true),
+              const PengaturanScreen(isTab: true),
+            ],
           ),
           Align(
             alignment: Alignment.bottomCenter,
@@ -153,6 +131,21 @@ class _HomeScreenState extends State<HomeScreen> {
               onTap: _onTapBottomNav,
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHomeContent() {
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 110),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildGreetingHeader(),
+          const SizedBox(height: 20),
+          _buildBentoGrid(),
         ],
       ),
     );
