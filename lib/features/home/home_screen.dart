@@ -5,6 +5,7 @@ import '../../core/constants/app_colors.dart';
 import '../../core/widgets/app_header.dart';
 import '../../core/widgets/app_bottom_nav.dart';
 import '../../core/widgets/quick_action_card.dart';
+import '../../data/sources/bahan_pakan_repository.dart';
 import '../cek_kandungan_nutrisi/cek_kandungan_nutrisi_screen.dart';
 import '../cek_kecukupan_pakan/cek_kecukupan_pakan_screen.dart';
 import '../master_pakan/master_pakan_screen.dart';
@@ -19,6 +20,26 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
+  int _jumlahBahan = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _muatJumlahBahan();
+  }
+
+  Future<void> _muatJumlahBahan() async {
+    try {
+      final repo = BahanPakanRepository();
+      await repo.initialize();
+      if (!mounted) return;
+      setState(() {
+        _jumlahBahan = repo.dataAktif.length;
+      });
+    } catch (_) {
+      // Fallback: just keep 0
+    }
+  }
 
   void _onTapBottomNav(int index) {
     if (index == 0) {
@@ -64,7 +85,10 @@ class _HomeScreenState extends State<HomeScreen> {
     Navigator.push(
       context,
       _createRoute(const MasterPakanScreen()),
-    ).then((_) => setState(() => _selectedIndex = 0));
+    ).then((_) {
+      setState(() => _selectedIndex = 0);
+      _muatJumlahBahan(); // refresh count after potential changes
+    });
   }
 
   void _bukaFormulasi() {
@@ -116,19 +140,9 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildHeroBanner(),
+                _buildGreetingHeader(),
                 const SizedBox(height: 20),
-                Text(
-                  'Fitur Utama',
-                  style: GoogleFonts.inter(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                    letterSpacing: -0.3,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                _buildFeatureGrid(),
+                _buildBentoGrid(),
               ],
             ),
           ),
@@ -144,117 +158,146 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildHeroBanner() {
+  /// Compact greeting header replacing the old large hero banner.
+  Widget _buildGreetingHeader() {
+    final hour = DateTime.now().hour;
+    final String greeting;
+    if (hour < 11) {
+      greeting = 'Selamat Pagi';
+    } else if (hour < 15) {
+      greeting = 'Selamat Siang';
+    } else if (hour < 18) {
+      greeting = 'Selamat Sore';
+    } else {
+      greeting = 'Selamat Malam';
+    }
+
     return Container(
       width: double.infinity,
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.border),
-        boxShadow: const [
+        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.primaryBlue,
+            AppColors.primaryBlue.withValues(alpha: 0.85),
+          ],
+        ),
+        boxShadow: [
           BoxShadow(
-            color: Color(0x140F172A),
-            blurRadius: 16,
-            offset: Offset(0, 6),
+            color: AppColors.primaryBlue.withValues(alpha: 0.25),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
-      clipBehavior: Clip.antiAlias,
-      child: Stack(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Hero Background Image
-          Positioned.fill(
-            child: Image.asset(
-              'assets/images/hero_banner_sapi.jpg',
-              fit: BoxFit.cover,
-            ),
-          ),
-          // Gradient Overlay
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    const Color(0xFF0F172A).withValues(alpha: 0.35),
-                    const Color(0xFF0F172A).withValues(alpha: 0.88),
-                  ],
-                ),
+          // Badge
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(100),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.2),
               ),
             ),
-          ),
-          // Content
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryBlue,
-                    borderRadius: BorderRadius.circular(100),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.25),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 6,
-                        height: 6,
-                        decoration: const BoxDecoration(
-                          color: AppColors.secondaryGreen,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        'RESEARCH-BASED FPP UNDIP',
-                        style: GoogleFonts.inter(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                          letterSpacing: 0.8,
-                        ),
-                      ),
-                    ],
+                  width: 6,
+                  height: 6,
+                  decoration: const BoxDecoration(
+                    color: AppColors.secondaryGreen,
+                    shape: BoxShape.circle,
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(width: 6),
                 Text(
-                  'Optimalkan Nutrisi\nTernak Anda',
+                  'RESEARCH-BASED FPP UNDIP',
                   style: GoogleFonts.inter(
-                    fontSize: 24,
+                    fontSize: 9,
                     fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                    height: 1.15,
-                    letterSpacing: -0.5,
-                    shadows: const [
-                      Shadow(
-                        color: Colors.black45,
-                        blurRadius: 8,
-                        offset: Offset(0, 2),
-                      ),
-                    ],
+                    color: Colors.white.withValues(alpha: 0.9),
+                    letterSpacing: 0.8,
                   ),
                 ),
-                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          // Greeting + Tagline
+          Text(
+            '$greeting 👋',
+            style: GoogleFonts.inter(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+              height: 1.15,
+              letterSpacing: -0.5,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Optimalkan nutrisi ternak Anda',
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              color: Colors.white.withValues(alpha: 0.85),
+              fontWeight: FontWeight.w500,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 14),
+          // Quick Stat Row
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.1),
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.inventory_2_outlined,
+                  size: 14,
+                  color: AppColors.secondaryGreen,
+                ),
+                const SizedBox(width: 6),
                 Text(
-                  'Standar riset terkini dari Fakultas Peternakan dan Pertanian (FPP) Universitas Diponegoro',
+                  '$_jumlahBahan Bahan Pakan',
                   style: GoogleFonts.inter(
-                    fontSize: 12.5,
-                    color: Colors.white.withValues(alpha: 0.9),
-                    fontWeight: FontWeight.w500,
-                    height: 1.35,
-                    shadows: const [
-                      Shadow(
-                        color: Colors.black38,
-                        blurRadius: 6,
-                        offset: Offset(0, 1),
-                      ),
-                    ],
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+                Container(
+                  width: 1,
+                  height: 12,
+                  margin: const EdgeInsets.symmetric(horizontal: 10),
+                  color: Colors.white.withValues(alpha: 0.25),
+                ),
+                Icon(
+                  Icons.grid_view_rounded,
+                  size: 14,
+                  color: AppColors.accentOrange,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  '4 Fitur Siap',
+                  style: GoogleFonts.inter(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
                   ),
                 ),
               ],
@@ -265,45 +308,74 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildFeatureGrid() {
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 2,
-      crossAxisSpacing: 14,
-      mainAxisSpacing: 14,
-      childAspectRatio: 0.95,
+  /// Asymmetric Bento Grid layout:
+  /// Row 1: Full-width hero card (Cek Kecukupan)
+  /// Row 2: Two medium cards side-by-side (Rekomendasi + Cek Kandungan)
+  /// Row 3: Full-width card (Database Pakan)
+  Widget _buildBentoGrid() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Section label
+        Text(
+          'Fitur Utama',
+          style: GoogleFonts.inter(
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+            letterSpacing: -0.3,
+          ),
+        ),
+        const SizedBox(height: 12),
+
+        // Row 1: Hero Card — Cek Kecukupan Pakan (full-width)
         QuickActionCard(
           title: 'Cek Kecukupan Pakan',
-          description: 'Evaluasi kebutuhan vs asupan pakan ternak',
+          description: 'Evaluasi kebutuhan vs asupan nutrisi ransum ternak Anda secara presisi',
           svgAsset: 'assets/icons/ic_evaluasi.svg',
           baseColor: AppColors.primaryBlue,
           onTap: _bukaCekKecukupan,
+          isHero: true,
+          chipLabels: const ['Sapi Potong', 'Sapi Perah', 'Kambing / Domba'],
         ),
-        QuickActionCard(
-          title: 'Cek Kandungan Nutrisi',
-          description: 'Kalkulasi nutrisi campuran bahan pakan',
-          icon: Icons.analytics_rounded,
-          baseColor: AppColors.secondaryGreen,
-          onTap: _bukaCekKandungan,
+        const SizedBox(height: 14),
+
+        // Row 2: Two medium cards side-by-side
+        Row(
+          children: [
+            Expanded(
+              child: QuickActionCard(
+                title: 'Rekomendasi Pakan',
+                description: 'Formulasi ransum otomatis',
+                svgAsset: 'assets/icons/ic_rekomendasi.svg',
+                baseColor: AppColors.accentOrange,
+                onTap: _bukaFormulasi,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: QuickActionCard(
+                title: 'Cek Kandungan Nutrisi',
+                description: 'Kalkulasi nutrisi campuran',
+                icon: Icons.analytics_rounded,
+                baseColor: AppColors.secondaryGreen,
+                onTap: _bukaCekKandungan,
+              ),
+            ),
+          ],
         ),
-        QuickActionCard(
-          title: 'Rekomendasi Pakan',
-          description: 'Formulasi ransum otomatis sesuai kebutuhan',
-          svgAsset: 'assets/icons/ic_rekomendasi.svg',
-          baseColor: AppColors.accentOrange,
-          onTap: _bukaFormulasi,
-        ),
+        const SizedBox(height: 14),
+
+        // Row 3: Full-width card — Database Pakan
         QuickActionCard(
           title: 'Database Pakan',
-          description: 'Katalog & kandungan nutrien pakan',
+          description: '$_jumlahBahan bahan pakan terdaftar — katalog & kandungan nutrien lengkap',
           svgAsset: 'assets/icons/ic_database.svg',
           baseColor: AppColors.expertPurple,
           onTap: _bukaMasterPakan,
+          isHero: true,
         ),
       ],
     );
   }
 }
-
