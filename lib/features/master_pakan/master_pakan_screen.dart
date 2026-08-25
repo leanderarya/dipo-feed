@@ -493,7 +493,7 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
                       final bahan = entry.value;
                       return StaggeredEntryCard(
                         key: ValueKey('staggered_bahan_${bahan.id}'),
-                        delay: Duration(milliseconds: (index.clamp(0, 8)) * 40),
+                        delay: Duration(milliseconds: (index.clamp(0, 10)) * 70),
                         child: _buildBahanCard(bahan),
                       );
                     }),

@@ -595,7 +595,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
             const SizedBox(height: 16),
             StaggeredEntryCard(
               key: const ValueKey('staggered_output_section'),
-              delay: const Duration(milliseconds: 120),
+              delay: const Duration(milliseconds: 160),
               child: _buildOutputSection(),
             ),
           ],
@@ -611,7 +611,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
             const SizedBox(height: 16),
             StaggeredEntryCard(
               key: const ValueKey('staggered_pemberian_pakan'),
-              delay: const Duration(milliseconds: 120),
+              delay: const Duration(milliseconds: 160),
               child: _buildPemberianPakanSection(),
             ),
           ],

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 
-/// A lightweight widget that animates its [child] with a subtle
-/// **fade-in** and **slide-up** transition, with an optional [delay]
-/// for creating staggered visual entrances on cards and sections.
-class StaggeredEntryCard extends StatelessWidget {
+/// An animated card wrapper that performs a smooth **slide-up** and **fade-in**
+/// transition with a noticeable [delay] for creating crisp staggered cascade effects.
+class StaggeredEntryCard extends StatefulWidget {
   final Widget child;
   final Duration delay;
   final Duration duration;
@@ -13,36 +12,74 @@ class StaggeredEntryCard extends StatelessWidget {
     super.key,
     required this.child,
     this.delay = Duration.zero,
-    this.duration = const Duration(milliseconds: 350),
-    this.slideOffset = 16.0,
+    this.duration = const Duration(milliseconds: 400),
+    this.slideOffset = 28.0,
   });
 
   @override
+  State<StaggeredEntryCard> createState() => _StaggeredEntryCardState();
+}
+
+class _StaggeredEntryCardState extends State<StaggeredEntryCard>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _fadeAnimation;
+  late final Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: widget.duration,
+    );
+
+    _fadeAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOut,
+    );
+
+    _slideAnimation = Tween<Offset>(
+      begin: Offset(0, widget.slideOffset),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeOutCubic,
+      ),
+    );
+
+    if (widget.delay == Duration.zero) {
+      _controller.forward();
+    } else {
+      Future.delayed(widget.delay, () {
+        if (mounted) {
+          _controller.forward();
+        }
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween<double>(begin: 0.0, end: 1.0),
-      duration: duration + delay,
-      curve: Curves.easeOutCubic,
-      builder: (context, progress, _) {
-        // If there's a delay, we calculate effective progress after delay factor
-        final delayFraction =
-            (duration + delay).inMilliseconds > 0
-                ? delay.inMilliseconds / (duration + delay).inMilliseconds
-                : 0.0;
-
-        final effectiveProgress = progress <= delayFraction
-            ? 0.0
-            : ((progress - delayFraction) / (1.0 - delayFraction)).clamp(0.0, 1.0);
-
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
         return Opacity(
-          opacity: effectiveProgress,
+          opacity: _fadeAnimation.value,
           child: Transform.translate(
-            offset: Offset(0, slideOffset * (1.0 - effectiveProgress)),
+            offset: _slideAnimation.value,
             child: child,
           ),
         );
       },
-      child: child,
+      child: widget.child,
     );
   }
 }
