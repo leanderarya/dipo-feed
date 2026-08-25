@@ -828,11 +828,33 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
                 controller: _lemakSusuController,
                 label: '% Lemak Susu',
                 suffix: '%',
-                hintText: '2,5 – 4,0',
+                hintText: 'Misal: 3,5',
                 validator: _validasiLemakSusu,
               ),
+              const SizedBox(height: 6),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    size: 15,
+                    color: Colors.grey.shade600,
+                  ),
+                  const SizedBox(width: 6),
+                  const Expanded(
+                    child: Text(
+                      'Kadar lemak susu sapi saat ini.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textLight,
+                        height: 1.3,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
               if (_warningLemakSusu != null) ...[
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 _buildRangeWarning(_warningLemakSusu!),
               ],
             ],
