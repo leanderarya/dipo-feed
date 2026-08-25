@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../constants/app_colors.dart';
 
 class QuickActionCard extends StatelessWidget {
@@ -22,77 +23,109 @@ class QuickActionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(12), // Reduced from 16 for compact look
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(
-            20,
-          ), // Slightly smaller radius for sleekness
-          border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: baseColor.withValues(alpha: 0.15),
+              width: 1.2,
             ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10), // Reduced from 12
-              decoration: BoxDecoration(
-                color: baseColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(14),
+            boxShadow: [
+              BoxShadow(
+                color: baseColor.withValues(alpha: 0.04),
+                blurRadius: 14,
+                offset: const Offset(0, 4),
               ),
-              child: svgAsset != null
-                  ? SvgPicture.asset(
-                      svgAsset!,
-                      width: 24, // Reduced from 26
-                      height: 24, // Reduced from 26
-                      colorFilter: ColorFilter.mode(baseColor, BlendMode.srcIn),
-                    )
-                  : Icon(
-                      icon,
-                      color: baseColor,
-                      size: 24, // Reduced from 26
+              const BoxShadow(
+                color: Color(0x050F172A),
+                blurRadius: 8,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Top Row: Icon Container + Mini Indicator Arrow
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: baseColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(14),
                     ),
-            ),
-            const SizedBox(height: 10), // Reduced from 16
-            Text(
-              title,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize:
-                    14, // Slightly smaller from 16 to fit beautifully in 2 lines
-                fontWeight: FontWeight.w800,
-                color: AppColors.textDark,
-                height: 1.1,
-                letterSpacing: -0.2,
+                    alignment: Alignment.center,
+                    child: svgAsset != null
+                        ? SvgPicture.asset(
+                            svgAsset!,
+                            width: 24,
+                            height: 24,
+                            colorFilter: ColorFilter.mode(baseColor, BlendMode.srcIn),
+                          )
+                        : Icon(
+                            icon ?? Icons.grid_view_rounded,
+                            color: baseColor,
+                            size: 24,
+                          ),
+                  ),
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceLow,
+                      shape: BoxShape.circle,
+                    ),
+                    alignment: Alignment.center,
+                    child: Icon(
+                      Icons.arrow_forward_rounded,
+                      size: 14,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 4), // Reduced from 6
-            Expanded(
-              child: Text(
-                description,
-                maxLines: 3,
+              const Spacer(),
+              // Title
+              Text(
+                title,
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: AppColors.textGrey.withValues(alpha: 0.8),
-                  height: 1.3,
+                style: GoogleFonts.inter(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                  height: 1.2,
+                  letterSpacing: -0.2,
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 4),
+              // Description
+              Text(
+                description,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.inter(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.textSecondary,
+                  height: 1.35,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
+

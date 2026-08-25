@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/constants/app_colors.dart';
 import '../../core/widgets/app_header.dart';
@@ -98,39 +99,25 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         );
       },
-      transitionDuration: const Duration(milliseconds: 500),
+      transitionDuration: const Duration(milliseconds: 400),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundCream,
+      backgroundColor: AppColors.background,
       appBar: const AppHeader(isHome: true),
       body: Stack(
         children: [
           SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(
-              20,
-              16,
-              20,
-              110,
-            ), // Optimized padding for iOS and screen viewports
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 110),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildHeroBanner(),
-                const SizedBox(height: 20), // Reduced from 32
-                const Text(
-                  'Fitur Utama',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primaryBlue,
-                    letterSpacing: -0.5,
-                  ),
-                ),
-                const SizedBox(height: 12), // Reduced from 16
+                _buildWelcomeHeader(),
+                const SizedBox(height: 20),
                 _buildFeatureGrid(),
               ],
             ),
@@ -147,110 +134,57 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildHeroBanner() {
+  Widget _buildWelcomeHeader() {
     return Container(
-      width: double.infinity,
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.surfaceLow,
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x060F172A),
+            blurRadius: 12,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
-      clipBehavior: Clip.antiAlias,
-      child: Stack(
+      child: Row(
         children: [
-          // Hero Background Image
-          Positioned.fill(
-            child: Image.asset(
-              'assets/images/hero_banner_sapi.jpg',
-              fit: BoxFit.cover,
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: AppColors.primaryLight,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: const Icon(
+              Icons.agriculture_rounded,
+              color: AppColors.primaryBlue,
+              size: 26,
             ),
           ),
-          // Rich Overlay to ensure high readability of both dark blue title and white description text
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    const Color(
-                      0xFF0F172A,
-                    ).withValues(alpha: 0.2), // Light at the top
-                    const Color(
-                      0xFF0F172A,
-                    ).withValues(alpha: 0.8), // Dark at the bottom
-                  ],
-                ),
-              ),
-            ),
-          ),
-          // Content
-          Padding(
-            padding: const EdgeInsets.all(20), // Reduced from 24
+          const SizedBox(width: 14),
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(
-                      0xFF004AAD,
-                    ), // Solid Royal Blue for high visibility
-                    borderRadius: BorderRadius.circular(100),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.eco_rounded, size: 14, color: Colors.white),
-                      SizedBox(width: 6),
-                      Text(
-                        'RESEARCH-BASED',
-                        style: TextStyle(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                          letterSpacing: 1,
-                        ),
-                      ),
-                    ],
+                Text(
+                  'Nutrisi Sapi Perah',
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                    letterSpacing: -0.3,
                   ),
                 ),
-                const SizedBox(height: 12), // Reduced from 16
-                const Text(
-                  'Optimalkan Nutrisi\nTernak Anda',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white, // High-contrast premium white
-                    height: 1.1,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black38,
-                        blurRadius: 8,
-                        offset: Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 8), // Reduced from 12
-                const Text(
-                  'Standar riset terkini dari Fakultas Peternakan dan Pertanian (FPP) Universitas Diponegoro',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.white,
-                    fontWeight:
-                        FontWeight.w600, // Thicker weight for premium contrast
-                    height: 1.4,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black45, // Darker shadow for solid pop
-                        blurRadius: 6,
-                        offset: Offset(0, 2),
-                      ),
-                    ],
+                const SizedBox(height: 2),
+                Text(
+                  'Pilih kalkulator nutrisi atau kelola database pakan:',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.textSecondary,
                   ),
                 ),
               ],
@@ -266,41 +200,40 @@ class _HomeScreenState extends State<HomeScreen> {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       crossAxisCount: 2,
-      crossAxisSpacing: 12,
-      mainAxisSpacing: 12,
-      childAspectRatio:
-          1.12, // Slightly wider and shorter for a modern, compact look
+      crossAxisSpacing: 14,
+      mainAxisSpacing: 14,
+      childAspectRatio: 0.95,
       children: [
         QuickActionCard(
-          title: 'Cek Kecukupan Pakan',
-          description: 'Evaluasi kecukupan nutrien pada pemberian pakan ternak',
+          title: 'Cek Kecukupan',
+          description: 'Evaluasi kebutuhan vs asupan pakan ternak',
           svgAsset: 'assets/icons/ic_evaluasi.svg',
-          baseColor: AppColors.secondaryGreen,
+          baseColor: AppColors.primaryBlue,
           onTap: _bukaCekKecukupan,
         ),
         QuickActionCard(
-          title: 'Database Pakan',
-          description: 'Database bahan pakan',
-          svgAsset: 'assets/icons/ic_database.svg',
-          baseColor: AppColors.primaryBlue,
-          onTap: _bukaMasterPakan,
-        ),
-        QuickActionCard(
-          title: 'Cek Kandungan Pakan',
-          description: 'Cek kandungan nutrisi pada pakan',
+          title: 'Cek Kandungan',
+          description: 'Kalkulasi nutrisi campuran bahan pakan',
           icon: Icons.analytics_rounded,
-          baseColor: AppColors.expertPurple,
+          baseColor: AppColors.secondaryGreen,
           onTap: _bukaCekKandungan,
         ),
         QuickActionCard(
           title: 'Rekomendasi Pakan',
-          description:
-              'Rekomendasi pemberian pakan untuk mencukupi kebutuhan nutrisi ternak',
+          description: 'Formulasi ransum otomatis sesuai kebutuhan',
           svgAsset: 'assets/icons/ic_rekomendasi.svg',
           baseColor: AppColors.accentOrange,
           onTap: _bukaFormulasi,
+        ),
+        QuickActionCard(
+          title: 'Database Pakan',
+          description: 'Katalog & kandungan nutrien pakan',
+          svgAsset: 'assets/icons/ic_database.svg',
+          baseColor: AppColors.expertPurple,
+          onTap: _bukaMasterPakan,
         ),
       ],
     );
   }
 }
+
