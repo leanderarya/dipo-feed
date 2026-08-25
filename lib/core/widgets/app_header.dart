@@ -7,10 +7,10 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
   /// Centered title in the top bar
   final String title;
 
-  /// Large heading text inside the header (optional)
+  /// Large heading text inside the header (optional, kept for backwards compatibility)
   final String? heading;
 
-  /// Subtitle or description text inside the header (optional)
+  /// Subtitle or description text inside the header (optional, kept for backwards compatibility)
   final String? subtitle;
 
   /// Whether to show the back button. Defaults to true if not home.
@@ -46,39 +46,81 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
 
   Widget _buildHomeHeader(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top + 8,
-        bottom: 12,
-        left: 20,
-        right: 20,
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        border: Border(
+          bottom: BorderSide(color: AppColors.border, width: 1),
+        ),
       ),
-      decoration: const BoxDecoration(color: AppColors.backgroundCream),
-      child: Center(
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.baseline,
-          textBaseline: TextBaseline.alphabetic,
-          children: [
-            Text(
-              'DIPO',
-              style: GoogleFonts.montserrat(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF004AAD), // Custom Royal Blue
-                letterSpacing: 0.5,
+      child: SafeArea(
+        bottom: false,
+        child: Container(
+          height: 60,
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            children: [
+              // Logo
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  Text(
+                    'DIPO',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.primaryBlue,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(width: 3),
+                  Text(
+                    'Feed',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.secondaryGreen,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(width: 4),
-            Text(
-              'Feed',
-              style: GoogleFonts.montserrat(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF00BF63), // Custom Vibrant Green
-                letterSpacing: 0.5,
+              const Spacer(),
+              // UNDIP FPP Badge
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryLight,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppColors.primaryBlue.withValues(alpha: 0.15)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: const BoxDecoration(
+                        color: AppColors.secondaryGreen,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'FPP UNDIP',
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primaryBlue,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -87,102 +129,70 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
   Widget _buildFeatureHeader(BuildContext context) {
     final bool canPop = Navigator.of(context).canPop();
     final bool shouldShowBack = showBackButton ?? canPop;
+    final displayTitle = title.isNotEmpty ? title : (heading ?? '');
 
     return Container(
-      width: double.infinity,
       decoration: const BoxDecoration(
-        color: AppColors.primaryGreen,
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(32),
-          bottomRight: Radius.circular(32),
+        color: AppColors.surface,
+        border: Border(
+          bottom: BorderSide(color: AppColors.border, width: 1),
         ),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Ensure we don't draw under the status bar if not handled by Scaffold
-          SizedBox(height: MediaQuery.of(context).padding.top),
-          // Top Bar
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: SizedBox(
-              height: 56,
-              child: NavigationToolbar(
-                leading: shouldShowBack
-                    ? IconButton(
-                        icon: const Icon(Icons.arrow_back, color: Colors.white),
-                        onPressed:
-                            onBackTap ?? () => Navigator.of(context).pop(),
-                      )
-                    : null,
-                centerMiddle: true,
-                middle: Text(
-                  title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
+      child: SafeArea(
+        bottom: false,
+        child: SizedBox(
+          height: 56,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: NavigationToolbar(
+              leading: shouldShowBack
+                  ? Center(
+                      child: Material(
+                        color: AppColors.surfaceLow,
+                        borderRadius: BorderRadius.circular(10),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(10),
+                          onTap: onBackTap ?? () => Navigator.of(context).pop(),
+                          child: Container(
+                            width: 36,
+                            height: 36,
+                            alignment: Alignment.center,
+                            child: const Icon(
+                              Icons.arrow_back_ios_new_rounded,
+                              size: 16,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                  : const SizedBox(width: 36),
+              centerMiddle: true,
+              middle: Text(
+                displayTitle,
+                style: GoogleFonts.inter(
+                  color: AppColors.textPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.2,
                 ),
-                trailing: actions != null
-                    ? Row(mainAxisSize: MainAxisSize.min, children: actions!)
-                    : const SizedBox(
-                        width: 48,
-                      ), // Spacer to keep title centered
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
+              trailing: actions != null
+                  ? Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: actions!,
+                    )
+                  : const SizedBox(width: 36),
             ),
           ),
-          // Expanded content (heading & subtitle)
-          if (heading != null || subtitle != null)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (heading != null)
-                    Text(
-                      heading!,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 26,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                  if (heading != null && subtitle != null)
-                    const SizedBox(height: 12),
-                  if (subtitle != null)
-                    Text(
-                      subtitle!,
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        fontSize: 14,
-                        height: 1.5,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-        ],
+        ),
       ),
     );
   }
 
   @override
-  Size get preferredSize {
-    if (isHome) return const Size.fromHeight(70);
-
-    double height = 56;
-
-    if (heading != null || subtitle != null) {
-      height += 128;
-    }
-
-    if ((subtitle?.length ?? 0) > 80) {
-      height += 24;
-    }
-
-    return Size.fromHeight(height);
-  }
+  Size get preferredSize => const Size.fromHeight(60);
 }
+
