@@ -1592,8 +1592,8 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                     children: [
                       Text(
                         hasil.isLkAman
-                            ? 'Kesimpulan Evaluasi: Formulasi Ransum Aman'
-                            : 'Kesimpulan Evaluasi: Formulasi Perlu Penyesuaian',
+                            ? 'Evaluasi Lemak Kasar (LK): Memenuhi Standar'
+                            : 'Peringatan: Lemak Kasar (LK) Perlu Penyesuaian',
                         style: const TextStyle(
                           fontWeight: FontWeight.w900,
                           color: Colors.white,
@@ -1603,8 +1603,8 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                       const SizedBox(height: 4),
                       Text(
                         hasil.isLkAman
-                            ? 'Kandungan Lemak Kasar (LK) aman dan memenuhi standar yaitu ${_format(hasil.lkPersenDariBk)}% dari total Bahan Kering (BK) pakan.'
-                            : 'Kandungan Lemak Kasar (LK) melebihi batas aman 5% yaitu ${_format(hasil.lkPersenDariBk)}% dari total Bahan Kering (BK). Disarankan untuk mengurangi proporsi bahan kaya lemak seperti bungkil kelapa atau polar.',
+                            ? 'Kandungan Lemak Kasar (LK) memenuhi batas standar (< 5% BK) yaitu ${_format(hasil.lkPersenDariBk)}% dari total Bahan Kering (BK).'
+                            : 'Kandungan Lemak Kasar (LK) melebihi batas toleransi 5% yaitu ${_format(hasil.lkPersenDariBk)}% dari total Bahan Kering (BK). Disarankan untuk mengurangi proporsi bahan kaya lemak seperti bungkil kelapa atau polar.',
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.white.withValues(alpha: 0.9),
