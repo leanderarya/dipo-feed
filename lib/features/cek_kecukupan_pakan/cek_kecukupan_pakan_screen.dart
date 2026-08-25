@@ -887,43 +887,64 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
   }
 
   Widget _buildOutputSection() {
-    if (_fisiologi == FisiologiSapi.dara) {
-      if (_kebutuhanNutrien == null) {
-        return _buildSectionCard(
-          title: 'Kebutuhan Nutrien',
-          icon: Icons.analytics_outlined,
-          subtitle: 'Standar: Dara',
-          child: const Text(
-            'Isi BB sapi yang valid untuk menampilkan kebutuhan nutrien Dara berdasarkan NRC 1978.',
-            style: TextStyle(height: 1.5, color: AppColors.textLight),
-          ),
-        );
+    if (_kebutuhanNutrien == null) {
+      String pesanPetunjuk;
+      if (_fisiologi == FisiologiSapi.dara) {
+        pesanPetunjuk =
+            'Isi BB sapi yang valid untuk menampilkan kebutuhan nutrien Dara berdasarkan NRC 1978.';
+      } else if (_fisiologi == FisiologiSapi.laktasi) {
+        pesanPetunjuk =
+            'Isi BB sapi, produksi susu, dan % lemak susu yang valid untuk menampilkan kebutuhan nutrien Laktasi berdasarkan NRC 1988.';
+      } else {
+        pesanPetunjuk =
+            'Isi BB sapi yang valid untuk menampilkan kebutuhan nutrien Kering Kandang.';
       }
 
-      return _buildKartuKebutuhan();
-    }
-
-    if (_fisiologi == FisiologiSapi.laktasi && _kebutuhanNutrien == null) {
       return _buildSectionCard(
         title: 'Kebutuhan Nutrien',
         icon: Icons.analytics_outlined,
-        subtitle: 'Standar: Laktasi',
-        child: const Text(
-          'Isi BB sapi, produksi susu, dan % lemak susu yang valid untuk menampilkan kebutuhan nutrien Laktasi berdasarkan NRC 1988.',
-          style: TextStyle(height: 1.5, color: AppColors.textLight),
+        trailing: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+            color: AppColors.primaryLight,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: AppColors.primaryBlue.withValues(alpha: 0.15),
+            ),
+          ),
+          child: Text(
+            'Standar: ${_labelFisiologi(_fisiologi)}',
+            style: GoogleFonts.inter(
+              fontSize: 11.5,
+              fontWeight: FontWeight.w700,
+              color: AppColors.primaryBlue,
+            ),
+          ),
         ),
-      );
-    }
-
-    if (_fisiologi == FisiologiSapi.keringKandang &&
-        _kebutuhanNutrien == null) {
-      return _buildSectionCard(
-        title: 'Kebutuhan Nutrien',
-        icon: Icons.analytics_outlined,
-        subtitle: 'Standar: Kering Kandang',
-        child: const Text(
-          'Isi BB sapi yang valid untuk menampilkan kebutuhan nutrien Kering Kandang.',
-          style: TextStyle(height: 1.5, color: AppColors.textLight),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              pesanPetunjuk,
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                color: AppColors.textSecondary,
+                height: 1.45,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _buildNutrientChip('BK', '-', 'kg'),
+                _buildNutrientChip('PK', '-', 'kg'),
+                _buildNutrientChip('TDN', '-', 'kg'),
+                _buildNutrientChip('Ca', '-', 'g'),
+                _buildNutrientChip('P', '-', 'g'),
+              ],
+            ),
+          ],
         ),
       );
     }
