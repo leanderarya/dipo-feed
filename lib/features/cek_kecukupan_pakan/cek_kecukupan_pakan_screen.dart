@@ -9,6 +9,7 @@ import '../../core/widgets/app_card.dart';
 import '../../core/widgets/app_header.dart';
 import '../../core/widgets/app_horizontal_stepper.dart';
 import '../../core/widgets/app_text_field.dart';
+import '../../core/widgets/staggered_entry_card.dart';
 import '../../data/models/bahan_pakan.dart';
 import '../../data/models/campuran_pakan_item.dart';
 import '../../data/models/fisiologi_sapi.dart';
@@ -586,17 +587,33 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
       case 0:
         return Column(
           children: [
-            _buildFormInput(),
+            StaggeredEntryCard(
+              key: const ValueKey('staggered_form_input'),
+              delay: Duration.zero,
+              child: _buildFormInput(),
+            ),
             const SizedBox(height: 16),
-            _buildOutputSection(),
+            StaggeredEntryCard(
+              key: const ValueKey('staggered_output_section'),
+              delay: const Duration(milliseconds: 120),
+              child: _buildOutputSection(),
+            ),
           ],
         );
       case 1:
         return Column(
           children: [
-            _buildEvaluasiScoreboard(),
+            StaggeredEntryCard(
+              key: const ValueKey('staggered_evaluasi_scoreboard'),
+              delay: Duration.zero,
+              child: _buildEvaluasiScoreboard(),
+            ),
             const SizedBox(height: 16),
-            _buildPemberianPakanSection(),
+            StaggeredEntryCard(
+              key: const ValueKey('staggered_pemberian_pakan'),
+              delay: const Duration(milliseconds: 120),
+              child: _buildPemberianPakanSection(),
+            ),
           ],
         );
     }
