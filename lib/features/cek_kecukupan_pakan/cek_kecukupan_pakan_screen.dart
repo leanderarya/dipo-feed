@@ -805,7 +805,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
               controller: _beratBadanController,
               label: 'BB Sapi',
               suffix: 'kg',
-              hintText: '100 – 600',
+              hintText: 'Contoh: 400',
               validator: _validasiBeratBadan,
             ),
             if (_warningBb != null) ...[
@@ -818,7 +818,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
                 controller: _produksiSusuController,
                 label: 'Produksi Susu',
                 suffix: 'liter/ekor/hari',
-                hintText: '10 – 30',
+                hintText: 'Contoh: 13',
                 validator: _validasiProduksiSusu,
               ),
               if (_warningProduksiSusu != null) ...[
@@ -830,7 +830,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
                 controller: _lemakSusuController,
                 label: '% Lemak Susu',
                 suffix: '%',
-                hintText: 'Misal: 3,5',
+                hintText: 'Contoh: 3,5',
                 validator: _validasiLemakSusu,
               ),
               const SizedBox(height: 6),

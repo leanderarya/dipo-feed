@@ -1079,7 +1079,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                 label: '% Lemak Susu',
                 suffix: '%',
                 validator: _validasiLemakSusu,
-                hintText: 'Misal: 3,5',
+                hintText: 'Contoh: 3,5',
               ),
               const SizedBox(height: 8),
               Row(
