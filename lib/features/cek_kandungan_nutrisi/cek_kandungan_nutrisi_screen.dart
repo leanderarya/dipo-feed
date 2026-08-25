@@ -595,12 +595,15 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              Text(
-                                '${item.bahan.kategori} • BK: ${IndonesianNumberFormatter.isSupportedMagnitude(item.bahan.bk) ? IndonesianNumberFormatter.format(item.bahan.bk, decimals: 1) : '-'}%',
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  color: AppColors.textGrey,
-                                ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  _buildMiniTag('BK ${IndonesianNumberFormatter.isSupportedMagnitude(item.bahan.bk) ? IndonesianNumberFormatter.format(item.bahan.bk, decimals: 1) : '-'}%', AppColors.secondaryLight, AppColors.secondaryGreen),
+                                  const SizedBox(width: 4),
+                                  _buildMiniTag('PK ${IndonesianNumberFormatter.isSupportedMagnitude(item.bahan.protein) ? IndonesianNumberFormatter.format(item.bahan.protein, decimals: 1) : '-'}%', AppColors.primaryLight, AppColors.primaryBlue),
+                                  const SizedBox(width: 4),
+                                  _buildMiniTag('TDN ${IndonesianNumberFormatter.isSupportedMagnitude(item.bahan.tdn) ? IndonesianNumberFormatter.format(item.bahan.tdn, decimals: 1) : '-'}%', AppColors.accentLight, AppColors.accentOrange),
+                                ],
                               ),
                             ],
                           ),
@@ -684,5 +687,23 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
       case FisiologiSapi.keringKandang:
         return 'Kering Kandang';
     }
+  }
+
+  Widget _buildMiniTag(String text, Color bgColor, Color textColor) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w700,
+          color: textColor,
+        ),
+      ),
+    );
   }
 }
