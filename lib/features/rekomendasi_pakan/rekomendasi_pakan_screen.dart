@@ -5,6 +5,7 @@ import '../../core/utils/app_toast.dart';
 import '../../core/utils/indonesian_number_formatter.dart';
 import '../../core/models/status_perhitungan.dart';
 import '../../core/widgets/app_header.dart';
+import '../../core/widgets/app_horizontal_stepper.dart';
 import '../../core/widgets/app_text_field.dart';
 import '../../data/models/bahan_pakan.dart';
 import '../../data/models/fisiologi_sapi.dart';
@@ -782,36 +783,20 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
 
 
   Widget _buildProgressIndicator() {
-    const labels = ['Data Sapi', 'Bahan Pakan Tersedia', 'Hasil Rekomendasi'];
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Tahap ${_tahapAktif + 1} dari ${labels.length}',
-            style: const TextStyle(
-              color: AppColors.primaryBlue,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(labels[_tahapAktif]),
-          const SizedBox(height: 12),
-          LinearProgressIndicator(
-            value: (_tahapAktif + 1) / labels.length,
-            minHeight: 8,
-            borderRadius: BorderRadius.circular(8),
-          ),
-        ],
-      ),
+    return AppHorizontalStepper(
+      currentStep: _tahapAktif,
+      steps: const [
+        'Data Sapi',
+        'Bahan Pakan Tersedia',
+        'Hasil Rekomendasi',
+      ],
+      onStepTapped: (step) {
+        if (step < _tahapAktif) {
+          setState(() {
+            _tahapAktif = step;
+          });
+        }
+      },
     );
   }
 

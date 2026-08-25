@@ -4,6 +4,7 @@ import 'package:dipo_feed/data/models/fisiologi_sapi.dart';
 import 'package:dipo_feed/data/sources/bahan_pakan_local_source.dart';
 import 'package:dipo_feed/data/sources/bahan_pakan_repository.dart';
 import 'package:dipo_feed/core/widgets/app_header.dart';
+import 'package:dipo_feed/core/widgets/app_horizontal_stepper.dart';
 import 'package:dipo_feed/core/widgets/app_sliver_header.dart';
 import 'package:dipo_feed/features/cek_kecukupan_pakan/cek_kecukupan_pakan_screen.dart';
 import 'package:dipo_feed/features/rekomendasi_pakan/rekomendasi_pakan_screen.dart';
@@ -176,7 +177,7 @@ void main() {
     expect(find.text('Cek Kecukupan Pakan'), findsOneWidget);
     expect(find.text('Data Sapi'), findsOneWidget);
     expect(find.text('Tahap 1 dari 2'), findsOneWidget);
-    expect(find.byType(LinearProgressIndicator), findsOneWidget);
+    expect(find.byType(AppHorizontalStepper), findsOneWidget);
     expect(find.text('Data Sapi & Kebutuhan Nutrien'), findsOneWidget);
     expect(find.text('Hasil Evaluasi Nutrisi'), findsNothing);
     expect(find.text('Lanjut ke Pemberian Pakan'), findsOneWidget);
@@ -427,7 +428,7 @@ void main() {
 
     expect(find.text('Data Sapi'), findsNWidgets(2));
     expect(find.text('Tahap 1 dari 3'), findsOneWidget);
-    expect(find.byType(LinearProgressIndicator), findsOneWidget);
+    expect(find.byType(AppHorizontalStepper), findsOneWidget);
     expect(find.text('Bahan Pakan Tersedia'), findsNothing);
     expect(find.text('Hasil Rekomendasi'), findsNothing);
     expect(find.text('Lanjut'), findsOneWidget);

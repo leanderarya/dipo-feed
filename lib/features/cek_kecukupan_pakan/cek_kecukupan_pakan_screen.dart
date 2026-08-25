@@ -6,6 +6,7 @@ import '../../core/utils/app_toast.dart';
 import '../../core/utils/indonesian_number_formatter.dart';
 import '../../core/widgets/app_card.dart';
 import '../../core/widgets/app_header.dart';
+import '../../core/widgets/app_horizontal_stepper.dart';
 import '../../core/widgets/app_text_field.dart';
 import '../../data/models/bahan_pakan.dart';
 import '../../data/models/campuran_pakan_item.dart';
@@ -567,34 +568,17 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
 
 
   Widget _buildProgressIndicator() {
-    final labels = [
-      'Data Sapi & Kebutuhan Nutrien',
-      'Evaluasi & Pemberian Pakan',
-    ];
-
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Tahap ${_tahapAktif + 1} dari ${labels.length}',
-            style: const TextStyle(
-              color: AppColors.primaryBlue,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(labels[_tahapAktif]),
-          const SizedBox(height: 12),
-          LinearProgressIndicator(
-            value: (_tahapAktif + 1) / labels.length,
-            minHeight: 8,
-            borderRadius: BorderRadius.circular(8),
-            color: AppColors.primaryBlue,
-            backgroundColor: AppColors.backgroundCream,
-          ),
-        ],
-      ),
+    return AppHorizontalStepper(
+      currentStep: _tahapAktif,
+      steps: const [
+        'Data Sapi & Kebutuhan Nutrien',
+        'Evaluasi & Pemberian Pakan',
+      ],
+      onStepTapped: (step) {
+        if (step == 0 && _tahapAktif == 1) {
+          _kembaliTahap();
+        }
+      },
     );
   }
 
