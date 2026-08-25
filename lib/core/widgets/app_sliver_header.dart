@@ -44,8 +44,8 @@ class AppSliverHeader extends StatelessWidget {
                     height: 36,
                     alignment: Alignment.center,
                     child: const Icon(
-                      Icons.arrow_back_ios_new_rounded,
-                      size: 16,
+                      Icons.arrow_back,
+                      size: 20,
                       color: AppColors.textPrimary,
                     ),
                   ),
@@ -55,15 +55,39 @@ class AppSliverHeader extends StatelessWidget {
           : null,
       actions: actions,
       centerTitle: true,
-      title: Text(
-        title,
-        style: GoogleFonts.inter(
-          color: AppColors.textPrimary,
-          fontSize: 16,
-          fontWeight: FontWeight.w700,
-          letterSpacing: -0.2,
-        ),
-      ),
+      title: (subtitle != null && subtitle!.isNotEmpty)
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title,
+                  style: GoogleFonts.inter(
+                    color: AppColors.textPrimary,
+                    fontSize: 15.5,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle!,
+                  style: GoogleFonts.inter(
+                    color: AppColors.textSecondary,
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            )
+          : Text(
+              title,
+              style: GoogleFonts.inter(
+                color: AppColors.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.2,
+              ),
+            ),
     );
   }
 }

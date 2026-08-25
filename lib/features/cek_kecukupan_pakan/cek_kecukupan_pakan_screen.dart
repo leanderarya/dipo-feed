@@ -536,6 +536,9 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
       children: [
         AppHeader(
           title: 'Cek Kecukupan Pakan',
+          subtitle: _tahapAktif == 0
+              ? 'Tahap 1 · Data Sapi & Target Nutrien'
+              : 'Tahap 2 · Pemberian Pakan & Evaluasi',
           showBackButton: true,
           onBackTap: () {
             if (_tahapAktif == 0) {
@@ -544,27 +547,6 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
               _kembaliTahap();
             }
           },
-          actions: [
-            Container(
-              margin: const EdgeInsets.only(right: 12),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppColors.primaryLight,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: AppColors.primaryBlue.withValues(alpha: 0.15),
-                ),
-              ),
-              child: Text(
-                'Tahap ${_tahapAktif + 1}/2',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.primaryBlue,
-                ),
-              ),
-            ),
-          ],
         ),
         Expanded(
           child: SingleChildScrollView(

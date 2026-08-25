@@ -748,6 +748,11 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
       children: [
         AppHeader(
           title: 'Rekomendasi Pakan',
+          subtitle: _tahapAktif == 0
+              ? 'Tahap 1 · Data Sapi & Target Nutrien'
+              : (_tahapAktif == 1
+                  ? 'Tahap 2 · Bahan Pakan Tersedia'
+                  : 'Tahap 3 · Hasil Rekomendasi Ransum'),
           showBackButton: true,
           onBackTap: () {
             if (_tahapAktif == 0) {
@@ -756,27 +761,6 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
               _kembaliTahap();
             }
           },
-          actions: [
-            Container(
-              margin: const EdgeInsets.only(right: 12),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppColors.primaryLight,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: AppColors.primaryBlue.withValues(alpha: 0.15),
-                ),
-              ),
-              child: Text(
-                'Tahap ${_tahapAktif + 1}/3',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.primaryBlue,
-                ),
-              ),
-            ),
-          ],
         ),
         Expanded(
           child: SingleChildScrollView(

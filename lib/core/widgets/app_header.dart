@@ -130,6 +130,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
     final bool canPop = Navigator.of(context).canPop();
     final bool shouldShowBack = showBackButton ?? canPop;
     final displayTitle = title.isNotEmpty ? title : (heading ?? '');
+    final bool hasSubtitle = subtitle != null && subtitle!.isNotEmpty;
 
     return Container(
       decoration: const BoxDecoration(
@@ -141,7 +142,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
       child: SafeArea(
         bottom: false,
         child: SizedBox(
-          height: 56,
+          height: 60,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: NavigationToolbar(
@@ -158,8 +159,8 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                             height: 36,
                             alignment: Alignment.center,
                             child: const Icon(
-                              Icons.arrow_back_ios_new_rounded,
-                              size: 16,
+                              Icons.arrow_back,
+                              size: 20,
                               color: AppColors.textPrimary,
                             ),
                           ),
@@ -168,17 +169,46 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                     )
                   : const SizedBox(width: 36),
               centerMiddle: true,
-              middle: Text(
-                displayTitle,
-                style: GoogleFonts.inter(
-                  color: AppColors.textPrimary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.2,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
+              middle: hasSubtitle
+                  ? Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          displayTitle,
+                          style: GoogleFonts.inter(
+                            color: AppColors.textPrimary,
+                            fontSize: 15.5,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.2,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          subtitle!,
+                          style: GoogleFonts.inter(
+                            color: AppColors.textSecondary,
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    )
+                  : Text(
+                      displayTitle,
+                      style: GoogleFonts.inter(
+                        color: AppColors.textPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.2,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
               trailing: actions != null
                   ? Row(
                       mainAxisSize: MainAxisSize.min,
