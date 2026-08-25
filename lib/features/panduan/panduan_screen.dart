@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/constants/app_colors.dart';
 import '../../core/widgets/animated_press_card.dart';
+import '../../core/widgets/staggered_entry_card.dart';
 
 class PanduanScreen extends StatelessWidget {
   final bool isTab;
@@ -18,133 +19,151 @@ class PanduanScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Banner Info
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  AppColors.primaryBlue,
-                  Color(0xFF2563EB),
-                ],
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primaryBlue.withValues(alpha: 0.25),
-                  blurRadius: 16,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.menu_book_rounded,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Text(
-                      'PANDUAN & EDUKASI',
-                      style: GoogleFonts.inter(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white.withValues(alpha: 0.9),
-                        letterSpacing: 0.8,
-                      ),
-                    ),
+          StaggeredEntryCard(
+            delay: Duration.zero,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    AppColors.primaryBlue,
+                    Color(0xFF2563EB),
                   ],
                 ),
-                const SizedBox(height: 14),
-                Text(
-                  'Panduan Nutrisi Pakan Sapi',
-                  style: GoogleFonts.inter(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                    letterSpacing: -0.4,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primaryBlue.withValues(alpha: 0.25),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
                   ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Kumpulan referensi praktis pengelolaan pakan, standar nutrien, dan formulasi berbasis riset FPP Undip.',
-                  style: GoogleFonts.inter(
-                    fontSize: 12.5,
-                    color: Colors.white.withValues(alpha: 0.85),
-                    fontWeight: FontWeight.w400,
-                    height: 1.4,
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.menu_book_rounded,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        'PANDUAN & EDUKASI',
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white.withValues(alpha: 0.9),
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
+                  const SizedBox(height: 14),
+                  Text(
+                    'Panduan Nutrisi Pakan Sapi',
+                    style: GoogleFonts.inter(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                      letterSpacing: -0.4,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Kumpulan referensi praktis pengelolaan pakan, standar nutrien, dan formulasi berbasis riset FPP Undip.',
+                    style: GoogleFonts.inter(
+                      fontSize: 12.5,
+                      color: Colors.white.withValues(alpha: 0.85),
+                      fontWeight: FontWeight.w400,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 24),
 
-          Text(
-            'Topik Panduan',
-            style: GoogleFonts.inter(
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
-              letterSpacing: -0.3,
+          StaggeredEntryCard(
+            delay: const Duration(milliseconds: 80),
+            child: Text(
+              'Topik Panduan',
+              style: GoogleFonts.inter(
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+                letterSpacing: -0.3,
+              ),
             ),
           ),
           const SizedBox(height: 14),
 
-          _buildPanduanCard(
-            context,
-            icon: Icons.calculate_outlined,
-            iconColor: AppColors.primaryBlue,
-            title: '1. Evaluasi Kecukupan Pakan',
-            description:
-                'Pelajari cara menghitung kebutuhan bahan kering (BK), protein kasar (PK), dan TDN sesuai bobot badan dan fase fisiologi sapi.',
-            tag: 'Dasar Nutrisi',
+          StaggeredEntryCard(
+            delay: const Duration(milliseconds: 140),
+            child: _buildPanduanCard(
+              context,
+              icon: Icons.calculate_outlined,
+              iconColor: AppColors.primaryBlue,
+              title: '1. Evaluasi Kecukupan Pakan',
+              description:
+                  'Pelajari cara menghitung kebutuhan bahan kering (BK), protein kasar (PK), dan TDN sesuai bobot badan dan fase fisiologi sapi.',
+              tag: 'Dasar Nutrisi',
+            ),
           ),
           const SizedBox(height: 12),
 
-          _buildPanduanCard(
-            context,
-            icon: Icons.auto_fix_high_rounded,
-            iconColor: AppColors.accentOrange,
-            title: '2. Metode Pearson\'s Square',
-            description:
-                'Teknik formulasi praktis untuk mencampur dua atau lebih bahan pakan agar mencapai target protein kasar yang diinginkan.',
-            tag: 'Formulasi',
+          StaggeredEntryCard(
+            delay: const Duration(milliseconds: 210),
+            child: _buildPanduanCard(
+              context,
+              icon: Icons.auto_fix_high_rounded,
+              iconColor: AppColors.accentOrange,
+              title: '2. Metode Pearson\'s Square',
+              description:
+                  'Teknik formulasi praktis untuk mencampur dua atau lebih bahan pakan agar mencapai target protein kasar yang diinginkan.',
+              tag: 'Formulasi',
+            ),
           ),
           const SizedBox(height: 12),
 
-          _buildPanduanCard(
-            context,
-            icon: Icons.grass_rounded,
-            iconColor: AppColors.secondaryGreen,
-            title: '3. Proporsi Hijauan & Konsentrat',
-            description:
-                'Panduan rasio ideal hijauan dan konsentrat untuk menjaga kesehatan rumen dan memaksimalkan produktivitas susu/daging.',
-            tag: 'Manajemen Ransum',
+          StaggeredEntryCard(
+            delay: const Duration(milliseconds: 280),
+            child: _buildPanduanCard(
+              context,
+              icon: Icons.grass_rounded,
+              iconColor: AppColors.secondaryGreen,
+              title: '3. Proporsi Hijauan & Konsentrat',
+              description:
+                  'Panduan rasio ideal hijauan dan konsentrat untuk menjaga kesehatan rumen dan memaksimalkan produktivitas susu/daging.',
+              tag: 'Manajemen Ransum',
+            ),
           ),
           const SizedBox(height: 12),
 
-          _buildPanduanCard(
-            context,
-            icon: Icons.storage_rounded,
-            iconColor: AppColors.expertPurple,
-            title: '4. Database Bahan Pakan Lokal',
-            description:
-                'Daftar kandungan nutrien pakan lokal Indonesia seperti rumput gajah, bekatul, ampas tahu, dan bungkil kedelai.',
-            tag: 'Tabel Pakan',
+          StaggeredEntryCard(
+            delay: const Duration(milliseconds: 350),
+            child: _buildPanduanCard(
+              context,
+              icon: Icons.storage_rounded,
+              iconColor: AppColors.expertPurple,
+              title: '4. Database Bahan Pakan Lokal',
+              description:
+                  'Daftar kandungan nutrien pakan lokal Indonesia seperti rumput gajah, bekatul, ampas tahu, dan bungkil kedelai.',
+              tag: 'Tabel Pakan',
+            ),
           ),
         ],
       ),
