@@ -8,6 +8,7 @@ import '../../core/models/status_perhitungan.dart';
 import '../../core/widgets/app_header.dart';
 import '../../core/widgets/app_horizontal_stepper.dart';
 import '../../core/widgets/app_text_field.dart';
+import '../../core/widgets/staggered_entry_card.dart';
 import '../../data/models/bahan_pakan.dart';
 import '../../data/models/fisiologi_sapi.dart';
 import '../../data/models/kebutuhan_nutrien_sapi.dart';
@@ -802,9 +803,17 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
       case 0:
         return Column(
           children: [
-            _buildProfilCard(),
+            StaggeredEntryCard(
+              key: const ValueKey('staggered_rek_profil'),
+              delay: Duration.zero,
+              child: _buildProfilCard(),
+            ),
             const SizedBox(height: 16),
-            _buildOutputSection(),
+            StaggeredEntryCard(
+              key: const ValueKey('staggered_rek_output'),
+              delay: const Duration(milliseconds: 160),
+              child: _buildOutputSection(),
+            ),
             if (_pesanPerhitungan != null) ...[
               const SizedBox(height: 12),
               Align(
@@ -821,43 +830,55 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
         return Column(
           children: [
             if (_kebutuhanNutrien != null) ...[
-              _buildTargetBkPakanCard(_kebutuhanNutrien!),
+              StaggeredEntryCard(
+                key: const ValueKey('staggered_rek_target'),
+                delay: Duration.zero,
+                child: _buildTargetBkPakanCard(_kebutuhanNutrien!),
+              ),
               const SizedBox(height: 16),
             ],
-            _buildFeedSelectionCard(
-              title: 'Hijauan yang Dimiliki',
-              subtitle:
-                  'Pilih bahan hijauan yang tersedia. Jumlah kg akan dihitung otomatis.',
-              icon: Icons.grass_rounded,
-              accentColor: const Color(0xFFB9E7C9),
-              avatarColor: const Color(0xFFDFF5E7),
-              items: _hijauanTerpilih,
-              rowKeys: _hijauanRowKeys,
-              opsiForIndex: _opsiHijauanUntuk,
-              onAdd: _tambahHijauan,
-              onRemove: _hapusHijauan,
-              onChanged: _ubahHijauan,
-              buttonLabel: 'Tambah Hijauan',
-              emptyTitle: 'Belum ada hijauan yang dipilih.',
-              emptyIcon: Icons.park_outlined,
+            StaggeredEntryCard(
+              key: const ValueKey('staggered_rek_hijauan'),
+              delay: const Duration(milliseconds: 120),
+              child: _buildFeedSelectionCard(
+                title: 'Hijauan yang Dimiliki',
+                subtitle:
+                    'Pilih bahan hijauan yang tersedia. Jumlah kg akan dihitung otomatis.',
+                icon: Icons.grass_rounded,
+                accentColor: const Color(0xFFB9E7C9),
+                avatarColor: const Color(0xFFDFF5E7),
+                items: _hijauanTerpilih,
+                rowKeys: _hijauanRowKeys,
+                opsiForIndex: _opsiHijauanUntuk,
+                onAdd: _tambahHijauan,
+                onRemove: _hapusHijauan,
+                onChanged: _ubahHijauan,
+                buttonLabel: 'Tambah Hijauan',
+                emptyTitle: 'Belum ada hijauan yang dipilih.',
+                emptyIcon: Icons.park_outlined,
+              ),
             ),
             const SizedBox(height: 16),
-            _buildFeedSelectionCard(
-              title: 'Konsentrat yang Dimiliki',
-              subtitle:
-                  'Pilih bahan konsentrat yang tersedia. Sistem akan melakukan pencarian kombinasi terbaik.',
-              icon: Icons.inventory_2_outlined,
-              accentColor: const Color(0xFFF7D8A8),
-              avatarColor: const Color(0xFFFFEBD1),
-              items: _konsentratTerpilih,
-              rowKeys: _konsentratRowKeys,
-              opsiForIndex: _opsiKonsentratUntuk,
-              onAdd: _tambahKonsentrat,
-              onRemove: _hapusKonsentrat,
-              onChanged: _ubahKonsentrat,
-              buttonLabel: 'Tambah Konsentrat',
-              emptyTitle: 'Belum ada konsentrat yang dipilih.',
-              emptyIcon: Icons.food_bank_outlined,
+            StaggeredEntryCard(
+              key: const ValueKey('staggered_rek_konsentrat'),
+              delay: const Duration(milliseconds: 240),
+              child: _buildFeedSelectionCard(
+                title: 'Konsentrat yang Dimiliki',
+                subtitle:
+                    'Pilih bahan konsentrat yang tersedia. Sistem akan melakukan pencarian kombinasi terbaik.',
+                icon: Icons.inventory_2_outlined,
+                accentColor: const Color(0xFFF7D8A8),
+                avatarColor: const Color(0xFFFFEBD1),
+                items: _konsentratTerpilih,
+                rowKeys: _konsentratRowKeys,
+                opsiForIndex: _opsiKonsentratUntuk,
+                onAdd: _tambahKonsentrat,
+                onRemove: _hapusKonsentrat,
+                onChanged: _ubahKonsentrat,
+                buttonLabel: 'Tambah Konsentrat',
+                emptyTitle: 'Belum ada konsentrat yang dipilih.',
+                emptyIcon: Icons.food_bank_outlined,
+              ),
             ),
             if (_statusPerhitungan == StatusPerhitungan.gagal) ...[
               const SizedBox(height: 12),
@@ -875,14 +896,18 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                       'Lengkapi tahap sebelumnya untuk melihat hasil rekomendasi.',
                 ),
               )
-            : Column(
-                children: [
-                  _buildSectionCard(
-                    title: 'Hasil Rekomendasi',
-                    icon: Icons.auto_awesome_rounded,
-                    child: _buildRecommendationResult(),
-                  ),
-                ],
+            : StaggeredEntryCard(
+                key: const ValueKey('staggered_rek_hasil'),
+                delay: Duration.zero,
+                child: Column(
+                  children: [
+                    _buildSectionCard(
+                      title: 'Hasil Rekomendasi',
+                      icon: Icons.auto_awesome_rounded,
+                      child: _buildRecommendationResult(),
+                    ),
+                  ],
+                ),
               );
     }
     return const SizedBox.shrink();

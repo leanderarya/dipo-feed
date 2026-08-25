@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 
 /// An animated card wrapper that performs a smooth **slide-up** and **fade-in**
@@ -25,6 +26,7 @@ class _StaggeredEntryCardState extends State<StaggeredEntryCard>
   late final AnimationController _controller;
   late final Animation<double> _fadeAnimation;
   late final Animation<Offset> _slideAnimation;
+  Timer? _timer;
 
   @override
   void initState() {
@@ -52,7 +54,7 @@ class _StaggeredEntryCardState extends State<StaggeredEntryCard>
     if (widget.delay == Duration.zero) {
       _controller.forward();
     } else {
-      Future.delayed(widget.delay, () {
+      _timer = Timer(widget.delay, () {
         if (mounted) {
           _controller.forward();
         }
@@ -62,6 +64,7 @@ class _StaggeredEntryCardState extends State<StaggeredEntryCard>
 
   @override
   void dispose() {
+    _timer?.cancel();
     _controller.dispose();
     super.dispose();
   }
