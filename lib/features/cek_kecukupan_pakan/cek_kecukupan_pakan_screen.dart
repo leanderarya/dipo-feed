@@ -49,6 +49,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
   HasilEvaluasiKecukupanNutrien? _hasilEvaluasi;
   StatusPerhitungan _statusPerhitungan = StatusPerhitungan.belumDihitung;
   int _tahapAktif = 0;
+  AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
 
   @override
   void initState() {
@@ -328,6 +329,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
   }
 
   bool _validasiTahapSatu() {
+    setState(() => _autovalidateMode = AutovalidateMode.onUserInteraction);
     final valid = _formKey.currentState?.validate() ?? false;
     if (!valid) return false;
 
@@ -772,7 +774,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
     return AppCard(
       child: Form(
         key: _formKey,
-        autovalidateMode: AutovalidateMode.always,
+        autovalidateMode: _autovalidateMode,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

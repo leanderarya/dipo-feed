@@ -56,6 +56,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
   StatusPerhitungan _statusPerhitungan = StatusPerhitungan.belumDihitung;
   String? _pesanPerhitungan;
   int _tahapAktif = 0;
+  AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
 
   @override
   void initState() {
@@ -342,6 +343,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
   }
 
   bool _validasiTahapSatu() {
+    setState(() => _autovalidateMode = AutovalidateMode.onUserInteraction);
     final valid = _formKey.currentState?.validate() ?? false;
     if (!valid) return false;
     return _hitungKebutuhanDariForm() != null;
@@ -1036,7 +1038,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
           'Isi profil sapi atau gunakan data dari Cek Kecukupan untuk menampilkan kebutuhan nutrien.',
       child: Form(
         key: _formKey,
-        autovalidateMode: AutovalidateMode.onUserInteraction,
+        autovalidateMode: _autovalidateMode,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
