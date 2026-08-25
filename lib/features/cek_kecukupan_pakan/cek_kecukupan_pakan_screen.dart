@@ -468,23 +468,6 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
     return null;
   }
 
-  String? get _warningBb {
-    final val = _parseDouble(_beratBadanController.text);
-    if (val <= 0) return null;
-    if (val < 100) return 'Kurang dari rentang (100 – 600 kg)';
-    if (val > 600) return 'Lebih dari rentang (100 – 600 kg)';
-    return null;
-  }
-
-  String? get _warningProduksiSusu {
-    if (_fisiologi != FisiologiSapi.laktasi) return null;
-    final val = _parseDouble(_produksiSusuController.text);
-    if (val <= 0) return null;
-    if (val < 10) return 'Kurang dari rentang (10 – 30 liter/ekor/hari)';
-    if (val > 30) return 'Lebih dari rentang (10 – 30 liter/ekor/hari)';
-    return null;
-  }
-
   String? get _warningLemakSusu {
     if (_fisiologi != FisiologiSapi.laktasi) return null;
     final val = _parseDouble(_lemakSusuController.text);
@@ -808,10 +791,6 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
               hintText: 'Contoh: 400',
               validator: _validasiBeratBadan,
             ),
-            if (_warningBb != null) ...[
-              const SizedBox(height: 4),
-              _buildRangeWarning(_warningBb!),
-            ],
             if (_fisiologi == FisiologiSapi.laktasi) ...[
               const SizedBox(height: 12),
               AppTextField(
@@ -821,10 +800,6 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
                 hintText: 'Contoh: 13',
                 validator: _validasiProduksiSusu,
               ),
-              if (_warningProduksiSusu != null) ...[
-                const SizedBox(height: 4),
-                _buildRangeWarning(_warningProduksiSusu!),
-              ],
               const SizedBox(height: 12),
               AppTextField(
                 controller: _lemakSusuController,
