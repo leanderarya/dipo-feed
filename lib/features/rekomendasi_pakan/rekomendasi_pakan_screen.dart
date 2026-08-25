@@ -803,6 +803,8 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
         return Column(
           children: [
             _buildProfilCard(),
+            const SizedBox(height: 16),
+            _buildOutputSection(),
             if (_pesanPerhitungan != null) ...[
               const SizedBox(height: 12),
               Align(
@@ -1116,50 +1118,154 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                 label: const Text('Gunakan Data Cek Kecukupan Pakan'),
               ),
             ],
-            if (_kebutuhanNutrien != null) ...[
-              const Divider(height: 32),
-              const Text(
-                'Target Kebutuhan Nutrien',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textGrey,
-                ),
-              ),
-              const SizedBox(height: 12),
-              GridView.count(
-                crossAxisCount: 3,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
-                childAspectRatio: 1.3,
-                children: [
-                  _buildNutrientMiniCard(
-                    'BK (kg)',
-                    _format(_kebutuhanNutrien!.kebutuhanBkKg),
-                  ),
-                  _buildNutrientMiniCard(
-                    'PK (kg)',
-                    _format(_kebutuhanNutrien!.kebutuhanProteinKg),
-                  ),
-                  _buildNutrientMiniCard(
-                    'TDN (kg)',
-                    _format(_kebutuhanNutrien!.kebutuhanTdnKg),
-                  ),
-                  _buildNutrientMiniCard(
-                    'Ca (g)',
-                    _format(_kebutuhanNutrien!.kebutuhanCaGram),
-                  ),
-                  _buildNutrientMiniCard(
-                    'P (g)',
-                    _format(_kebutuhanNutrien!.kebutuhanPGram),
-                  ),
-                ],
-              ),
-            ],
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildOutputSection() {
+    if (_kebutuhanNutrien == null) {
+      String pesanPetunjuk;
+      if (_fisiologi == FisiologiSapi.dara) {
+        pesanPetunjuk =
+            'Isi BB sapi yang valid untuk menampilkan kebutuhan nutrien Dara berdasarkan NRC 1978.';
+      } else if (_fisiologi == FisiologiSapi.laktasi) {
+        pesanPetunjuk =
+            'Isi BB sapi, produksi susu, dan % lemak susu yang valid untuk menampilkan kebutuhan nutrien Laktasi berdasarkan NRC 1988.';
+      } else {
+        pesanPetunjuk =
+            'Isi BB sapi yang valid untuk menampilkan kebutuhan nutrien Kering Kandang.';
+      }
+
+      return _buildSectionCard(
+        title: 'Kebutuhan Nutrien',
+        icon: Icons.analytics_outlined,
+        trailing: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+            color: AppColors.primaryLight,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: AppColors.primaryBlue.withValues(alpha: 0.15),
+            ),
+          ),
+          child: Text(
+            'Standar: ${_labelFisiologi(_fisiologi)}',
+            style: GoogleFonts.inter(
+              fontSize: 11.5,
+              fontWeight: FontWeight.w700,
+              color: AppColors.primaryBlue,
+            ),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              pesanPetunjuk,
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                color: AppColors.textSecondary,
+                height: 1.45,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _buildNutrientChip('BK', '-', 'kg'),
+                _buildNutrientChip('PK', '-', 'kg'),
+                _buildNutrientChip('TDN', '-', 'kg'),
+                _buildNutrientChip('Ca', '-', 'g'),
+                _buildNutrientChip('P', '-', 'g'),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
+
+    return _buildKartuKebutuhan();
+  }
+
+  Widget _buildKartuKebutuhan() {
+    final kebutuhan = _kebutuhanNutrien!;
+
+    return _buildSectionCard(
+      title: 'Kebutuhan Nutrien',
+      icon: Icons.analytics_outlined,
+      trailing: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: AppColors.primaryLight,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: AppColors.primaryBlue.withValues(alpha: 0.15),
+          ),
+        ),
+        child: Text(
+          'Standar: ${_labelFisiologi(_fisiologi)}',
+          style: GoogleFonts.inter(
+            fontSize: 11.5,
+            fontWeight: FontWeight.w700,
+            color: AppColors.primaryBlue,
+          ),
+        ),
+      ),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          _buildNutrientChip('BK', _format(kebutuhan.kebutuhanBkKg), 'kg'),
+          _buildNutrientChip('PK', _format(kebutuhan.kebutuhanProteinKg), 'kg'),
+          _buildNutrientChip('TDN', _format(kebutuhan.kebutuhanTdnKg), 'kg'),
+          _buildNutrientChip('Ca', _format(kebutuhan.kebutuhanCaGram), 'g'),
+          _buildNutrientChip('P', _format(kebutuhan.kebutuhanPGram), 'g'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNutrientChip(String label, String value, String satuan) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceLow,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              color: AppColors.primaryBlue,
+            ),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            value,
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(width: 3),
+          Text(
+            satuan,
+            style: GoogleFonts.inter(
+              fontSize: 10.5,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
       ),
     );
   }
