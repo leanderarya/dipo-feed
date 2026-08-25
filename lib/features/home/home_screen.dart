@@ -5,6 +5,7 @@ import '../../core/constants/app_colors.dart';
 import '../../core/widgets/app_header.dart';
 import '../../core/widgets/app_bottom_nav.dart';
 import '../../core/widgets/quick_action_card.dart';
+import '../../core/widgets/staggered_entry_card.dart';
 import '../../data/sources/bahan_pakan_repository.dart';
 import '../cek_kandungan_nutrisi/cek_kandungan_nutrisi_screen.dart';
 import '../cek_kecukupan_pakan/cek_kecukupan_pakan_screen.dart';
@@ -143,7 +144,10 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildGreetingHeader(),
+          StaggeredEntryCard(
+            delay: Duration.zero,
+            child: _buildGreetingHeader(),
+          ),
           const SizedBox(height: 20),
           _buildBentoGrid(),
         ],
@@ -309,63 +313,77 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Section label
-        Text(
-          'Fitur Utama',
-          style: GoogleFonts.inter(
-            fontSize: 17,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
-            letterSpacing: -0.3,
+        // Section label & Row 1: Hero Card — Cek Kecukupan Pakan (full-width)
+        StaggeredEntryCard(
+          delay: const Duration(milliseconds: 90),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Fitur Utama',
+                style: GoogleFonts.inter(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                  letterSpacing: -0.3,
+                ),
+              ),
+              const SizedBox(height: 12),
+              QuickActionCard(
+                title: 'Cek Kecukupan Pakan',
+                description:
+                    'Evaluasi kebutuhan vs asupan nutrisi ransum sapi secara presisi',
+                svgAsset: 'assets/icons/ic_evaluasi.svg',
+                baseColor: AppColors.primaryBlue,
+                onTap: _bukaCekKecukupan,
+                isHero: true,
+              ),
+            ],
           ),
-        ),
-        const SizedBox(height: 12),
-
-        // Row 1: Hero Card — Cek Kecukupan Pakan (full-width)
-        QuickActionCard(
-          title: 'Cek Kecukupan Pakan',
-          description: 'Evaluasi kebutuhan vs asupan nutrisi ransum sapi secara presisi',
-          svgAsset: 'assets/icons/ic_evaluasi.svg',
-          baseColor: AppColors.primaryBlue,
-          onTap: _bukaCekKecukupan,
-          isHero: true,
         ),
         const SizedBox(height: 14),
 
         // Row 2: Two medium cards side-by-side
-        Row(
-          children: [
-            Expanded(
-              child: QuickActionCard(
-                title: 'Rekomendasi Pakan',
-                description: 'Formulasi ransum otomatis',
-                svgAsset: 'assets/icons/ic_rekomendasi.svg',
-                baseColor: AppColors.accentOrange,
-                onTap: _bukaFormulasi,
+        StaggeredEntryCard(
+          delay: const Duration(milliseconds: 180),
+          child: Row(
+            children: [
+              Expanded(
+                child: QuickActionCard(
+                  title: 'Rekomendasi Pakan',
+                  description: 'Formulasi ransum otomatis',
+                  svgAsset: 'assets/icons/ic_rekomendasi.svg',
+                  baseColor: AppColors.accentOrange,
+                  onTap: _bukaFormulasi,
+                ),
               ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: QuickActionCard(
-                title: 'Cek Kandungan Nutrisi',
-                description: 'Kalkulasi nutrisi campuran',
-                icon: Icons.analytics_rounded,
-                baseColor: AppColors.secondaryGreen,
-                onTap: _bukaCekKandungan,
+              const SizedBox(width: 14),
+              Expanded(
+                child: QuickActionCard(
+                  title: 'Cek Kandungan Nutrisi',
+                  description: 'Kalkulasi nutrisi campuran',
+                  icon: Icons.analytics_rounded,
+                  baseColor: AppColors.secondaryGreen,
+                  onTap: _bukaCekKandungan,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         const SizedBox(height: 14),
 
         // Row 3: Full-width card — Database Pakan
-        QuickActionCard(
-          title: 'Database Pakan',
-          description: '$_jumlahBahan bahan pakan terdaftar — katalog & kandungan nutrien lengkap',
-          svgAsset: 'assets/icons/ic_database.svg',
-          baseColor: AppColors.expertPurple,
-          onTap: _bukaMasterPakan,
-          isHero: true,
+        StaggeredEntryCard(
+          delay: const Duration(milliseconds: 270),
+          child: QuickActionCard(
+            title: 'Database Pakan',
+            description:
+                '$_jumlahBahan bahan pakan terdaftar — katalog & kandungan nutrien lengkap',
+            svgAsset: 'assets/icons/ic_database.svg',
+            baseColor: AppColors.expertPurple,
+            onTap: _bukaMasterPakan,
+            isHero: true,
+          ),
         ),
       ],
     );
