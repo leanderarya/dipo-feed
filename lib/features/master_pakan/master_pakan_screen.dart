@@ -602,17 +602,21 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
                   children: [
                     Text(
                       bahan.nama,
-                      style: const TextStyle(
+                      style: GoogleFonts.inter(
                         fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textPrimary,
+                        letterSpacing: -0.3,
                       ),
                     ),
+                    const SizedBox(height: 2),
                     Text(
                       bahan.kategori.toUpperCase(),
-                      style: const TextStyle(
-                        fontSize: 10,
-                        color: AppColors.textGrey,
-                        letterSpacing: 1,
+                      style: GoogleFonts.inter(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textSecondary,
+                        letterSpacing: 0.8,
                       ),
                     ),
                   ],
