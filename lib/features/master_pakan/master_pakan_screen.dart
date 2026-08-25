@@ -588,49 +588,81 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
   }
 
   Widget _buildBahanCard(BahanPakan bahan) {
-    return AppCard(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      bahan.nama,
-                      style: GoogleFonts.inter(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.textPrimary,
-                        letterSpacing: -0.3,
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 250),
+      opacity: bahan.isActive ? 1.0 : 0.55,
+      child: AppCard(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              bahan.nama,
+                              style: GoogleFonts.inter(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                color: bahan.isActive
+                                    ? AppColors.textPrimary
+                                    : AppColors.textSecondary,
+                                letterSpacing: -0.3,
+                              ),
+                            ),
+                          ),
+                          if (!bahan.isActive) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.border,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                'Nonaktif',
+                                style: GoogleFonts.inter(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      bahan.kategori.toUpperCase(),
-                      style: GoogleFonts.inter(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textSecondary,
-                        letterSpacing: 0.8,
+                      const SizedBox(height: 2),
+                      Text(
+                        bahan.kategori.toUpperCase(),
+                        style: GoogleFonts.inter(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textSecondary,
+                          letterSpacing: 0.8,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              Switch(
-                value: bahan.isActive,
-                activeThumbColor: AppColors.secondaryGreen,
-                onChanged: _isLoading || _isProcessing
-                    ? null
-                    : (value) => _ubahStatusAktif(bahan, value),
-              ),
-            ],
-          ),
+                Switch(
+                  value: bahan.isActive,
+                  activeThumbColor: AppColors.secondaryGreen,
+                  onChanged: _isLoading || _isProcessing
+                      ? null
+                      : (value) => _ubahStatusAktif(bahan, value),
+                ),
+              ],
+            ),
           const Divider(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -682,8 +714,9 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildMetric(String label, String value) {
     final Color bgColor;
