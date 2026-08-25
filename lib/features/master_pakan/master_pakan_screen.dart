@@ -12,6 +12,7 @@ import '../../core/utils/indonesian_number_formatter.dart';
 import '../../core/widgets/app_card.dart';
 import '../../core/widgets/app_text_field.dart';
 import '../../core/widgets/app_sliver_header.dart';
+import '../../core/widgets/staggered_entry_card.dart';
 import '../../data/csv/bahan_pakan_csv_codec.dart';
 import '../../data/csv/hasil_import_bahan_pakan.dart';
 import '../../data/models/bahan_pakan.dart';
@@ -476,15 +477,26 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
                   const SizedBox(height: 24),
-                  _buildRingkasan(
-                    totalSemua: semuaData.length,
-                    totalAktif: totalAktif,
+                  StaggeredEntryCard(
+                    delay: Duration.zero,
+                    child: _buildRingkasan(
+                      totalSemua: semuaData.length,
+                      totalAktif: totalAktif,
+                    ),
                   ),
                   const SizedBox(height: 16),
                   if (semuaData.isEmpty)
                     _buildEmptyState()
                   else
-                    ...semuaData.map(_buildBahanCard),
+                    ...semuaData.asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final bahan = entry.value;
+                      return StaggeredEntryCard(
+                        key: ValueKey('staggered_bahan_${bahan.id}'),
+                        delay: Duration(milliseconds: (index.clamp(0, 8)) * 40),
+                        child: _buildBahanCard(bahan),
+                      );
+                    }),
                 ]),
               ),
             ),
