@@ -58,7 +58,7 @@ class AppSliverHeader extends StatelessWidget {
           : null,
       leadingWidth: showBackButton ? 64 : 16,
       titleSpacing: 0,
-      centerTitle: false,
+      centerTitle: true,
       actions: actions != null && actions!.isNotEmpty
           ? [
               ...actions!,
@@ -68,10 +68,11 @@ class AppSliverHeader extends StatelessWidget {
       title: (subtitle != null && subtitle!.isNotEmpty)
           ? Column(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
                   title,
+                  textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
                     color: AppColors.textPrimary,
                     fontSize: 16,
@@ -84,6 +85,7 @@ class AppSliverHeader extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   subtitle!,
+                  textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
                     color: AppColors.textSecondary,
                     fontSize: 12,
@@ -96,6 +98,7 @@ class AppSliverHeader extends StatelessWidget {
             )
           : Text(
               title,
+              textAlign: TextAlign.center,
               style: GoogleFonts.inter(
                 color: AppColors.textPrimary,
                 fontSize: 16,

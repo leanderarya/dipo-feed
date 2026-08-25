@@ -132,6 +132,34 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
     final displayTitle = title.isNotEmpty ? title : (heading ?? '');
     final bool hasSubtitle = subtitle != null && subtitle!.isNotEmpty;
 
+    final Widget leftWidget = shouldShowBack
+        ? Material(
+            color: AppColors.surfaceLow,
+            borderRadius: BorderRadius.circular(10),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(10),
+              onTap: onBackTap ?? () => Navigator.of(context).pop(),
+              child: Container(
+                width: 36,
+                height: 36,
+                alignment: Alignment.center,
+                child: const Icon(
+                  Icons.arrow_back,
+                  size: 20,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ),
+          )
+        : const SizedBox(width: 36);
+
+    final Widget rightWidget = actions != null && actions!.isNotEmpty
+        ? Row(
+            mainAxisSize: MainAxisSize.min,
+            children: actions!,
+          )
+        : const SizedBox(width: 36);
+
     return Container(
       decoration: const BoxDecoration(
         color: AppColors.surface,
@@ -146,35 +174,17 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
-              if (shouldShowBack) ...[
-                Material(
-                  color: AppColors.surfaceLow,
-                  borderRadius: BorderRadius.circular(10),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(10),
-                    onTap: onBackTap ?? () => Navigator.of(context).pop(),
-                    child: Container(
-                      width: 36,
-                      height: 36,
-                      alignment: Alignment.center,
-                      child: const Icon(
-                        Icons.arrow_back,
-                        size: 20,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-              ],
+              leftWidget,
+              const SizedBox(width: 8),
               Expanded(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
                       displayTitle,
+                      textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
                         color: AppColors.textPrimary,
                         fontSize: 16,
@@ -188,6 +198,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                       const SizedBox(height: 2),
                       Text(
                         subtitle!,
+                        textAlign: TextAlign.center,
                         style: GoogleFonts.inter(
                           color: AppColors.textSecondary,
                           fontSize: 12,
@@ -200,13 +211,8 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                   ],
                 ),
               ),
-              if (actions != null && actions!.isNotEmpty) ...[
-                const SizedBox(width: 8),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: actions!,
-                ),
-              ],
+              const SizedBox(width: 8),
+              rightWidget,
             ],
           ),
         ),
