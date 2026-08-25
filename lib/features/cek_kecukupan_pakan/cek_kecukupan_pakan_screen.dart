@@ -537,9 +537,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
       children: [
         AppHeader(
           title: 'Cek Kecukupan Pakan',
-          subtitle: _tahapAktif == 0
-              ? 'Tahap 1 · Data Sapi & Target Nutrien'
-              : 'Tahap 2 · Pemberian Pakan & Evaluasi',
+          subtitle: 'Evaluasi kecukupan nutrien pakan ternak',
           showBackButton: true,
           onBackTap: () {
             if (_tahapAktif == 0) {

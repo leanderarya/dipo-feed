@@ -749,11 +749,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
       children: [
         AppHeader(
           title: 'Rekomendasi Pakan',
-          subtitle: _tahapAktif == 0
-              ? 'Tahap 1 · Data Sapi & Target Nutrien'
-              : (_tahapAktif == 1
-                  ? 'Tahap 2 · Bahan Pakan Tersedia'
-                  : 'Tahap 3 · Hasil Rekomendasi Ransum'),
+          subtitle: 'Rekomendasi ransum pakan sapi perah',
           showBackButton: true,
           onBackTap: () {
             if (_tahapAktif == 0) {
