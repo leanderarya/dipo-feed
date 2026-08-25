@@ -331,12 +331,11 @@ class _HomeScreenState extends State<HomeScreen> {
         // Row 1: Hero Card — Cek Kecukupan Pakan (full-width)
         QuickActionCard(
           title: 'Cek Kecukupan Pakan',
-          description: 'Evaluasi kebutuhan vs asupan nutrisi ransum ternak Anda secara presisi',
+          description: 'Evaluasi kebutuhan vs asupan nutrisi ransum sapi secara presisi',
           svgAsset: 'assets/icons/ic_evaluasi.svg',
           baseColor: AppColors.primaryBlue,
           onTap: _bukaCekKecukupan,
           isHero: true,
-          chipLabels: const ['Sapi Potong', 'Sapi Perah', 'Kambing / Domba'],
         ),
         const SizedBox(height: 14),
 
