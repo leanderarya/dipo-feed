@@ -281,7 +281,6 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
 
   Future<void> _ubahStatusAktif(BahanPakan bahan, bool isActive) async {
     if (_isLoading || _isProcessing) return;
-    setState(() => _isProcessing = true);
 
     try {
       await _repository.updateBahan(
@@ -293,8 +292,6 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
     } catch (error) {
       if (!mounted) return;
       AppToast.showError(context, 'Gagal mengubah status bahan pakan: $error');
-    } finally {
-      if (mounted) setState(() => _isProcessing = false);
     }
   }
 
