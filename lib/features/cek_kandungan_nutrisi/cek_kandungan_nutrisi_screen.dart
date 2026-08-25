@@ -8,6 +8,7 @@ import '../../core/utils/indonesian_number_formatter.dart';
 import '../../core/widgets/app_card.dart';
 import '../../core/widgets/app_sliver_header.dart';
 import '../../core/widgets/app_text_field.dart';
+import '../../core/widgets/staggered_entry_card.dart';
 import '../../data/models/bahan_pakan.dart';
 import '../../data/models/campuran_pakan_item.dart';
 import '../../data/models/fisiologi_sapi.dart';
@@ -408,7 +409,10 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildKartuStandarFisiologi(),
+          StaggeredEntryCard(
+            delay: Duration.zero,
+            child: _buildKartuStandarFisiologi(),
+          ),
           const SizedBox(height: 16),
           if (_campuran.isEmpty)
             _buildEmptyState()
@@ -419,7 +423,11 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
             ),
             const SizedBox(height: 12),
             ..._campuran.asMap().entries.map(
-              (entry) => _buildKartuBahan(entry.key, entry.value),
+              (entry) => StaggeredEntryCard(
+                key: ValueKey('staggered_campuran_${entry.value.bahan.id}'),
+                delay: Duration(milliseconds: (entry.key.clamp(0, 8)) * 60),
+                child: _buildKartuBahan(entry.key, entry.value),
+              ),
             ),
             const SizedBox(height: 8),
             OutlinedButton.icon(
@@ -429,10 +437,13 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
             ),
             if (evaluasiStandar != null && hasil != null) ...[
               const SizedBox(height: 16),
-              EvaluasiStandarCard(
-                evaluasi: evaluasiStandar,
-                totalBeratKg: hasil.totalBerat,
-                totalBiaya: hasil.totalBiaya,
+              StaggeredEntryCard(
+                delay: const Duration(milliseconds: 140),
+                child: EvaluasiStandarCard(
+                  evaluasi: evaluasiStandar,
+                  totalBeratKg: hasil.totalBerat,
+                  totalBiaya: hasil.totalBiaya,
+                ),
               ),
             ],
           ],
