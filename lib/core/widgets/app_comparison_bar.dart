@@ -111,27 +111,27 @@ class AppComparisonBar extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Realisasi: ${IndonesianNumberFormatter.format(current, decimals: 2)} / Target: ${IndonesianNumberFormatter.format(limit, decimals: 2)}$unitSuffix',
+                '${IndonesianNumberFormatter.format(current, decimals: 2)} / ${IndonesianNumberFormatter.format(limit, decimals: 2)}$unitSuffix',
                 style: GoogleFonts.inter(
-                  fontSize: 11,
+                  fontSize: 11.5,
                   fontWeight: FontWeight.w500,
                   color: AppColors.textSecondary,
                 ),
               ),
               if (isKurang)
                 Text(
-                  'Butuh ${IndonesianNumberFormatter.format(limit - current, decimals: 2)}$unitSuffix lagi',
+                  'Butuh ${IndonesianNumberFormatter.format(limit - current, decimals: 2)} lagi',
                   style: GoogleFonts.inter(
-                    fontSize: 11,
+                    fontSize: 11.5,
                     fontWeight: FontWeight.w600,
                     color: AppColors.statusKurang,
                   ),
                 )
               else if (isBerlebih)
                 Text(
-                  'Kelebihan ${IndonesianNumberFormatter.format(current - limit, decimals: 2)}$unitSuffix',
+                  'Kelebihan ${IndonesianNumberFormatter.format(current - limit, decimals: 2)}',
                   style: GoogleFonts.inter(
-                    fontSize: 11,
+                    fontSize: 11.5,
                     fontWeight: FontWeight.w600,
                     color: AppColors.statusBerlebih,
                   ),
