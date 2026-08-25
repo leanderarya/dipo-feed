@@ -87,37 +87,30 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                 ],
               ),
               const Spacer(),
-              // UNDIP FPP Badge
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryLight,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppColors.primaryBlue.withValues(alpha: 0.15)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 6,
-                      height: 6,
-                      decoration: const BoxDecoration(
-                        color: AppColors.secondaryGreen,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'FPP UNDIP',
-                      style: GoogleFonts.inter(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.primaryBlue,
-                        letterSpacing: 0.3,
-                      ),
-                    ),
-                  ],
-                ),
+              // Partner Logos (UNDIP & ACIAR)
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Image.asset(
+                    'assets/images/logo_undip.png',
+                    height: 28,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+                  ),
+                  const SizedBox(width: 10),
+                  Container(
+                    height: 18,
+                    width: 1,
+                    color: AppColors.border,
+                  ),
+                  const SizedBox(width: 10),
+                  Image.asset(
+                    'assets/images/logo_aciar.png',
+                    height: 26,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+                  ),
+                ],
               ),
             ],
           ),
