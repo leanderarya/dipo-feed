@@ -347,13 +347,19 @@ class EvaluasiStandarCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  item.label,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textDark,
-                    fontSize: 13,
-                  ),
+                Row(
+                  children: [
+                    Text(
+                      item.label,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textDark,
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    _buildStatusBadge(item.status),
+                  ],
                 ),
                 const SizedBox(height: 3),
                 Text(
@@ -403,6 +409,45 @@ class EvaluasiStandarCard extends StatelessWidget {
                 color: AppColors.textDark,
                 fontSize: 18,
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatusBadge(StatusStandarNutrien status) {
+    final (color, label) = switch (status) {
+      StatusStandarNutrien.sesuai => (AppColors.statusPas, 'Pas'),
+      StatusStandarNutrien.berlebih => (AppColors.statusBerlebih, 'Berlebih'),
+      StatusStandarNutrien.kurang => (AppColors.statusKurang, 'Kurang'),
+    };
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.3), width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontSize: 10.5,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ],

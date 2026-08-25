@@ -13,14 +13,24 @@ class AppComparisonBar extends StatelessWidget {
     required this.label,
     required this.limit,
     required this.current,
-    this.unit = '',
+    this.unit = 'kg',
   });
 
   @override
   Widget build(BuildContext context) {
     final double percentage = limit > 0 ? (current / limit).clamp(0.0, 1.2) : 0;
-    final isOver = current >= limit;
-    final color = isOver ? AppColors.accentGreen : AppColors.errorRed;
+    final bool isKurang = current < limit * 0.95;
+    final bool isBerlebih = limit > 0 && current > limit * 1.05;
+
+    final color = isKurang
+        ? AppColors.statusKurang
+        : (isBerlebih ? AppColors.statusBerlebih : AppColors.statusPas);
+
+    final statusText = isKurang
+        ? 'Kurang'
+        : (isBerlebih ? 'Berlebih' : 'Tercukupi (Pas)');
+
+    final unitSuffix = unit.isNotEmpty ? ' $unit' : '';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -30,9 +40,9 @@ class AppComparisonBar extends StatelessWidget {
           children: [
             Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
             Text(
-              '${IndonesianNumberFormatter.format(current, decimals: 2)} / ${IndonesianNumberFormatter.format(limit, decimals: 2)} $unit',
+              '${IndonesianNumberFormatter.format(current, decimals: 2)} / ${IndonesianNumberFormatter.format(limit, decimals: 2)}$unitSuffix',
               style: TextStyle(
-                color: isOver ? AppColors.primaryGreen : AppColors.errorRed,
+                color: color,
                 fontWeight: FontWeight.w600,
                 fontSize: 13,
               ),
@@ -77,16 +87,24 @@ class AppComparisonBar extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              isOver ? 'Tercukupi' : 'Kurang',
+              statusText,
               style: TextStyle(
                 fontSize: 11,
                 color: color,
                 fontWeight: FontWeight.w500,
               ),
             ),
-            if (!isOver)
+            if (isKurang)
               Text(
-                'Butuh ${IndonesianNumberFormatter.format(limit - current, decimals: 2)} lagi',
+                'Kurang ${IndonesianNumberFormatter.format(limit - current, decimals: 2)}$unitSuffix',
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: AppColors.textLight,
+                ),
+              )
+            else if (isBerlebih)
+              Text(
+                'Lebih ${IndonesianNumberFormatter.format(current - limit, decimals: 2)}$unitSuffix',
                 style: const TextStyle(
                   fontSize: 11,
                   color: AppColors.textLight,

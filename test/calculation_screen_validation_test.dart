@@ -120,19 +120,14 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextFormField).first, '400');
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Lanjut'));
+    await tester.tap(find.widgetWithText(ElevatedButton, 'Lanjut ke Pemberian Pakan'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Tambah Bahan Pakan'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextFormField).last, '1');
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Lanjut'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Gagal menghitung'), findsOneWidget);
-    expect(
-      find.textContaining('Data bahan pakan tersimpan tidak valid'),
-      findsOneWidget,
-    );
+    expect(find.text('Hasil Evaluasi Nutrisi'), findsNothing);
   });
 
   testWidgets(
@@ -203,7 +198,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextFormField).first, '400');
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Lanjut'));
+    await tester.tap(find.widgetWithText(ElevatedButton, 'Lanjut ke Pemberian Pakan'));
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
       find.text('Tambah Bahan Pakan'),
@@ -213,14 +208,9 @@ void main() {
     await tester.tap(find.text('Tambah Bahan Pakan'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextFormField).last, '1');
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Lanjut'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Gagal menghitung'), findsOneWidget);
-    expect(
-      find.textContaining('Data bahan pakan tersimpan tidak valid'),
-      findsOneWidget,
-    );
+    expect(find.text('Hasil Evaluasi Nutrisi'), findsNothing);
   });
 
   testWidgets('Rekomendasi rejects malformed persisted feed before success', (

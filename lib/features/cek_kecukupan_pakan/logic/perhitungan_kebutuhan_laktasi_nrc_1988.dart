@@ -179,10 +179,15 @@ class PerhitunganKebutuhanLaktasiNrc1988 {
       catatan: catatan,
     );
 
-    if (lemakSusuPersen < 2.5 || lemakSusuPersen > 4.0) {
+    if (lemakSusuPersen < 2.5) {
       _tambahCatatan(
         catatan,
-        'Lemak susu berada di luar rentang rekomendasi 2,5%–4,0%, hasil dihitung dengan ekstrapolasi.',
+        'Kadar lemak susu terlalu rendah (< 2,5%), hasil dihitung dengan ekstrapolasi.',
+      );
+    } else if (lemakSusuPersen > 4.0) {
+      _tambahCatatan(
+        catatan,
+        'Kadar lemak susu melebihi standar (> 4,0%), hasil dihitung dengan ekstrapolasi.',
       );
     }
 

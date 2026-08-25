@@ -75,7 +75,7 @@ void main() {
 
       expect(hasil.kebutuhanBkKg, greaterThan(0));
       expect(
-        hasil.catatan.any((item) => item.contains('luar rentang rekomendasi')),
+        hasil.catatan.any((item) => item.contains('ekstrapolasi') || item.contains('melebihi standar')),
         isTrue,
       );
     });

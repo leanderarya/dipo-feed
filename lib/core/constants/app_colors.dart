@@ -15,6 +15,11 @@ class AppColors {
   static const Color textPrimary = Color(0xFF1E293B);
   static const Color textSecondary = Color(0xFF64748B);
 
+  // Status Colors (Indikator Kecukupan Nutrisi)
+  static const Color statusPas = Color(0xFF00BF63); // 🟢 Pas (Emerald Green)
+  static const Color statusBerlebih = Color(0xFF1E3A8A); // 🔵 Berlebih (Biru Undip)
+  static const Color statusKurang = Color(0xFFBA1A1A); // 🔴 Kurang (Merah)
+
   // Aliases for compatibility
   static const Color primaryGreen = Color(0xFF1E3A8A); // primaryBlue
   static const Color backgroundCream = Color(0xFFF8FAFC); // background

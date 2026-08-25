@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/constants/app_colors.dart';
+import '../../core/utils/app_toast.dart';
 import '../../core/utils/indonesian_number_formatter.dart';
 import '../../core/models/status_perhitungan.dart';
 import '../../core/widgets/app_sliver_header.dart';
@@ -55,6 +56,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
   StatusPerhitungan _statusPerhitungan = StatusPerhitungan.belumDihitung;
   String? _pesanPerhitungan;
   int _tahapAktif = 0;
+  AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
 
   @override
   void initState() {
@@ -341,6 +343,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
   }
 
   bool _validasiTahapSatu() {
+    setState(() => _autovalidateMode = AutovalidateMode.onUserInteraction);
     final valid = _formKey.currentState?.validate() ?? false;
     if (!valid) return false;
     return _hitungKebutuhanDariForm() != null;
@@ -508,6 +511,38 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     return kebutuhan;
   }
 
+  String? get _warningLemakSusu {
+    if (_fisiologi != FisiologiSapi.laktasi) return null;
+    final val = _parseDouble(_lemakSusuController.text);
+    if (val <= 0) return null;
+    if (val < 2.5) return 'Kadar lemak susu terlalu rendah (< 2,5%)';
+    if (val > 4.0) return 'Kadar lemak susu melebihi standar (> 4,0%)';
+    return null;
+  }
+
+  Widget _buildRangeWarning(String message) {
+    return Row(
+      children: [
+        const Icon(
+          Icons.info_outline,
+          size: 13,
+          color: AppColors.accentOrange,
+        ),
+        const SizedBox(width: 4),
+        Expanded(
+          child: Text(
+            message,
+            style: const TextStyle(
+              fontSize: 11,
+              color: AppColors.accentOrange,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   double _parseDouble(String value) {
     final parsed = IndonesianNumberFormatter.tryParse(value)?.toDouble();
     return parsed != null &&
@@ -670,9 +705,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
 
   void _showSnackBar(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
-    );
+    AppToast.showWarning(context, message);
   }
 
   double _hitungTotalAsFed(List<RekomendasiPakanItem> items) {
@@ -1037,7 +1070,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
           'Isi profil sapi atau gunakan data dari Cek Kecukupan untuk menampilkan kebutuhan nutrien.',
       child: Form(
         key: _formKey,
-        autovalidateMode: AutovalidateMode.onUserInteraction,
+        autovalidateMode: _autovalidateMode,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1078,7 +1111,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                 label: '% Lemak Susu',
                 suffix: '%',
                 validator: _validasiLemakSusu,
-                hintText: 'Misal: 3,5',
+                hintText: 'Contoh: 3,5',
               ),
               const SizedBox(height: 8),
               Row(
@@ -1092,7 +1125,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                   const SizedBox(width: 8),
                   const Expanded(
                     child: Text(
-                      'Diisi sesuai dengan pengetahuan peternak, misalnya 3–3,5%.',
+                      'Tuliskan target persentase lemak susu.',
                       style: TextStyle(
                         fontSize: 12,
                         color: AppColors.textLight,
@@ -1102,6 +1135,10 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                   ),
                 ],
               ),
+              if (_warningLemakSusu != null) ...[
+                const SizedBox(height: 6),
+                _buildRangeWarning(_warningLemakSusu!),
+              ],
             ],
             if (widget.kebutuhanAwal != null) ...[
               const SizedBox(height: 16),
@@ -1593,8 +1630,8 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                     children: [
                       Text(
                         hasil.isLkAman
-                            ? 'Kesimpulan Evaluasi: Formulasi Ransum Aman'
-                            : 'Kesimpulan Evaluasi: Formulasi Perlu Penyesuaian',
+                            ? 'Evaluasi Lemak Kasar (LK): Memenuhi Standar'
+                            : 'Peringatan: Lemak Kasar (LK) Perlu Penyesuaian',
                         style: const TextStyle(
                           fontWeight: FontWeight.w900,
                           color: Colors.white,
@@ -1604,8 +1641,8 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                       const SizedBox(height: 4),
                       Text(
                         hasil.isLkAman
-                            ? 'Kandungan Lemak Kasar (LK) aman dan memenuhi standar yaitu ${_format(hasil.lkPersenDariBk)}% dari total Bahan Kering (BK) pakan.'
-                            : 'Kandungan Lemak Kasar (LK) melebihi batas aman 5% yaitu ${_format(hasil.lkPersenDariBk)}% dari total Bahan Kering (BK). Disarankan untuk mengurangi proporsi bahan kaya lemak seperti bungkil kelapa atau polar.',
+                            ? 'Kandungan Lemak Kasar (LK) memenuhi batas standar (< 5% BK) yaitu ${_format(hasil.lkPersenDariBk)}% dari total Bahan Kering (BK).'
+                            : 'Kandungan Lemak Kasar (LK) melebihi batas toleransi 5% yaitu ${_format(hasil.lkPersenDariBk)}% dari total Bahan Kering (BK). Disarankan untuk mengurangi proporsi bahan kaya lemak seperti bungkil kelapa atau polar.',
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.white.withValues(alpha: 0.9),
@@ -1644,12 +1681,19 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
       hasil: hasilValue,
       target: target,
     );
-    final selisih = hasilValue - target;
+    String selisihText;
+    if (status == 'Kurang') {
+      selisihText = 'Kurang ${_format((target - hasilValue).abs())} $unit';
+    } else if (status == 'Berlebih') {
+      selisihText = 'Lebih ${_format((hasilValue - target).abs())} $unit';
+    } else {
+      selisihText = 'Sesuai kebutuhan';
+    }
     final statusColor = status == 'Pas'
-        ? AppColors.primaryGreen
+        ? AppColors.statusPas
         : status == 'Kurang'
-        ? AppColors.errorRed
-        : const Color(0xFFB8571B);
+        ? AppColors.statusKurang
+        : AppColors.statusBerlebih;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -1682,7 +1726,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Selisih ${selisih >= 0 ? '+' : ''}${_format(selisih)} $unit',
+                  selisihText,
                   textAlign: TextAlign.end,
                   style: const TextStyle(
                     fontSize: 12,
@@ -1694,14 +1738,36 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
           ),
           const SizedBox(width: 12),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
             decoration: BoxDecoration(
               color: statusColor.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(999),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: statusColor.withValues(alpha: 0.3),
+                width: 1,
+              ),
             ),
-            child: Text(
-              status,
-              style: TextStyle(color: statusColor, fontWeight: FontWeight.w700),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: statusColor,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  status,
+                  style: TextStyle(
+                    color: statusColor,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
