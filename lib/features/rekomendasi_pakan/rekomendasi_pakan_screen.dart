@@ -1091,7 +1091,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                   const SizedBox(width: 8),
                   const Expanded(
                     child: Text(
-                      'Diisi sesuai dengan pengetahuan peternak, misalnya 3–3,5%.',
+                      'Tuliskan target persentase lemak susu.',
                       style: TextStyle(
                         fontSize: 12,
                         color: AppColors.textLight,
