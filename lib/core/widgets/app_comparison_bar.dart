@@ -13,7 +13,7 @@ class AppComparisonBar extends StatelessWidget {
     required this.label,
     required this.limit,
     required this.current,
-    this.unit = '',
+    this.unit = 'kg',
   });
 
   @override
@@ -30,6 +30,8 @@ class AppComparisonBar extends StatelessWidget {
         ? 'Kurang'
         : (isBerlebih ? 'Berlebih' : 'Tercukupi (Pas)');
 
+    final unitSuffix = unit.isNotEmpty ? ' $unit' : '';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -38,7 +40,7 @@ class AppComparisonBar extends StatelessWidget {
           children: [
             Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
             Text(
-              '${IndonesianNumberFormatter.format(current, decimals: 2)} / ${IndonesianNumberFormatter.format(limit, decimals: 2)} $unit',
+              '${IndonesianNumberFormatter.format(current, decimals: 2)} / ${IndonesianNumberFormatter.format(limit, decimals: 2)}$unitSuffix',
               style: TextStyle(
                 color: color,
                 fontWeight: FontWeight.w600,
@@ -94,7 +96,7 @@ class AppComparisonBar extends StatelessWidget {
             ),
             if (isKurang)
               Text(
-                'Butuh ${IndonesianNumberFormatter.format(limit - current, decimals: 2)} lagi',
+                'Kurang ${IndonesianNumberFormatter.format(limit - current, decimals: 2)}$unitSuffix',
                 style: const TextStyle(
                   fontSize: 11,
                   color: AppColors.textLight,
@@ -102,7 +104,7 @@ class AppComparisonBar extends StatelessWidget {
               )
             else if (isBerlebih)
               Text(
-                'Kelebihan ${IndonesianNumberFormatter.format(current - limit, decimals: 2)} $unit',
+                'Lebih ${IndonesianNumberFormatter.format(current - limit, decimals: 2)}$unitSuffix',
                 style: const TextStyle(
                   fontSize: 11,
                   color: AppColors.textLight,
