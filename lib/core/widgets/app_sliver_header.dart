@@ -27,9 +27,19 @@ class AppSliverHeader extends StatelessWidget {
       scrolledUnderElevation: 0,
       backgroundColor: AppColors.surface,
       surfaceTintColor: Colors.transparent,
-      bottom: const PreferredSize(
-        preferredSize: Size.fromHeight(1),
-        child: Divider(height: 1, thickness: 1, color: AppColors.border),
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(2),
+        child: Container(
+          height: 2,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppColors.primaryBlue,
+                AppColors.secondaryGreen,
+              ],
+            ),
+          ),
+        ),
       ),
       leading: showBackButton
           ? Padding(
