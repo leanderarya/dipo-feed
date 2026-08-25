@@ -54,7 +54,7 @@ class AppHorizontalStepper extends StatelessWidget {
                   duration: const Duration(milliseconds: 250),
                   child: Text(
                     steps[safeStep],
-                    key: ValueKey<int>(safeStep),
+                    key: ValueKey<String>('stepper_step_title_$safeStep'),
                     style: GoogleFonts.inter(
                       fontSize: 13.5,
                       fontWeight: FontWeight.w700,
