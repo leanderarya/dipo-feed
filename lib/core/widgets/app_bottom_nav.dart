@@ -95,32 +95,16 @@ class AppBottomNav extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 3),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (isActive) ...[
-                  Container(
-                    width: 4,
-                    height: 4,
-                    margin: const EdgeInsets.only(right: 4),
-                    decoration: const BoxDecoration(
-                      color: AppColors.secondaryGreen,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ],
-                Text(
-                  label,
-                  style: GoogleFonts.inter(
-                    fontSize: 11,
-                    fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                    color: isActive
-                        ? AppColors.primaryBlue
-                        : AppColors.textSecondary,
-                    letterSpacing: -0.1,
-                  ),
-                ),
-              ],
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 11,
+                fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                color: isActive
+                    ? AppColors.primaryBlue
+                    : AppColors.textSecondary,
+                letterSpacing: -0.1,
+              ),
             ),
           ],
         ),
