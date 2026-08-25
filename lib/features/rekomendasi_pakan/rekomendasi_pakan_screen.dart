@@ -1681,7 +1681,14 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
       hasil: hasilValue,
       target: target,
     );
-    final selisih = hasilValue - target;
+    String selisihText;
+    if (status == 'Kurang') {
+      selisihText = 'Kurang ${_format((target - hasilValue).abs())} $unit';
+    } else if (status == 'Berlebih') {
+      selisihText = 'Lebih ${_format((hasilValue - target).abs())} $unit';
+    } else {
+      selisihText = 'Sesuai kebutuhan';
+    }
     final statusColor = status == 'Pas'
         ? AppColors.statusPas
         : status == 'Kurang'
@@ -1719,7 +1726,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Selisih ${selisih >= 0 ? '+' : ''}${_format(selisih)} $unit',
+                  selisihText,
                   textAlign: TextAlign.end,
                   style: const TextStyle(
                     fontSize: 12,

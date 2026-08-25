@@ -485,7 +485,7 @@ class _EvaluasiKecukupanCardState extends State<EvaluasiKecukupanCard> {
     if (item.status == StatusKecukupanNutrien.berlebih) {
       final lebih = (item.pemberian - item.kebutuhan).abs();
       return Text(
-        'Kelebihan ${_format(lebih)} ${item.satuan}',
+        'Lebih ${_format(lebih)} ${item.satuan}',
         style: TextStyle(
           fontSize: 11,
           color: color,
