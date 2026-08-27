@@ -141,7 +141,12 @@ void main() {
 
   Future<void> addFeedAndSetWeight(WidgetTester tester, String weight) async {
     await tapText(tester, 'Susun Pakan');
-    await tester.enterText(find.byType(TextFormField).first, weight);
+    await tester.pumpAndSettle();
+    if (find.text('Rumput Gajah').evaluate().isNotEmpty) {
+      await tester.tap(find.text('Rumput Gajah').last);
+      await tester.pumpAndSettle();
+    }
+    await tester.enterText(find.byType(TextField).first, weight);
     await tester.pump();
   }
 
@@ -171,6 +176,11 @@ void main() {
   ) async {
     await pumpScreen(tester);
     await tapText(tester, 'Susun Pakan');
+    await tester.pumpAndSettle();
+    if (find.text('Rumput Gajah').evaluate().isNotEmpty) {
+      await tester.tap(find.text('Rumput Gajah').last);
+      await tester.pumpAndSettle();
+    }
 
     await tapText(tester, 'Hitung');
 
@@ -186,7 +196,12 @@ void main() {
   ) async {
     await pumpScreen(tester);
     await tapText(tester, 'Susun Pakan');
-    await tester.enterText(find.byType(TextFormField).first, 'abc');
+    await tester.pumpAndSettle();
+    if (find.text('Rumput Gajah').evaluate().isNotEmpty) {
+      await tester.tap(find.text('Rumput Gajah').last);
+      await tester.pumpAndSettle();
+    }
+    await tester.enterText(find.byType(TextField).first, 'abc');
     await tester.pump();
 
     await tapText(tester, 'Hitung');
