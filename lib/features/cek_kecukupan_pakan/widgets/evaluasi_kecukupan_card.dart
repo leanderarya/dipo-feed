@@ -214,18 +214,18 @@ class _EvaluasiKecukupanCardState extends State<EvaluasiKecukupanCard> {
                   Text(
                     item.singkatan,
                     style: const TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 15,
                       color: AppColors.textDark,
                     ),
                   ),
-                  const SizedBox(width: 4),
+                  const SizedBox(width: 5),
                   Text(
                     '(${item.nama})',
                     style: const TextStyle(
-                      fontSize: 11.5,
+                      fontSize: 12,
                       color: AppColors.textLight,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
@@ -240,8 +240,8 @@ class _EvaluasiKecukupanCardState extends State<EvaluasiKecukupanCard> {
               Text(
                 'Total: ${_format(item.pemberian)} / ${_format(item.kebutuhan)} ${item.satuan}',
                 style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.textDark,
                 ),
               ),
@@ -375,18 +375,18 @@ class _EvaluasiKecukupanCardState extends State<EvaluasiKecukupanCard> {
                   Text(
                     item.singkatan,
                     style: const TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 15,
                       color: AppColors.textDark,
                     ),
                   ),
-                  const SizedBox(width: 4),
+                  const SizedBox(width: 5),
                   Text(
                     '(${item.nama})',
                     style: const TextStyle(
                       fontSize: 12,
                       color: AppColors.textLight,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
@@ -403,17 +403,17 @@ class _EvaluasiKecukupanCardState extends State<EvaluasiKecukupanCard> {
               Text(
                 'Pemberian: ${_format(item.pemberian)} ${item.satuan}',
                 style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.textDark,
                 ),
               ),
               Text(
                 'Kebutuhan: ${_format(item.kebutuhan)} ${item.satuan}',
                 style: const TextStyle(
-                  fontSize: 12,
+                  fontSize: 12.5,
                   color: AppColors.textLight,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -460,7 +460,7 @@ class _EvaluasiKecukupanCardState extends State<EvaluasiKecukupanCard> {
             label,
             style: TextStyle(
               color: color,
-              fontSize: 11,
+              fontSize: 11.5,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -475,9 +475,9 @@ class _EvaluasiKecukupanCardState extends State<EvaluasiKecukupanCard> {
       return Text(
         'Kurang ${_format(butuh)} ${item.satuan}',
         style: TextStyle(
-          fontSize: 11,
+          fontSize: 12,
           color: color,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w700,
         ),
       );
     }
@@ -487,9 +487,9 @@ class _EvaluasiKecukupanCardState extends State<EvaluasiKecukupanCard> {
       return Text(
         'Lebih ${_format(lebih)} ${item.satuan}',
         style: TextStyle(
-          fontSize: 11,
+          fontSize: 12,
           color: color,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w700,
         ),
       );
     }
@@ -497,9 +497,9 @@ class _EvaluasiKecukupanCardState extends State<EvaluasiKecukupanCard> {
     return Text(
       'Sesuai kebutuhan',
       style: TextStyle(
-        fontSize: 11,
+        fontSize: 12,
         color: color,
-        fontWeight: FontWeight.w600,
+        fontWeight: FontWeight.w700,
       ),
     );
   }
