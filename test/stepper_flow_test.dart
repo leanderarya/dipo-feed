@@ -176,10 +176,9 @@ void main() {
 
     expect(find.byType(AppSliverHeader), findsOneWidget);
     expect(find.text('Cek Kecukupan Pakan'), findsNWidgets(2));
-    expect(find.text('Data Sapi'), findsOneWidget);
-    expect(find.text('Tahap 1 dari 3'), findsOneWidget);
-    expect(find.byType(LinearProgressIndicator), findsOneWidget);
-    expect(find.text('Data Sapi & Kebutuhan Nutrien'), findsOneWidget);
+    expect(find.text('Data Sapi'), findsNWidgets(2));
+    expect(find.textContaining('Tahap 1 dari 3'), findsOneWidget);
+    expect(find.textContaining('Data Sapi & Kebutuhan Nutrien'), findsOneWidget);
     expect(find.text('Hasil Evaluasi Nutrisi'), findsNothing);
     expect(find.text('Lanjut ke Komposisi Pakan'), findsOneWidget);
     expect(find.text('Kembali'), findsNothing);
@@ -206,7 +205,7 @@ void main() {
 
     expect(find.byType(AppSliverHeader), findsNothing);
     expect(find.text('Cek Kecukupan Pakan'), findsOneWidget);
-    expect(find.text('Tahap 2 dari 3'), findsOneWidget);
+    expect(find.textContaining('Tahap 2 dari 3'), findsOneWidget);
     expect(find.text('Pemberian Pakan'), findsOneWidget);
     expect(find.text('Tambah Bahan Pakan'), findsOneWidget);
   });
@@ -237,7 +236,7 @@ void main() {
     expect(find.text('Standar: Laktasi (NRC 1988)'), findsNothing);
     await tapButton(tester, 'Lanjut ke Komposisi Pakan');
 
-    expect(find.text('Tahap 1 dari 3'), findsOneWidget);
+    expect(find.textContaining('Tahap 1 dari 3'), findsOneWidget);
     expect(find.text('Pemberian Pakan'), findsNothing);
   });
 
@@ -246,11 +245,11 @@ void main() {
     await tester.enterText(find.byType(TextFormField).first, '500');
     await tapButton(tester, 'Lanjut ke Komposisi Pakan');
 
-    expect(find.text('Tahap 2 dari 3'), findsOneWidget);
+    expect(find.textContaining('Tahap 2 dari 3'), findsOneWidget);
     await tapHeaderBack(tester);
 
-    expect(find.text('Data Sapi'), findsOneWidget);
-    expect(find.text('Tahap 1 dari 3'), findsOneWidget);
+    expect(find.text('Data Sapi'), findsNWidgets(2));
+    expect(find.textContaining('Tahap 1 dari 3'), findsOneWidget);
   });
 
   testWidgets('back navigation preserves profile data', (tester) async {
@@ -260,7 +259,7 @@ void main() {
     await tapButton(tester, 'Lanjut ke Komposisi Pakan');
     await tapHeaderBack(tester);
 
-    expect(find.text('Data Sapi'), findsOneWidget);
+    expect(find.text('Data Sapi'), findsNWidgets(2));
     expect(find.byType(TextFormField).first, findsOneWidget);
     expect(
       tester
@@ -285,7 +284,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Step 3 displays evaluation card and summary
-      expect(find.text('Tahap 3 dari 3'), findsOneWidget);
+      expect(find.textContaining('Tahap 3 dari 3'), findsOneWidget);
       expect(find.text('Hasil Evaluasi Nutrisi'), findsOneWidget);
       expect(find.text('Komposisi Pakan Diberikan'), findsOneWidget);
       expect(find.text('Tutup Detail'), findsOneWidget);
@@ -330,7 +329,7 @@ void main() {
       await tapButton(tester, 'Lanjut ke Komposisi Pakan');
 
       expect(find.text('Angka tidak valid'), findsWidgets);
-      expect(find.text('Tahap 1 dari 3'), findsOneWidget);
+      expect(find.textContaining('Tahap 1 dari 3'), findsOneWidget);
     });
 
     testWidgets('rejects invalid produksi susu value $invalidValue', (
@@ -342,7 +341,7 @@ void main() {
       await tapButton(tester, 'Lanjut ke Komposisi Pakan');
 
       expect(find.text('Angka tidak valid'), findsWidgets);
-      expect(find.text('Tahap 1 dari 3'), findsOneWidget);
+      expect(find.textContaining('Tahap 1 dari 3'), findsOneWidget);
     });
 
     testWidgets('rejects invalid lemak susu value $invalidValue', (
@@ -354,7 +353,7 @@ void main() {
       await tapButton(tester, 'Lanjut ke Komposisi Pakan');
 
       expect(find.text('Angka tidak valid'), findsWidgets);
-      expect(find.text('Tahap 1 dari 3'), findsOneWidget);
+      expect(find.textContaining('Tahap 1 dari 3'), findsOneWidget);
     });
   }
 
@@ -377,7 +376,7 @@ void main() {
     await tapButton(tester, 'Lanjut ke Komposisi Pakan');
     await tester.pumpAndSettle();
 
-    expect(find.text('Tahap 2 dari 3'), findsOneWidget);
+    expect(find.textContaining('Tahap 2 dari 3'), findsOneWidget);
   });
 
   for (final invalidQuantity in ['abc', 'NaN', 'Infinity', '-1']) {
@@ -399,7 +398,7 @@ void main() {
         await tapButton(tester, 'Hitung & Evaluasi');
         await tester.pumpAndSettle();
 
-        expect(find.text('Tahap 2 dari 3'), findsOneWidget);
+        expect(find.textContaining('Tahap 2 dari 3'), findsOneWidget);
         expect(find.text('Hasil Evaluasi Nutrisi'), findsNothing);
       },
     );
