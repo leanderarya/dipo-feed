@@ -331,10 +331,47 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
   bool _validasiTahapSatu() {
     setState(() => _autovalidateMode = AutovalidateMode.onUserInteraction);
     final valid = _formKey.currentState?.validate() ?? false;
-    if (!valid) return false;
+    if (!valid) {
+      AppToast.showWarning(context, 'Lengkapi data sapi terlebih dahulu.');
+      return false;
+    }
 
     _perbaruiKebutuhanOtomatis();
-    return _kebutuhanNutrien != null;
+    if (_kebutuhanNutrien == null) {
+      AppToast.showWarning(
+        context,
+        'Data sapi belum valid untuk menghitung kebutuhan.',
+      );
+      return false;
+    }
+    return true;
+  }
+
+  bool _validasiTahapDua() {
+    if (_pemberianPakan.isEmpty) {
+      AppToast.showWarning(context, 'Tambahkan minimal 1 bahan pakan.');
+      return false;
+    }
+    if (_jumlahPakanTidakValid.isNotEmpty) {
+      AppToast.showError(context, 'Format jumlah pakan ada yang tidak valid.');
+      return false;
+    }
+    final totalJumlah = _pemberianPakan.fold<double>(
+      0,
+      (sum, item) => sum + item.jumlahKg,
+    );
+    if (totalJumlah <= 0) {
+      AppToast.showWarning(context, 'Masukkan jumlah pemberian pakan (kg).');
+      return false;
+    }
+    if (_pemberianPakan.any((item) => item.jumlahKg <= 0)) {
+      AppToast.showWarning(
+        context,
+        'Pastikan semua bahan pakan memiliki jumlah lebih dari 0 kg.',
+      );
+      return false;
+    }
+    return true;
   }
 
   void _lanjutTahap() {
@@ -342,12 +379,29 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
       if (_validasiTahapSatu()) {
         setState(() => _tahapAktif = 1);
       }
+    } else if (_tahapAktif == 1) {
+      if (_validasiTahapDua()) {
+        _perbaruiEvaluasiRealtime();
+        if (_statusPerhitungan == StatusPerhitungan.berhasil &&
+            _hasilEvaluasi != null) {
+          setState(() => _tahapAktif = 2);
+          AppToast.showSuccess(
+            context,
+            'Kecukupan pakan berhasil dihitung!',
+          );
+        } else {
+          AppToast.showError(
+            context,
+            'Perhitungan nutrisi gagal. Periksa data pakan.',
+          );
+        }
+      }
     }
   }
 
   void _kembaliTahap() {
     if (_tahapAktif == 0) {
-      Navigator.of(context).pop();
+      _handleSystemBack();
       return;
     }
     setState(() => _tahapAktif--);
@@ -597,7 +651,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
               ),
             ),
             Text(
-              '${_tahapAktif + 1}/2',
+              '${_tahapAktif + 1}/3',
               style: const TextStyle(color: Colors.white),
             ),
           ],
@@ -609,7 +663,8 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
   Widget _buildProgressIndicator() {
     final labels = [
       'Data Sapi & Kebutuhan Nutrien',
-      'Evaluasi & Pemberian Pakan',
+      'Pemilihan & Komposisi Pakan',
+      'Hasil & Evaluasi Kecukupan Pakan',
     ];
 
     return AppCard(
@@ -649,108 +704,183 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
           ],
         );
       case 1:
-        return Column(
+        return _buildPemberianPakanSection();
+      case 2:
+        return _buildHasilEvaluasiSection();
+    }
+    return const SizedBox.shrink();
+  }
+
+  Widget _buildHasilEvaluasiSection() {
+    if (_hasilEvaluasi == null) {
+      return AppCard(
+        child: Column(
           children: [
-            _buildEvaluasiScoreboard(),
-            const SizedBox(height: 16),
-            _buildPemberianPakanSection(),
-          ],
-        );
-    }
-    return const SizedBox.shrink();
-  }
-
-  Widget _buildEvaluasiScoreboard() {
-    if (_pemberianPakan.isEmpty) {
-      return _buildScoreboardPlaceholder(
-        icon: Icons.eco_outlined,
-        title: 'Tambahkan pakan untuk melihat evaluasi',
-        subtitle:
-            'Pilih bahan pakan di bawah untuk memulai perbandingan nutrisi secara realtime.',
-      );
-    }
-
-    final semuaJumlahNol = _pemberianPakan.every((item) => item.jumlahKg <= 0);
-    if (semuaJumlahNol) {
-      return _buildScoreboardPlaceholder(
-        icon: Icons.edit_note_rounded,
-        title: 'Isi jumlah pakan untuk memulai evaluasi',
-        subtitle:
-            'Masukkan jumlah pemberian (kg) pada bahan pakan untuk melihat evaluasi realtime.',
-      );
-    }
-
-    if (_hasilEvaluasi != null) {
-      return EvaluasiKecukupanCard(hasil: _hasilEvaluasi!);
-    }
-
-    return const SizedBox.shrink();
-  }
-
-  Widget _buildScoreboardPlaceholder({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.primaryBlue.withValues(alpha: 0.08),
-              shape: BoxShape.circle,
+            const Icon(
+              Icons.warning_amber_rounded,
+              size: 48,
+              color: AppColors.accentOrange,
             ),
-            child: Icon(icon, size: 30, color: AppColors.primaryBlue),
+            const SizedBox(height: 12),
+            const Text(
+              'Hasil evaluasi belum tersedia',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Silakan kembali ke tahap sebelumnya untuk mengisi pakan.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: AppColors.textLight),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      children: [
+        EvaluasiKecukupanCard(
+          hasil: _hasilEvaluasi!,
+          initialExpanded: true,
+        ),
+        const SizedBox(height: 16),
+        _buildRingkasanPakanTerpilih(),
+      ],
+    );
+  }
+
+  Widget _buildRingkasanPakanTerpilih() {
+    final totalKg = _pemberianPakan.fold<double>(
+      0,
+      (sum, item) => sum + item.jumlahKg,
+    );
+
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Komposisi Pakan Diberikan',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primaryBlue,
+                    ),
+              ),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryBlue.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'Total: ${_format(totalKg)} kg',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                    color: AppColors.primaryBlue,
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontWeight: FontWeight.w800,
-              fontSize: 15,
-              color: AppColors.textDark,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            subtitle,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 12,
-              color: AppColors.textLight,
-              height: 1.4,
-            ),
-          ),
+          Divider(height: 1, color: Colors.grey.shade200),
+          const SizedBox(height: 12),
+          ..._pemberianPakan.asMap().entries.map((entry) {
+            final idx = entry.key;
+            final item = entry.value;
+            final feedColor = getFeedColor(idx);
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                children: [
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: feedColor,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      item.bahan.nama,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                        color: AppColors.textDark,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    '${_format(item.jumlahKg)} kg',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                      color: AppColors.textDark,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
         ],
       ),
     );
   }
 
   Widget _buildNavigationControls() {
-    if (_tahapAktif >= 1) return const SizedBox.shrink();
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: _lanjutTahap,
-        child: const Text('Lanjut ke Pemberian Pakan'),
-      ),
-    );
+    if (_tahapAktif == 0) {
+      return SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: _lanjutTahap,
+          child: const Text('Lanjut ke Komposisi Pakan'),
+        ),
+      );
+    } else if (_tahapAktif == 1) {
+      return Row(
+        children: [
+          Expanded(
+            child: OutlinedButton(
+              onPressed: _kembaliTahap,
+              child: const Text('Kembali'),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            flex: 2,
+            child: ElevatedButton(
+              onPressed: _lanjutTahap,
+              child: const Text('Hitung & Evaluasi'),
+            ),
+          ),
+        ],
+      );
+    } else {
+      return Row(
+        children: [
+          Expanded(
+            child: OutlinedButton(
+              onPressed: _kembaliTahap,
+              child: const Text('Ubah Pakan'),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Selesai'),
+            ),
+          ),
+        ],
+      );
+    }
   }
 
   Widget _buildFormInput() {
