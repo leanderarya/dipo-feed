@@ -661,6 +661,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
   }
 
   Widget _buildProgressIndicator() {
+    final stepTitles = ['Data Sapi', 'Komposisi Pakan', 'Hasil Evaluasi'];
     final labels = [
       'Data Sapi & Kebutuhan Nutrien',
       'Pemilihan & Komposisi Pakan',
@@ -668,25 +669,151 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
     ];
 
     return AppCard(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Tahap ${_tahapAktif + 1} dari ${labels.length}',
-            style: const TextStyle(
-              color: AppColors.primaryBlue,
-              fontWeight: FontWeight.bold,
-            ),
+          Row(
+            children: List.generate(3, (index) {
+              final isCurrent = index == _tahapAktif;
+              final isCompleted = index < _tahapAktif;
+              final canTap = index < _tahapAktif;
+
+              return Expanded(
+                child: InkWell(
+                  onTap: canTap
+                      ? () {
+                          setState(() => _tahapAktif = index);
+                        }
+                      : null,
+                  borderRadius: BorderRadius.circular(8),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            if (index > 0)
+                              Expanded(
+                                child: Container(
+                                  height: 2.5,
+                                  color: isCompleted || isCurrent
+                                      ? AppColors.primaryBlue
+                                      : Colors.grey.shade300,
+                                ),
+                              ),
+                            Container(
+                              width: 28,
+                              height: 28,
+                              decoration: BoxDecoration(
+                                color: isCurrent
+                                    ? AppColors.primaryBlue
+                                    : isCompleted
+                                        ? AppColors.secondaryGreen
+                                        : Colors.grey.shade200,
+                                shape: BoxShape.circle,
+                                boxShadow: isCurrent
+                                    ? [
+                                        BoxShadow(
+                                          color: AppColors.primaryBlue
+                                              .withValues(alpha: 0.3),
+                                          blurRadius: 6,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ]
+                                    : null,
+                              ),
+                              child: Center(
+                                child: isCompleted
+                                    ? const Icon(
+                                        Icons.check,
+                                        size: 16,
+                                        color: Colors.white,
+                                      )
+                                    : Text(
+                                        '${index + 1}',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                          color: isCurrent
+                                              ? Colors.white
+                                              : Colors.grey.shade600,
+                                        ),
+                                      ),
+                              ),
+                            ),
+                            if (index < 2)
+                              Expanded(
+                                child: Container(
+                                  height: 2.5,
+                                  color: isCompleted
+                                      ? AppColors.secondaryGreen
+                                      : Colors.grey.shade300,
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          stepTitles[index],
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: isCurrent
+                                ? FontWeight.w800
+                                : isCompleted
+                                    ? FontWeight.w600
+                                    : FontWeight.normal,
+                            color: isCurrent
+                                ? AppColors.primaryBlue
+                                : isCompleted
+                                    ? AppColors.textDark
+                                    : AppColors.textLight,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }),
           ),
-          const SizedBox(height: 8),
-          Text(labels[_tahapAktif]),
-          const SizedBox(height: 12),
-          LinearProgressIndicator(
-            value: (_tahapAktif + 1) / labels.length,
-            minHeight: 8,
-            borderRadius: BorderRadius.circular(8),
-            color: AppColors.primaryBlue,
-            backgroundColor: AppColors.backgroundCream,
+          const SizedBox(height: 10),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: AppColors.backgroundCream,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  _tahapAktif == 0
+                      ? Icons.pets
+                      : _tahapAktif == 1
+                          ? Icons.inventory_2_outlined
+                          : Icons.analytics_outlined,
+                  size: 16,
+                  color: AppColors.primaryBlue,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Tahap ${_tahapAktif + 1} dari 3: ${labels[_tahapAktif]}',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textDark,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
