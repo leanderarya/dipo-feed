@@ -283,15 +283,24 @@ class PengaturanScreen extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 16),
           // Logos Row
-          PartnershipBrandingWidget(
-            height: 32,
-            isCardStyle: false,
-            showInfoBadge: false,
-            onTap: () => PartnershipInfoDialog.show(context),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+            decoration: BoxDecoration(
+              color: AppColors.backgroundCream,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: Colors.black.withValues(alpha: 0.04)),
+            ),
+            child: PartnershipBrandingWidget(
+              height: 48,
+              isCardStyle: false,
+              showInfoBadge: false,
+              onTap: () => PartnershipInfoDialog.show(context),
+            ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           Text(
             'DipoFeed dikembangkan oleh Tim Riset Fakultas Peternakan dan Pertanian (FPP) Universitas Diponegoro bekerja sama dengan Australian Centre for International Agricultural Research (ACIAR) Australia.',
             style: GoogleFonts.inter(
