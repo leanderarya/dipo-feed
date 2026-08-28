@@ -151,20 +151,12 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
     _perbaruiKebutuhanOtomatis();
   }
 
-  void _tambahBahanPakan() {
+  Future<void> _tambahBahanPakan() async {
     if (_semuaBahan.isEmpty) return;
 
     final bahanSudahDipakai = _pemberianPakan.map((e) => e.bahan.id).toSet();
 
-    BahanPakan? bahanBaru;
-    for (final bahan in _semuaBahan) {
-      if (!bahanSudahDipakai.contains(bahan.id)) {
-        bahanBaru = bahan;
-        break;
-      }
-    }
-
-    if (bahanBaru == null) {
+    if (bahanSudahDipakai.length >= _semuaBahan.length) {
       AppToast.showWarning(
         context,
         'Semua bahan pakan aktif sudah ditambahkan.',
@@ -172,10 +164,28 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
       return;
     }
 
+    final bahanBaru = await SearchableBahanPakanDialog.show(
+      context: context,
+      semuaBahan: _semuaBahan,
+      bahanTerpilihIds: bahanSudahDipakai,
+    );
+
+    if (bahanBaru == null || !mounted) return;
+
+    final sudahDipakai =
+        _pemberianPakan.any((item) => item.bahan.id == bahanBaru.id);
+    if (sudahDipakai) {
+      AppToast.showWarning(
+        context,
+        'Bahan "${bahanBaru.nama}" sudah dipilih pada item lain.',
+      );
+      return;
+    }
+
     setState(() {
       _pemberianPakan.add(
         CampuranPakanItem(
-          bahan: bahanBaru!,
+          bahan: bahanBaru,
           jumlahKg: 0,
           hargaPerKg: bahanBaru.hargaDefault,
         ),
@@ -237,9 +247,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
       bahanSaatIni: itemLama.bahan,
     );
 
-    if (bahanBaru == null || bahanBaru.id == itemLama.bahan.id) return;
-
-    if (!mounted) return;
+    if (bahanBaru == null || bahanBaru.id == itemLama.bahan.id || !mounted) return;
     _ubahBahanPakan(index, bahanBaru);
   }
 
@@ -1200,11 +1208,6 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
     return IndonesianNumberFormatter.format(value, decimals: 2);
   }
 
-  String _formatPersen(double value) {
-    if (!IndonesianNumberFormatter.isSupportedMagnitude(value)) return '-';
-    return IndonesianNumberFormatter.format(value, decimals: 1);
-  }
-
   bool _nilaiValid(Iterable<double> values) => values.every(
     (value) =>
         IndonesianNumberFormatter.isSupportedMagnitude(value) && value >= 0,
@@ -1404,228 +1407,94 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
   }
 
   Widget _buildKartuPakan(int index, CampuranPakanItem item) {
-    final kontribusi = KontribusiNutrisiBahanPakan.fromItem(item, index: index);
-    final feedColor = getFeedColor(index);
-    final isBahanValid =
-        item.bahan.isValidForCalculation(requirePositiveBk: true);
-
     return AppCard(
-      padding: const EdgeInsets.all(14),
-      width: double.infinity,
+      key: ValueKey('kartu_bahan_${item.bahan.id}'),
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Row 1: Dot + Number + Selector + Search Button + Delete
           Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Container(
-                width: 12,
-                height: 12,
-                decoration: BoxDecoration(
-                  color: feedColor,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                '${index + 1}.',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  color: AppColors.primaryBlue,
-                ),
-              ),
-              const SizedBox(width: 8),
               Expanded(
-                child: DropdownButtonFormField<BahanPakan>(
-                  initialValue: item.bahan,
-                  isExpanded: true,
-                  isDense: true,
-                  decoration: InputDecoration(
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
+                child: InkWell(
+                  onTap: () => _pilihAtauUbahBahan(index),
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
                     ),
-                    filled: true,
-                    fillColor: AppColors.backgroundCream,
-                    border: OutlineInputBorder(
+                    decoration: BoxDecoration(
+                      color: AppColors.backgroundKrem,
                       borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(
-                        color: Colors.grey.shade300,
+                      border: Border.all(
+                        color: AppColors.textLight.withValues(alpha: 0.2),
                       ),
                     ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(
-                        color: Colors.grey.shade300,
-                      ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item.bahan.nama,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  color: AppColors.textDark,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                '${item.bahan.kategori} • BK: ${IndonesianNumberFormatter.format(item.bahan.bk, decimals: 1)}%',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.textGrey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(
+                          Icons.arrow_drop_down,
+                          color: AppColors.primaryBlue,
+                        ),
+                      ],
                     ),
                   ),
-                  items: _semuaBahan.map((bahan) {
-                    return DropdownMenuItem<BahanPakan>(
-                      value: bahan,
-                      child: Text(
-                        bahan.nama,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    if (value != null) _ubahBahanPakan(index, value);
-                  },
                 ),
               ),
               const SizedBox(width: 4),
               IconButton(
-                onPressed: () => _pilihAtauUbahBahan(index),
-                tooltip: 'Cari & pilih bahan',
+                onPressed: () => _hapusBahanPakan(index),
+                visualDensity: VisualDensity.compact,
                 icon: const Icon(
-                  Icons.search_rounded,
-                  color: AppColors.primaryBlue,
-                  size: 20,
-                ),
-              ),
-              InkWell(
-                borderRadius: BorderRadius.circular(16),
-                onTap: () => _hapusBahanPakan(index),
-                child: const Padding(
-                  padding: EdgeInsets.all(6),
-                  child: Icon(
-                    Icons.close,
-                    size: 20,
-                    color: AppColors.errorRed,
-                  ),
+                  Icons.close,
+                  color: AppColors.errorRed,
+                  size: 18,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          // Row 2: Input Jumlah + Nutrisi tags
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(
-                width: 120,
-                child: TextFormField(
-                  initialValue: item.jumlahKg == 0
-                      ? ''
-                      : IndonesianNumberFormatter.isSupportedMagnitude(
-                              item.jumlahKg)
-                          ? IndonesianNumberFormatter.format(item.jumlahKg,
-                              decimals: 2)
-                          : '',
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
+          const SizedBox(height: 8),
+          AppTextField(
+            key: ValueKey('jumlah_${item.bahan.id}'),
+            initialValue:
+                item.jumlahKg == 0 ||
+                    !IndonesianNumberFormatter.isSupportedMagnitude(
+                      item.jumlahKg,
+                    )
+                ? ''
+                : IndonesianNumberFormatter.format(
+                    item.jumlahKg,
+                    decimals: 2,
                   ),
-                  decoration: InputDecoration(
-                    hintText: '0',
-                    labelText: 'Jumlah',
-                    isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 12,
-                    ),
-                    suffixIcon: Padding(
-                      padding: const EdgeInsets.only(right: 10),
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        widthFactor: 1.0,
-                        child: Text(
-                          'kg',
-                          style: TextStyle(
-                            color:
-                                AppColors.textLight.withValues(alpha: 0.85),
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                    suffixIconConstraints: const BoxConstraints(
-                      minWidth: 0,
-                      minHeight: 0,
-                    ),
-                  ),
-                  onChanged: (value) => _ubahJumlahPakan(index, value),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.backgroundCream,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: Colors.black.withValues(alpha: 0.04),
-                    ),
-                  ),
-                  child: !isBahanValid
-                      ? const Text(
-                          'Data nutrisi tidak valid',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: AppColors.errorRed,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        )
-                      : Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  item.jumlahKg > 0
-                                      ? 'BK: ${_format(kontribusi.bkKg)} kg'
-                                      : 'BK: ${_formatPersen(item.bahan.bk)}%',
-                                  style: const TextStyle(
-                                    fontSize: 11.5,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.textDark,
-                                  ),
-                                ),
-                                Text(
-                                  item.jumlahKg > 0
-                                      ? 'PK: ${_format(kontribusi.pkKg)} kg'
-                                      : 'PK: ${_formatPersen(item.bahan.protein)}%',
-                                  style: const TextStyle(
-                                    fontSize: 11.5,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.primaryBlue,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              item.jumlahKg > 0
-                                  ? 'TDN: ${_format(kontribusi.tdnKg)} kg'
-                                  : 'TDN: ${_formatPersen(item.bahan.tdn)}%',
-                              style: const TextStyle(
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.secondaryGreen,
-                              ),
-                            ),
-                          ],
-                        ),
-                ),
-              ),
-            ],
+            label: 'Jumlah (kg)',
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            onChanged: (v) => _ubahJumlahPakan(index, v),
           ),
         ],
       ),

@@ -4,6 +4,7 @@ import 'package:dipo_feed/data/models/fisiologi_sapi.dart';
 import 'package:dipo_feed/data/sources/bahan_pakan_local_source.dart';
 import 'package:dipo_feed/data/sources/bahan_pakan_repository.dart';
 import 'package:dipo_feed/core/widgets/app_sliver_header.dart';
+import 'package:dipo_feed/core/widgets/app_text_field.dart';
 import 'package:dipo_feed/features/cek_kecukupan_pakan/cek_kecukupan_pakan_screen.dart';
 import 'package:dipo_feed/features/rekomendasi_pakan/rekomendasi_pakan_screen.dart';
 import 'package:flutter/material.dart';
@@ -168,7 +169,14 @@ void main() {
       scrollable: find.byType(Scrollable).first,
     );
     await tester.tap(target);
-    await tester.pump();
+    await tester.pumpAndSettle();
+    final availableItems = find.byWidgetPredicate(
+      (w) => w is ListTile && w.enabled == true,
+    );
+    if (availableItems.evaluate().isNotEmpty) {
+      await tester.tap(availableItems.first);
+      await tester.pumpAndSettle();
+    }
   }
 
   testWidgets('starts at Data Sapi stage', (tester) async {
@@ -277,7 +285,7 @@ void main() {
       await tester.enterText(find.byType(TextFormField).first, '500');
       await tapButton(tester, 'Lanjut ke Komposisi Pakan');
       await tapFeedAdd(tester);
-      await tester.enterText(find.byType(TextFormField).first, '1.234,50');
+      await tester.enterText(find.byType(TextField).first, '1.234,50');
       await tester.pumpAndSettle();
 
       await tapButton(tester, 'Hitung & Evaluasi');
@@ -298,14 +306,14 @@ void main() {
     await tester.enterText(find.byType(TextFormField).first, '500');
     await tapButton(tester, 'Lanjut ke Komposisi Pakan');
     await tapFeedAdd(tester);
-    await tester.enterText(find.byType(TextFormField).at(0), '10');
+    await tester.enterText(find.byType(TextField).at(0), '10');
     await tapFeedAdd(tester);
-    await tester.enterText(find.byType(TextFormField).at(1), '20');
+    await tester.enterText(find.byType(TextField).at(1), '20');
 
     await tester.tap(find.byIcon(Icons.close).first);
-    await tester.pump();
+    await tester.pumpAndSettle();
 
-    expect(find.byType(TextFormField), findsOneWidget);
+    expect(find.byType(AppTextField), findsOneWidget);
     expect(
       tester
           .widget<EditableText>(find.byType(EditableText).last)
@@ -364,7 +372,7 @@ void main() {
     await tester.enterText(find.byType(TextFormField).first, '500');
     await tapButton(tester, 'Lanjut ke Komposisi Pakan');
     await tapFeedAdd(tester);
-    await tester.enterText(find.byType(TextFormField).first, '10');
+    await tester.enterText(find.byType(TextField).first, '10');
     await tester.pumpAndSettle();
 
     await tapHeaderBack(tester);
@@ -387,10 +395,10 @@ void main() {
         await tester.enterText(find.byType(TextFormField).first, '500');
         await tapButton(tester, 'Lanjut ke Komposisi Pakan');
         await tapFeedAdd(tester);
-        await tester.enterText(find.byType(TextFormField).at(0), '10');
+        await tester.enterText(find.byType(TextField).at(0), '10');
         await tapFeedAdd(tester);
         await tester.enterText(
-          find.byType(TextFormField).at(1),
+          find.byType(TextField).at(1),
           invalidQuantity,
         );
         await tester.pumpAndSettle();
