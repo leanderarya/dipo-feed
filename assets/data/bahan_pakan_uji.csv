@@ -1,4 +1,4 @@
-nama;kategori;BK;abu;lemak;serat;PK;BETN;TDN;ME;harga;Ca;P
-Rumput Gajah;hijauan;30,00;18,00;1,50;31,00;10,00;40,00;55,00;8,30;750;0,00;0,00
-Pollard Tongkat;konsentrat;86,63;4,49;4,85;9,29;13,47;67,90;79,25;11,97;4.750;0,00;0,00
-Tepung Kedelai;lainnya;89,00;6,00;1,50;5,00;44,00;43,50;82,00;12,50;8.500;0,20;0,60
+nama;harga;kategori;BK;abu;lemak;serat;PK;BETN;TDN;ME;Ca;P
+Rumput Gajah;750;hijauan;30,00;18,00;1,50;31,00;10,00;40,00;55,00;8,30;0,00;0,00
+Pollard Tongkat;4.750;konsentrat;86,63;4,49;4,85;9,29;13,47;67,90;79,25;11,97;0,00;0,00
+Tepung Kedelai;8.500;lainnya;89,00;6,00;1,50;5,00;44,00;43,50;82,00;12,50;0,20;0,60
