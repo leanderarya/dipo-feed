@@ -204,8 +204,8 @@ void main() {
   testWidgets('starts at Data Sapi stage', (tester) async {
     await pumpScreen(tester);
 
-    expect(find.byType(AppHeader), findsOneWidget);
-    expect(find.text('Cek Kecukupan Pakan'), findsOneWidget);
+    expect(find.byType(AppSliverHeader), findsOneWidget);
+    expect(find.text('Cek Kecukupan Pakan'), findsNWidgets(2));
     expect(find.text('Data Sapi'), findsNWidgets(2));
     expect(find.textContaining('Tahap 1 dari 3'), findsOneWidget);
     expect(find.textContaining('Data Sapi & Kebutuhan Nutrien'), findsOneWidget);

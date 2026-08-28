@@ -97,7 +97,7 @@ void main() {
     );
 
     expect(find.text('1.234,50 / 2.000,00 kg'), findsOneWidget);
-    expect(find.text('Butuh 765,50 lagi'), findsOneWidget);
+    expect(find.text('butuh 765,50 kg'), findsOneWidget);
   });
 
   testWidgets('Cek Kecukupan rejects feed at formatter magnitude limit', (
