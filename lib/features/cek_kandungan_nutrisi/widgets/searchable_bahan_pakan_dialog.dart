@@ -175,7 +175,7 @@ class _SearchableBahanPakanDialogState
                           ),
                         ),
                         subtitle: Text(
-                          'Kategori: ${bahan.kategori} • BK: ${IndonesianNumberFormatter.format(bahan.bk, decimals: 1)}%',
+                          'Kategori: ${bahan.kategori} • BK: ${IndonesianNumberFormatter.isSupportedMagnitude(bahan.bk) ? '${IndonesianNumberFormatter.format(bahan.bk, decimals: 1)}%' : '-'}',
                           style: const TextStyle(fontSize: 12),
                         ),
                         trailing: isSelectedCurrent

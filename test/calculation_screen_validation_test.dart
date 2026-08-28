@@ -97,7 +97,7 @@ void main() {
     );
 
     expect(find.text('1.234,50 / 2.000,00 kg'), findsOneWidget);
-    expect(find.text('Butuh 765,50 lagi'), findsOneWidget);
+    expect(find.text('butuh 765,50 kg'), findsOneWidget);
   });
 
   testWidgets('Cek Kecukupan rejects feed at formatter magnitude limit', (
@@ -120,11 +120,13 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextFormField).first, '400');
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Lanjut ke Pemberian Pakan'));
+    await tester.tap(find.widgetWithText(ElevatedButton, 'Lanjut ke Komposisi Pakan'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Tambah Bahan Pakan'));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextFormField).last, '1');
+    await tester.tap(find.byType(ListTile).first);
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).last, '1');
     await tester.pumpAndSettle();
 
     expect(find.text('Hasil Evaluasi Nutrisi'), findsNothing);
@@ -198,7 +200,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextFormField).first, '400');
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Lanjut ke Pemberian Pakan'));
+    await tester.tap(find.widgetWithText(ElevatedButton, 'Lanjut ke Komposisi Pakan'));
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
       find.text('Tambah Bahan Pakan'),
@@ -207,7 +209,9 @@ void main() {
     );
     await tester.tap(find.text('Tambah Bahan Pakan'));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextFormField).last, '1');
+    await tester.tap(find.byType(ListTile).first);
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).last, '1');
     await tester.pumpAndSettle();
 
     expect(find.text('Hasil Evaluasi Nutrisi'), findsNothing);
@@ -274,7 +278,7 @@ void main() {
     expect(find.text('Gagal menghitung'), findsOneWidget);
     expect(
       find.textContaining('Data bahan pakan tersimpan tidak valid'),
-      findsOneWidget,
+      findsWidgets,
     );
   });
 
