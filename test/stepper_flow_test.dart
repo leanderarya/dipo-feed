@@ -699,4 +699,31 @@ void main() {
     await tapButton(tester, 'Lanjut');
     expect(find.text('Hasil Rekomendasi'), findsWidgets);
   });
+
+  testWidgets('recommendation opens detail evaluation bottom sheet modal', (
+    tester,
+  ) async {
+    await pumpRecommendationScreen(tester);
+    await tester.enterText(find.byType(TextFormField).first, '500');
+    await tapButton(tester, 'Lanjut');
+    await tapRecommendationFeed(tester, 'Tambah Hijauan', 'Rumput Gajah');
+    await tapRecommendationFeed(tester, 'Tambah Konsentrat', 'Dedak Padi');
+    await tapButton(tester, 'Lanjut');
+
+    expect(find.text('Hasil Analisis Ransum Pakan'), findsOneWidget);
+    expect(find.text('Lihat Detail Evaluasi Nutrisi'), findsOneWidget);
+    expect(find.text('Detail Evaluasi Nutrisi Ransum'), findsNothing);
+
+    await tester.tap(find.text('Lihat Detail Evaluasi Nutrisi'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Detail Evaluasi Nutrisi Ransum'), findsOneWidget);
+    expect(find.text('Total Hijauan + Konsentrat'), findsOneWidget);
+    expect(find.text('Evaluasi Terhadap Target'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('close_detail_evaluasi_btn')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Detail Evaluasi Nutrisi Ransum'), findsNothing);
+  });
 }
