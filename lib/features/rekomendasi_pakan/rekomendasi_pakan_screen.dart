@@ -1890,9 +1890,9 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
         crossAxisCount: 2,
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 1.35,
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 8,
+        childAspectRatio: 2.2,
         children: [
           _buildNutrientMiniCard(
             'Total As Fed',
@@ -2172,11 +2172,11 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
 
   Widget _buildNutrientMiniCard(String title, String value) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: AppColors.backgroundCream.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+        color: AppColors.backgroundCream.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2185,22 +2185,22 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
           Text(
             title,
             style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
+              fontSize: 10.5,
+              fontWeight: FontWeight.w600,
               color: AppColors.textGrey,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 3),
+          const SizedBox(height: 2),
           FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
             child: Text(
               value,
               style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w800,
+                fontSize: 13.5,
+                fontWeight: FontWeight.w900,
                 color: AppColors.primaryBlue,
               ),
             ),
