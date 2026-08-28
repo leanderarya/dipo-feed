@@ -9,6 +9,7 @@ import '../cek_kecukupan_pakan/cek_kecukupan_pakan_screen.dart';
 import '../master_pakan/master_pakan_screen.dart';
 import '../rekomendasi_pakan/rekomendasi_pakan_screen.dart';
 import '../../core/widgets/partnership_branding_widget.dart';
+import '../../core/widgets/partnership_info_dialog.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -311,10 +312,10 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Row(
+        Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
+            const Text(
               'Kerja Sama & Kemitraan',
               style: TextStyle(
                 fontSize: 16,
@@ -323,33 +324,38 @@ class _HomeScreenState extends State<HomeScreen> {
                 letterSpacing: -0.3,
               ),
             ),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.info_outline_rounded,
-                  size: 14,
-                  color: AppColors.textSecondary,
+            InkWell(
+              onTap: () => PartnershipInfoDialog.show(context),
+              borderRadius: BorderRadius.circular(20),
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.info_outline_rounded,
+                      size: 14,
+                      color: AppColors.textSecondary,
+                    ),
+                    SizedBox(width: 4),
+                    Text(
+                      'Info Kolaborasi',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
                 ),
-                SizedBox(width: 4),
-                Text(
-                  'Info Kolaborasi',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ],
+              ),
             ),
           ],
         ),
         const SizedBox(height: 10),
         PartnershipBrandingWidget(
           height: 38,
-          onTap: () {
-            // Callback placeholder for popup dialog
-          },
+          onTap: () => PartnershipInfoDialog.show(context),
         ),
       ],
     );
