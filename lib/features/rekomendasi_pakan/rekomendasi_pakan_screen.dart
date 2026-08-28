@@ -1604,7 +1604,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
         physics: const NeverScrollableScrollPhysics(),
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
-        childAspectRatio: 1.55,
+        childAspectRatio: 1.35,
         children: [
           _buildNutrientMiniCard(
             'Total As Fed',
@@ -1884,7 +1884,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
 
   Widget _buildNutrientMiniCard(String title, String value) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
         color: AppColors.backgroundCream.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(12),
@@ -1897,18 +1897,24 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
           Text(
             title,
             style: const TextStyle(
-              fontSize: 10,
+              fontSize: 11,
               fontWeight: FontWeight.bold,
               color: AppColors.textGrey,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 2),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w800,
-              color: AppColors.primaryBlue,
+          const SizedBox(height: 3),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+                color: AppColors.primaryBlue,
+              ),
             ),
           ),
         ],
