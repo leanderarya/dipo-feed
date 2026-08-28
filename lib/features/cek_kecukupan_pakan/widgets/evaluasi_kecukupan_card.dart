@@ -473,7 +473,7 @@ class _EvaluasiKecukupanCardState extends State<EvaluasiKecukupanCard> {
     if (item.status == StatusKecukupanNutrien.kurang) {
       final butuh = (item.kebutuhan - item.pemberian).abs();
       return Text(
-        'Kurang ${_format(butuh)} ${item.satuan}',
+        'butuh ${_format(butuh)} ${item.satuan}',
         style: TextStyle(
           fontSize: 12,
           color: color,
@@ -485,7 +485,7 @@ class _EvaluasiKecukupanCardState extends State<EvaluasiKecukupanCard> {
     if (item.status == StatusKecukupanNutrien.berlebih) {
       final lebih = (item.pemberian - item.kebutuhan).abs();
       return Text(
-        'Lebih ${_format(lebih)} ${item.satuan}',
+        'lebih ${_format(lebih)} ${item.satuan}',
         style: TextStyle(
           fontSize: 12,
           color: color,
