@@ -53,33 +53,78 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
         right: 20,
       ),
       decoration: const BoxDecoration(color: AppColors.backgroundCream),
-      child: Center(
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.baseline,
-          textBaseline: TextBaseline.alphabetic,
-          children: [
-            Text(
-              'DIPO',
-              style: GoogleFonts.montserrat(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF004AAD), // Custom Royal Blue
-                letterSpacing: 0.5,
+      child: Row(
+        children: [
+          // Left: Logo DipoFeed + Text DIPO Feed
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: Image.asset(
+                  'assets/images/logo_dipofeed.jpeg',
+                  height: 32,
+                  fit: BoxFit.contain,
+                ),
               ),
-            ),
-            const SizedBox(width: 4),
-            Text(
-              'Feed',
-              style: GoogleFonts.montserrat(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF00BF63), // Custom Vibrant Green
-                letterSpacing: 0.5,
+              const SizedBox(width: 8),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  Text(
+                    'DIPO',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0xFF004AAD), // Royal Blue
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(width: 3),
+                  Text(
+                    'Feed',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0xFF00BF63), // Vibrant Green
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
+          const Spacer(),
+          // Right: Partner Logos (UNDIP & ACIAR)
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset(
+                'assets/images/logo_undip.png',
+                height: 28,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) =>
+                    const SizedBox.shrink(),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                height: 18,
+                width: 1,
+                color: Colors.grey.withValues(alpha: 0.3),
+              ),
+              const SizedBox(width: 8),
+              Image.asset(
+                'assets/images/logo_aciar.png',
+                height: 26,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) =>
+                    const SizedBox.shrink(),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
