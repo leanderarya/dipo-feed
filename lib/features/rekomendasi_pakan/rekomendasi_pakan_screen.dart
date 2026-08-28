@@ -5,7 +5,7 @@ import '../../core/utils/app_toast.dart';
 import '../../core/utils/indonesian_number_formatter.dart';
 import '../../core/models/status_perhitungan.dart';
 import '../../core/widgets/app_card.dart';
-import '../../core/widgets/app_sliver_header.dart';
+import '../../core/widgets/app_header.dart';
 import '../../core/widgets/app_text_field.dart';
 import '../../data/models/bahan_pakan.dart';
 import '../../data/models/fisiologi_sapi.dart';
@@ -851,17 +851,11 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
           curve: Curves.easeInOut,
           alignment: Alignment.topCenter,
           child: _tahapAktif == 0
-              ? SizedBox(
-                  height: 210,
-                  child: CustomScrollView(
-                    slivers: [
-                      AppSliverHeader(
-                        title: 'Rekomendasi Pakan',
-                        subtitle: 'Dapatkan rekomendasi pakan sesuai kebutuhan sapi.',
-                        onBackTap: _handleSystemBack,
-                      ),
-                    ],
-                  ),
+              ? AppHeader(
+                  title: 'Rekomendasi Pakan',
+                  subtitle:
+                      'Dapatkan rekomendasi pakan sesuai kebutuhan sapi.',
+                  onBackTap: _handleSystemBack,
                 )
               : _buildCompactHeader(),
         ),

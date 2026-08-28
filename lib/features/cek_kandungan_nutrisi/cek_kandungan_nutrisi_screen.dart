@@ -6,7 +6,7 @@ import '../../core/utils/app_toast.dart';
 import '../../core/utils/currency_formatter.dart';
 import '../../core/utils/indonesian_number_formatter.dart';
 import '../../core/widgets/app_card.dart';
-import '../../core/widgets/app_sliver_header.dart';
+import '../../core/widgets/app_header.dart';
 import '../../core/widgets/app_text_field.dart';
 import '../../data/models/bahan_pakan.dart';
 import '../../data/models/campuran_pakan_item.dart';
@@ -451,27 +451,21 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
           curve: Curves.easeInOut,
           alignment: Alignment.topCenter,
           child: _tahapAktif == 0
-              ? SizedBox(
-                  height: 210,
-                  child: CustomScrollView(
-                    slivers: [
-                      AppSliverHeader(
-                        title: 'Cek Kandungan Pakan',
-                        subtitle: 'Cek kandungan nutrisi pada pakan.',
-                        onBackTap: _handleSystemBack,
-                        actions: [
-                          IconButton(
-                            tooltip: 'Database Pakan',
-                            onPressed: _isLoading ? null : _bukaManajemenMaster,
-                            icon: const Icon(
-                              Icons.inventory_2_outlined,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
+              ? AppHeader(
+                  title: 'Cek Kandungan Pakan',
+                  subtitle: 'Cek kandungan nutrisi pada pakan.',
+                  onBackTap: _handleSystemBack,
+                  actions: [
+                    IconButton(
+                      tooltip: 'Database Pakan',
+                      onPressed: _isLoading ? null : _bukaManajemenMaster,
+                      icon: const Icon(
+                        Icons.inventory_2_outlined,
+                        color: AppColors.textPrimary,
+                        size: 22,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 )
               : _buildCompactHeader(),
         ),
