@@ -59,30 +59,44 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
                 children: [
-                  // Logo
+                  // Left: Logo DipoFeed + Text DIPO Feed
                   Row(
                     mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.baseline,
-                    textBaseline: TextBaseline.alphabetic,
                     children: [
-                      Text(
-                        'DIPO',
-                        style: GoogleFonts.montserrat(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.primaryBlue,
-                          letterSpacing: 0.5,
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: Image.asset(
+                          'assets/images/logo_dipofeed.jpeg',
+                          height: 32,
+                          fit: BoxFit.contain,
                         ),
                       ),
-                      const SizedBox(width: 3),
-                      Text(
-                        'Feed',
-                        style: GoogleFonts.montserrat(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.secondaryGreen,
-                          letterSpacing: 0.5,
-                        ),
+                      const SizedBox(width: 8),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.baseline,
+                        textBaseline: TextBaseline.alphabetic,
+                        children: [
+                          Text(
+                            'DIPO',
+                            style: GoogleFonts.montserrat(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.primaryBlue,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(width: 3),
+                          Text(
+                            'Feed',
+                            style: GoogleFonts.montserrat(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.secondaryGreen,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
