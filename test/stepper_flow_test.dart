@@ -614,7 +614,7 @@ void main() {
     await tapRecommendationFeed(tester, 'Tambah Hijauan', 'Rumput Gajah');
     await tapButton(tester, 'Lanjut');
 
-    expect(find.text('Tambahkan minimal satu konsentrat.'), findsOneWidget);
+    expect(find.text('Tambahkan minimal satu konsentrat.'), findsWidgets);
     expect(find.text('Hasil Rekomendasi'), findsNothing);
   });
 

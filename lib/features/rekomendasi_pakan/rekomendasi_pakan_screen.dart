@@ -235,7 +235,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     );
 
     if (duplikatKelompok || duplikatLintasKelompok) {
-      _showSnackBar('Bahan pakan tersebut sudah dipilih.');
+      AppToast.showWarning(context, 'Bahan pakan tersebut sudah dipilih.');
       return;
     }
 
@@ -255,7 +255,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     );
 
     if (duplikatKelompok || duplikatLintasKelompok) {
-      _showSnackBar('Bahan pakan tersebut sudah dipilih.');
+      AppToast.showWarning(context, 'Bahan pakan tersebut sudah dipilih.');
       return;
     }
 
@@ -327,7 +327,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
       });
 
       if (!hasil.isLkAman) {
-        _showSnackBar('LK melebihi batas 5% BK.');
+        AppToast.showWarning(context, 'LK melebihi batas 5% BK.');
       }
     } catch (_) {
       _gagalMenghitung('Rekomendasi pakan gagal dihitung.');
@@ -340,6 +340,9 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
       _statusPerhitungan = StatusPerhitungan.gagal;
       _pesanPerhitungan = pesan;
     });
+    if (mounted) {
+      AppToast.showError(context, pesan, title: 'Perhitungan Gagal');
+    }
   }
 
   bool _validasiTahapSatu() {
@@ -388,14 +391,21 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     final hijauan = _hijauanTerpilih.whereType<BahanPakan>().toList();
     final konsentrat = _konsentratTerpilih.whereType<BahanPakan>().toList();
     if (!hijauan.any(isBahanHijauan)) {
-      _gagalMenghitung('Pilih minimal satu bahan kategori hijauan.');
+      _gagalMenghitung(
+        'Pilihan bahan hijauan harus memiliki pakan dengan kategori hijauan.',
+      );
       return false;
     }
     if (!konsentrat.any(isBahanKonsentrat)) {
-      _gagalMenghitung('Pilih minimal satu bahan non-hijauan.');
+      _gagalMenghitung(
+        'Pilihan bahan konsentrat harus memiliki pakan dengan kategori konsentrat.',
+      );
       return false;
     }
-    if ([...hijauan, ...konsentrat].any((item) => item.bk <= 0)) {
+
+    final semuaBahan = [...hijauan, ...konsentrat];
+    final adaBkKosong = semuaBahan.any((item) => item.bk <= 0);
+    if (adaBkKosong) {
       _gagalMenghitung(
         'Semua bahan pakan harus memiliki nilai BK lebih dari 0.',
       );
@@ -408,6 +418,17 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     if (_tahapAktif == 0) {
       if (_validasiTahapSatu()) {
         setState(() => _tahapAktif = 1);
+        AppToast.showSuccess(
+          context,
+          'Data sapi tersimpan. Silakan pilih bahan pakan.',
+          title: 'Data Sapi Siap',
+        );
+      } else {
+        AppToast.showWarning(
+          context,
+          'Lengkapi data sapi terlebih dahulu.',
+          title: 'Data Belum Lengkap',
+        );
       }
       return;
     }
@@ -416,6 +437,11 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
       _hitungRekomendasi();
       if (_statusPerhitungan == StatusPerhitungan.berhasil) {
         setState(() => _tahapAktif = 2);
+        AppToast.showSuccess(
+          context,
+          'Formulasi rekomendasi pakan berhasil dihitung!',
+          title: 'Rekomendasi Siap',
+        );
       }
     }
   }
