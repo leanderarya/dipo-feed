@@ -1104,7 +1104,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
                   const SizedBox(width: 6),
                   const Expanded(
                     child: Text(
-                      'Tuliskan target persentase lemak susu.',
+                      'Tuliskan target lemak susu.',
                       style: TextStyle(
                         fontSize: 12,
                         color: AppColors.textLight,

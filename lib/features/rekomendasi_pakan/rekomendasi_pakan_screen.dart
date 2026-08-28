@@ -1151,7 +1151,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                   const SizedBox(width: 8),
                   const Expanded(
                     child: Text(
-                      'Tuliskan target persentase lemak susu.',
+                      'Tuliskan target lemak susu.',
                       style: TextStyle(
                         fontSize: 12,
                         color: AppColors.textLight,
