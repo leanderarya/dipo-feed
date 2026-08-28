@@ -232,7 +232,7 @@ void main() {
 
     await tapButton(tester, 'Lanjut ke Komposisi Pakan');
 
-    expect(find.byType(AppSliverHeader), findsNothing);
+    expect(find.byType(AppHeader), findsOneWidget);
     expect(find.text('Cek Kecukupan Pakan'), findsOneWidget);
     expect(find.textContaining('Tahap 2 dari 3'), findsOneWidget);
     expect(find.text('Pemberian Pakan'), findsOneWidget);
