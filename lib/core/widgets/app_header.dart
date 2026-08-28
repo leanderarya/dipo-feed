@@ -47,87 +47,54 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
   Widget _buildHomeHeader(BuildContext context) {
     return Container(
       padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top + 10,
-        bottom: 14,
+        top: MediaQuery.of(context).padding.top + 8,
+        bottom: 12,
         left: 20,
         right: 20,
       ),
       decoration: const BoxDecoration(color: AppColors.backgroundCream),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Left: Logo DipoFeed + Text DIPO Feed
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.asset(
-                  'assets/images/logo_dipofeed.jpeg',
-                  height: 38,
-                  fit: BoxFit.contain,
+      child: Center(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset(
+                'assets/images/logo_dipofeed.jpeg',
+                height: 38,
+                fit: BoxFit.contain,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                Text(
+                  'DIPO',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF004AAD), // Royal Blue
+                    letterSpacing: 0.5,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.baseline,
-                textBaseline: TextBaseline.alphabetic,
-                children: [
-                  Text(
-                    'DIPO',
-                    style: GoogleFonts.montserrat(
-                      fontSize: 25,
-                      fontWeight: FontWeight.w800,
-                      color: const Color(0xFF004AAD), // Royal Blue
-                      letterSpacing: 0.5,
-                    ),
+                const SizedBox(width: 4),
+                Text(
+                  'Feed',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF00BF63), // Vibrant Green
+                    letterSpacing: 0.5,
                   ),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Feed',
-                    style: GoogleFonts.montserrat(
-                      fontSize: 25,
-                      fontWeight: FontWeight.w800,
-                      color: const Color(0xFF00BF63), // Vibrant Green
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const Spacer(),
-          // Right: Partner Logos (UNDIP & ACIAR)
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Image.asset(
-                'assets/images/logo_undip.png',
-                height: 34,
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) =>
-                    const SizedBox.shrink(),
-              ),
-              const SizedBox(width: 10),
-              Container(
-                height: 22,
-                width: 1.2,
-                color: Colors.grey.withValues(alpha: 0.35),
-              ),
-              const SizedBox(width: 10),
-              Image.asset(
-                'assets/images/logo_aciar.png',
-                height: 32,
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) =>
-                    const SizedBox.shrink(),
-              ),
-            ],
-          ),
-        ],
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -219,7 +186,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Size get preferredSize {
-    if (isHome) return const Size.fromHeight(78);
+    if (isHome) return const Size.fromHeight(72);
 
     double height = 56;
 
