@@ -99,7 +99,7 @@ void main() {
   });
 
   test('rejects an empty canonical CSV seed', () async {
-    mockAsset('nama;kategori;BK;abu;lemak;serat;PK;BETN;TDN;ME;harga;Ca;P');
+    mockAsset('nama;harga;kategori;BK;abu;lemak;serat;PK;BETN;TDN;ME;Ca;P');
 
     try {
       await expectLater(
