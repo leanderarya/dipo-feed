@@ -724,8 +724,8 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
                               Expanded(
                                 child: Container(
                                   height: 2.5,
-                                  color: isCompleted || isCurrent
-                                      ? AppColors.primaryBlue
+                                  color: index <= _tahapAktif
+                                      ? AppColors.secondaryGreen
                                       : Colors.grey.shade300,
                                 ),
                               ),
@@ -773,7 +773,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
                               Expanded(
                                 child: Container(
                                   height: 2.5,
-                                  color: isCompleted
+                                  color: index < _tahapAktif
                                       ? AppColors.secondaryGreen
                                       : Colors.grey.shade300,
                                 ),
