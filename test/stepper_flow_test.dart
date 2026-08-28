@@ -3,6 +3,7 @@ import 'package:dipo_feed/data/models/bahan_pakan.dart';
 import 'package:dipo_feed/data/models/fisiologi_sapi.dart';
 import 'package:dipo_feed/data/sources/bahan_pakan_local_source.dart';
 import 'package:dipo_feed/data/sources/bahan_pakan_repository.dart';
+import 'package:dipo_feed/core/widgets/app_header.dart';
 import 'package:dipo_feed/core/widgets/app_sliver_header.dart';
 import 'package:dipo_feed/core/widgets/app_text_field.dart';
 import 'package:dipo_feed/features/cek_kandungan_nutrisi/cek_kandungan_nutrisi_screen.dart';
@@ -203,8 +204,8 @@ void main() {
   testWidgets('starts at Data Sapi stage', (tester) async {
     await pumpScreen(tester);
 
-    expect(find.byType(AppSliverHeader), findsOneWidget);
-    expect(find.text('Cek Kecukupan Pakan'), findsNWidgets(2));
+    expect(find.byType(AppHeader), findsOneWidget);
+    expect(find.text('Cek Kecukupan Pakan'), findsOneWidget);
     expect(find.text('Data Sapi'), findsNWidgets(2));
     expect(find.textContaining('Tahap 1 dari 3'), findsOneWidget);
     expect(find.textContaining('Data Sapi & Kebutuhan Nutrien'), findsOneWidget);

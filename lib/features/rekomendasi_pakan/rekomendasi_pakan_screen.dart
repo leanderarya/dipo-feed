@@ -33,8 +33,6 @@ class RekomendasiPakanScreen extends StatefulWidget {
 }
 
 class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
-  static const maxSelectedFeedsPerGroup = 4;
-
   final _formKey = GlobalKey<FormState>();
   late final BahanPakanRepository _repository;
 
@@ -161,10 +159,6 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
   }
 
   Future<void> _tambahHijauan() async {
-    if (_hijauanTerpilih.length >= maxSelectedFeedsPerGroup) {
-      _showSnackBar('Maksimal $maxSelectedFeedsPerGroup bahan hijauan.');
-      return;
-    }
     final bahanSudahDipakai = <int>{
       ..._hijauanTerpilih.map((item) => item.id),
       ..._konsentratTerpilih.map((item) => item.id),
@@ -202,10 +196,6 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
   }
 
   Future<void> _tambahKonsentrat() async {
-    if (_konsentratTerpilih.length >= maxSelectedFeedsPerGroup) {
-      _showSnackBar('Maksimal $maxSelectedFeedsPerGroup bahan konsentrat.');
-      return;
-    }
     final bahanSudahDipakai = <int>{
       ..._hijauanTerpilih.map((item) => item.id),
       ..._konsentratTerpilih.map((item) => item.id),
@@ -427,15 +417,6 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
       _gagalMenghitung(
         'Data bahan pakan tersimpan tidak valid. Periksa nilai nutrisi, harga, dan BK.',
       );
-      return false;
-    }
-
-    if (_hijauanTerpilih.length > maxSelectedFeedsPerGroup) {
-      _gagalMenghitung('Maksimal $maxSelectedFeedsPerGroup bahan hijauan.');
-      return false;
-    }
-    if (_konsentratTerpilih.length > maxSelectedFeedsPerGroup) {
-      _gagalMenghitung('Maksimal $maxSelectedFeedsPerGroup bahan konsentrat.');
       return false;
     }
 
