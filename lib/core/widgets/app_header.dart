@@ -56,27 +56,42 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
       child: Center(
         child: Row(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.baseline,
-          textBaseline: TextBaseline.alphabetic,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text(
-              'DIPO',
-              style: GoogleFonts.montserrat(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF004AAD), // Custom Royal Blue
-                letterSpacing: 0.5,
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset(
+                'assets/images/logo_dipofeed.jpeg',
+                height: 38,
+                fit: BoxFit.contain,
               ),
             ),
-            const SizedBox(width: 4),
-            Text(
-              'Feed',
-              style: GoogleFonts.montserrat(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF00BF63), // Custom Vibrant Green
-                letterSpacing: 0.5,
-              ),
+            const SizedBox(width: 10),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                Text(
+                  'DIPO',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF004AAD), // Royal Blue
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  'Feed',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF00BF63), // Vibrant Green
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -171,7 +186,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Size get preferredSize {
-    if (isHome) return const Size.fromHeight(70);
+    if (isHome) return const Size.fromHeight(72);
 
     double height = 56;
 

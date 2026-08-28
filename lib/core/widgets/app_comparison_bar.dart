@@ -96,7 +96,7 @@ class AppComparisonBar extends StatelessWidget {
             ),
             if (isKurang)
               Text(
-                'Kurang ${IndonesianNumberFormatter.format(limit - current, decimals: 2)}$unitSuffix',
+                'butuh ${IndonesianNumberFormatter.format(limit - current, decimals: 2)}$unitSuffix',
                 style: const TextStyle(
                   fontSize: 11,
                   color: AppColors.textLight,

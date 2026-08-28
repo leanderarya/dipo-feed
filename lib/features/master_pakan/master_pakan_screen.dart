@@ -355,33 +355,109 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
             title: 'Database Pakan',
             subtitle: 'Database bahan pakan.',
             actions: [
-              IconButton(
-                tooltip: 'Impor CSV',
-                onPressed: _isLoading || _isProcessing ? null : _imporCsv,
-                icon: const Icon(
-                  Icons.file_upload_outlined,
-                  color: Colors.white,
-                ),
-              ),
-              if (defaultTargetPlatform != TargetPlatform.linux)
-                IconButton(
-                  key: _exportButtonKey,
-                  tooltip: 'Ekspor CSV',
-                  onPressed: _isLoading || _isProcessing ? null : _eksporCsv,
-                  icon: const Icon(
-                    Icons.file_download_outlined,
-                    color: Colors.white,
-                  ),
-                ),
               if (_isProcessing)
                 const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 12),
-                  child: Icon(Icons.hourglass_top, color: Colors.white),
+                  padding: EdgeInsets.symmetric(horizontal: 8),
+                  child: Icon(
+                    Icons.hourglass_top_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
                 ),
-              IconButton(
-                tooltip: 'Reset Data',
-                onPressed: _isLoading || _isProcessing ? null : _resetDataAwal,
-                icon: const Icon(Icons.refresh_rounded, color: Colors.white),
+              PopupMenuButton<String>(
+                key: _exportButtonKey,
+                icon: const Icon(
+                  Icons.more_vert_rounded,
+                  color: Colors.white,
+                ),
+                tooltip: 'Menu Opsi',
+                enabled: !_isLoading && !_isProcessing,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                onSelected: (value) {
+                  switch (value) {
+                    case 'impor':
+                      _imporCsv();
+                      break;
+                    case 'ekspor':
+                      _eksporCsv();
+                      break;
+                    case 'reset':
+                      _resetDataAwal();
+                      break;
+                  }
+                },
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'impor',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.file_upload_outlined,
+                          size: 18,
+                          color: AppColors.primaryBlue,
+                        ),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Impor CSV',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (defaultTargetPlatform != TargetPlatform.linux)
+                    const PopupMenuItem(
+                      value: 'ekspor',
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.file_download_outlined,
+                            size: 18,
+                            color: AppColors.secondaryGreen,
+                          ),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Ekspor CSV',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  const PopupMenuDivider(),
+                  const PopupMenuItem(
+                    value: 'reset',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.refresh_rounded,
+                          size: 18,
+                          color: AppColors.accentOrange,
+                        ),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Reset ke Data Awal',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

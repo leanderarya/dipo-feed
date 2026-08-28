@@ -88,12 +88,13 @@ BahanPakan bahan({
 
 String row({
   required String nama,
+  String harga = '100',
   String kategori = 'hijauan',
   String bk = '1,00',
-  String harga = '100',
 }) {
   return [
     nama,
+    harga,
     kategori,
     bk,
     '2,00',
@@ -103,7 +104,6 @@ String row({
     '6,00',
     '7,00',
     '8,00',
-    harga,
     '0,00',
     '0,00',
   ].join(';');

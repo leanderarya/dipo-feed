@@ -13,6 +13,7 @@ import '../../data/models/fisiologi_sapi.dart';
 import '../../data/models/kebutuhan_nutrien_sapi.dart';
 import '../../data/sources/bahan_pakan_repository.dart';
 import '../cek_kandungan_nutrisi/logic/perhitungan_nutrisi.dart';
+import '../cek_kandungan_nutrisi/widgets/searchable_bahan_pakan_dialog.dart';
 import 'logic/evaluasi_kecukupan_nutrien.dart';
 import 'logic/perhitungan_kebutuhan_nutrien.dart';
 import 'widgets/evaluasi_kecukupan_card.dart';
@@ -50,6 +51,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
   StatusPerhitungan _statusPerhitungan = StatusPerhitungan.belumDihitung;
   int _tahapAktif = 0;
   AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -63,6 +65,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _beratBadanController.removeListener(_perbaruiKebutuhanOtomatis);
     _produksiSusuController.removeListener(_perbaruiKebutuhanOtomatis);
     _lemakSusuController.removeListener(_perbaruiKebutuhanOtomatis);
@@ -70,6 +73,14 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
     _produksiSusuController.dispose();
     _lemakSusuController.dispose();
     super.dispose();
+  }
+
+  void _resetScrollPosition() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(0.0);
+      }
+    });
   }
 
   Future<void> _muatBahanPakan() async {
@@ -150,20 +161,12 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
     _perbaruiKebutuhanOtomatis();
   }
 
-  void _tambahBahanPakan() {
+  Future<void> _tambahBahanPakan() async {
     if (_semuaBahan.isEmpty) return;
 
     final bahanSudahDipakai = _pemberianPakan.map((e) => e.bahan.id).toSet();
 
-    BahanPakan? bahanBaru;
-    for (final bahan in _semuaBahan) {
-      if (!bahanSudahDipakai.contains(bahan.id)) {
-        bahanBaru = bahan;
-        break;
-      }
-    }
-
-    if (bahanBaru == null) {
+    if (bahanSudahDipakai.length >= _semuaBahan.length) {
       AppToast.showWarning(
         context,
         'Semua bahan pakan aktif sudah ditambahkan.',
@@ -171,10 +174,28 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
       return;
     }
 
+    final bahanBaru = await SearchableBahanPakanDialog.show(
+      context: context,
+      semuaBahan: _semuaBahan,
+      bahanTerpilihIds: bahanSudahDipakai,
+    );
+
+    if (bahanBaru == null || !mounted) return;
+
+    final sudahDipakai =
+        _pemberianPakan.any((item) => item.bahan.id == bahanBaru.id);
+    if (sudahDipakai) {
+      AppToast.showWarning(
+        context,
+        'Bahan "${bahanBaru.nama}" sudah dipilih pada item lain.',
+      );
+      return;
+    }
+
     setState(() {
       _pemberianPakan.add(
         CampuranPakanItem(
-          bahan: bahanBaru!,
+          bahan: bahanBaru,
           jumlahKg: 0,
           hargaPerKg: bahanBaru.hargaDefault,
         ),
@@ -222,6 +243,22 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
       );
     });
     _perbaruiEvaluasiRealtime();
+  }
+
+  Future<void> _pilihAtauUbahBahan(int index) async {
+    final bahanTerpilihIds =
+        _pemberianPakan.map((item) => item.bahan.id).toSet();
+    final itemLama = _pemberianPakan[index];
+
+    final bahanBaru = await SearchableBahanPakanDialog.show(
+      context: context,
+      semuaBahan: _semuaBahan,
+      bahanTerpilihIds: bahanTerpilihIds,
+      bahanSaatIni: itemLama.bahan,
+    );
+
+    if (bahanBaru == null || bahanBaru.id == itemLama.bahan.id || !mounted) return;
+    _ubahBahanPakan(index, bahanBaru);
   }
 
   void _ubahJumlahPakan(int index, String value) {
@@ -331,26 +368,90 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
   bool _validasiTahapSatu() {
     setState(() => _autovalidateMode = AutovalidateMode.onUserInteraction);
     final valid = _formKey.currentState?.validate() ?? false;
-    if (!valid) return false;
+    if (!valid) {
+      AppToast.showWarning(context, 'Lengkapi data sapi terlebih dahulu.');
+      return false;
+    }
 
     _perbaruiKebutuhanOtomatis();
-    return _kebutuhanNutrien != null;
+    if (_kebutuhanNutrien == null) {
+      AppToast.showWarning(
+        context,
+        'Data sapi belum valid untuk menghitung kebutuhan.',
+      );
+      return false;
+    }
+    if (_warningLemakSusu != null) {
+      AppToast.showWarning(
+        context,
+        _warningLemakSusu!,
+        title: 'Peringatan Lemak Susu',
+      );
+    }
+    return true;
+  }
+
+  bool _validasiTahapDua() {
+    if (_pemberianPakan.isEmpty) {
+      AppToast.showWarning(context, 'Tambahkan minimal 1 bahan pakan.');
+      return false;
+    }
+    if (_jumlahPakanTidakValid.isNotEmpty) {
+      AppToast.showError(context, 'Format jumlah pakan ada yang tidak valid.');
+      return false;
+    }
+    final totalJumlah = _pemberianPakan.fold<double>(
+      0,
+      (sum, item) => sum + item.jumlahKg,
+    );
+    if (totalJumlah <= 0) {
+      AppToast.showWarning(context, 'Masukkan jumlah pemberian pakan (kg).');
+      return false;
+    }
+    if (_pemberianPakan.any((item) => item.jumlahKg <= 0)) {
+      AppToast.showWarning(
+        context,
+        'Pastikan semua bahan pakan memiliki jumlah lebih dari 0 kg.',
+      );
+      return false;
+    }
+    return true;
   }
 
   void _lanjutTahap() {
     if (_tahapAktif == 0) {
       if (_validasiTahapSatu()) {
         setState(() => _tahapAktif = 1);
+        _resetScrollPosition();
+      }
+    } else if (_tahapAktif == 1) {
+      if (_validasiTahapDua()) {
+        _perbaruiEvaluasiRealtime();
+        if (_statusPerhitungan == StatusPerhitungan.berhasil &&
+            _hasilEvaluasi != null) {
+          setState(() => _tahapAktif = 2);
+          _resetScrollPosition();
+          AppToast.showSuccess(
+            context,
+            'Kecukupan pakan berhasil dihitung!',
+          );
+        } else {
+          AppToast.showError(
+            context,
+            'Perhitungan nutrisi gagal. Periksa data pakan.',
+          );
+        }
       }
     }
   }
 
   void _kembaliTahap() {
     if (_tahapAktif == 0) {
-      Navigator.of(context).pop();
+      _handleSystemBack();
       return;
     }
     setState(() => _tahapAktif--);
+    _resetScrollPosition();
   }
 
   bool get _hasEnteredData =>
@@ -376,6 +477,9 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.errorRed,
+            ),
             child: const Text('Keluar'),
           ),
         ],
@@ -472,8 +576,8 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
     if (_fisiologi != FisiologiSapi.laktasi) return null;
     final val = _parseDouble(_lemakSusuController.text);
     if (val <= 0) return null;
-    if (val < 2.5) return 'Kadar lemak susu terlalu rendah (< 2,5%)';
-    if (val > 4.0) return 'Kadar lemak susu melebihi standar (> 4,0%)';
+    if (val < 2.5) return 'Lemak terlalu rendah (< 2,5%)';
+    if (val > 4.0) return 'Lemak terlalu tinggi (> 4,0%)';
     return null;
   }
 
@@ -555,6 +659,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
         ),
         Expanded(
           child: SingleChildScrollView(
+            controller: _scrollController,
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
             child: Column(
               children: [
@@ -571,7 +676,10 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
 
   Widget _buildCompactHeader() {
     return Container(
-      color: AppColors.primaryBlue,
+      decoration: const BoxDecoration(
+        color: AppColors.primaryBlue,
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+      ),
       padding: EdgeInsets.only(
         top: MediaQuery.paddingOf(context).top,
         left: 8,
@@ -597,7 +705,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
               ),
             ),
             Text(
-              '${_tahapAktif + 1}/2',
+              '${_tahapAktif + 1}/3',
               style: const TextStyle(color: Colors.white),
             ),
           ],
@@ -607,31 +715,160 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
   }
 
   Widget _buildProgressIndicator() {
+    final stepTitles = ['Data Sapi', 'Komposisi Pakan', 'Hasil Evaluasi'];
     final labels = [
       'Data Sapi & Kebutuhan Nutrien',
-      'Evaluasi & Pemberian Pakan',
+      'Pemilihan & Komposisi Pakan',
+      'Hasil & Evaluasi Kecukupan Pakan',
     ];
 
     return AppCard(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Tahap ${_tahapAktif + 1} dari ${labels.length}',
-            style: const TextStyle(
-              color: AppColors.primaryBlue,
-              fontWeight: FontWeight.bold,
-            ),
+          Row(
+            children: List.generate(3, (index) {
+              final isCurrent = index == _tahapAktif;
+              final isCompleted = index < _tahapAktif;
+              final canTap = index < _tahapAktif;
+
+              return Expanded(
+                child: InkWell(
+                  onTap: canTap
+                      ? () {
+                          setState(() => _tahapAktif = index);
+                          _resetScrollPosition();
+                        }
+                      : null,
+                  borderRadius: BorderRadius.circular(8),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            if (index > 0)
+                              Expanded(
+                                child: Container(
+                                  height: 2.5,
+                                  color: index <= _tahapAktif
+                                      ? AppColors.secondaryGreen
+                                      : Colors.grey.shade300,
+                                ),
+                              ),
+                            Container(
+                              width: 28,
+                              height: 28,
+                              decoration: BoxDecoration(
+                                color: isCurrent
+                                    ? AppColors.primaryBlue
+                                    : isCompleted
+                                        ? AppColors.secondaryGreen
+                                        : Colors.grey.shade200,
+                                shape: BoxShape.circle,
+                                boxShadow: isCurrent
+                                    ? [
+                                        BoxShadow(
+                                          color: AppColors.primaryBlue
+                                              .withValues(alpha: 0.3),
+                                          blurRadius: 6,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ]
+                                    : null,
+                              ),
+                              child: Center(
+                                child: isCompleted
+                                    ? const Icon(
+                                        Icons.check,
+                                        size: 16,
+                                        color: Colors.white,
+                                      )
+                                    : Text(
+                                        '${index + 1}',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                          color: isCurrent
+                                              ? Colors.white
+                                              : Colors.grey.shade600,
+                                        ),
+                                      ),
+                              ),
+                            ),
+                            if (index < 2)
+                              Expanded(
+                                child: Container(
+                                  height: 2.5,
+                                  color: index < _tahapAktif
+                                      ? AppColors.secondaryGreen
+                                      : Colors.grey.shade300,
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          stepTitles[index],
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: isCurrent
+                                ? FontWeight.w800
+                                : isCompleted
+                                    ? FontWeight.w600
+                                    : FontWeight.normal,
+                            color: isCurrent
+                                ? AppColors.primaryBlue
+                                : isCompleted
+                                    ? AppColors.textDark
+                                    : AppColors.textLight,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }),
           ),
-          const SizedBox(height: 8),
-          Text(labels[_tahapAktif]),
-          const SizedBox(height: 12),
-          LinearProgressIndicator(
-            value: (_tahapAktif + 1) / labels.length,
-            minHeight: 8,
-            borderRadius: BorderRadius.circular(8),
-            color: AppColors.primaryBlue,
-            backgroundColor: AppColors.backgroundCream,
+          const SizedBox(height: 10),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: AppColors.backgroundCream,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  _tahapAktif == 0
+                      ? Icons.pets
+                      : _tahapAktif == 1
+                          ? Icons.inventory_2_outlined
+                          : Icons.analytics_outlined,
+                  size: 16,
+                  color: AppColors.primaryBlue,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Tahap ${_tahapAktif + 1} dari 3: ${labels[_tahapAktif]}',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textDark,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -649,108 +886,183 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
           ],
         );
       case 1:
-        return Column(
+        return _buildPemberianPakanSection();
+      case 2:
+        return _buildHasilEvaluasiSection();
+    }
+    return const SizedBox.shrink();
+  }
+
+  Widget _buildHasilEvaluasiSection() {
+    if (_hasilEvaluasi == null) {
+      return AppCard(
+        child: Column(
           children: [
-            _buildEvaluasiScoreboard(),
-            const SizedBox(height: 16),
-            _buildPemberianPakanSection(),
-          ],
-        );
-    }
-    return const SizedBox.shrink();
-  }
-
-  Widget _buildEvaluasiScoreboard() {
-    if (_pemberianPakan.isEmpty) {
-      return _buildScoreboardPlaceholder(
-        icon: Icons.eco_outlined,
-        title: 'Tambahkan pakan untuk melihat evaluasi',
-        subtitle:
-            'Pilih bahan pakan di bawah untuk memulai perbandingan nutrisi secara realtime.',
-      );
-    }
-
-    final semuaJumlahNol = _pemberianPakan.every((item) => item.jumlahKg <= 0);
-    if (semuaJumlahNol) {
-      return _buildScoreboardPlaceholder(
-        icon: Icons.edit_note_rounded,
-        title: 'Isi jumlah pakan untuk memulai evaluasi',
-        subtitle:
-            'Masukkan jumlah pemberian (kg) pada bahan pakan untuk melihat evaluasi realtime.',
-      );
-    }
-
-    if (_hasilEvaluasi != null) {
-      return EvaluasiKecukupanCard(hasil: _hasilEvaluasi!);
-    }
-
-    return const SizedBox.shrink();
-  }
-
-  Widget _buildScoreboardPlaceholder({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.primaryBlue.withValues(alpha: 0.08),
-              shape: BoxShape.circle,
+            const Icon(
+              Icons.warning_amber_rounded,
+              size: 48,
+              color: AppColors.accentOrange,
             ),
-            child: Icon(icon, size: 30, color: AppColors.primaryBlue),
+            const SizedBox(height: 12),
+            const Text(
+              'Hasil evaluasi belum tersedia',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Silakan kembali ke tahap sebelumnya untuk mengisi pakan.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: AppColors.textLight),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      children: [
+        EvaluasiKecukupanCard(
+          hasil: _hasilEvaluasi!,
+          initialExpanded: true,
+        ),
+        const SizedBox(height: 16),
+        _buildRingkasanPakanTerpilih(),
+      ],
+    );
+  }
+
+  Widget _buildRingkasanPakanTerpilih() {
+    final totalKg = _pemberianPakan.fold<double>(
+      0,
+      (sum, item) => sum + item.jumlahKg,
+    );
+
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Komposisi Pakan Diberikan',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primaryBlue,
+                    ),
+              ),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryBlue.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'Total: ${_format(totalKg)} kg',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                    color: AppColors.primaryBlue,
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontWeight: FontWeight.w800,
-              fontSize: 15,
-              color: AppColors.textDark,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            subtitle,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 12,
-              color: AppColors.textLight,
-              height: 1.4,
-            ),
-          ),
+          Divider(height: 1, color: Colors.grey.shade200),
+          const SizedBox(height: 12),
+          ..._pemberianPakan.asMap().entries.map((entry) {
+            final idx = entry.key;
+            final item = entry.value;
+            final feedColor = getFeedColor(idx);
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                children: [
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: feedColor,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      item.bahan.nama,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                        color: AppColors.textDark,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    '${_format(item.jumlahKg)} kg',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                      color: AppColors.textDark,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
         ],
       ),
     );
   }
 
   Widget _buildNavigationControls() {
-    if (_tahapAktif >= 1) return const SizedBox.shrink();
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: _lanjutTahap,
-        child: const Text('Lanjut ke Pemberian Pakan'),
-      ),
-    );
+    if (_tahapAktif == 0) {
+      return SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: _lanjutTahap,
+          child: const Text('Lanjut ke Komposisi Pakan'),
+        ),
+      );
+    } else if (_tahapAktif == 1) {
+      return Row(
+        children: [
+          Expanded(
+            child: OutlinedButton(
+              onPressed: _kembaliTahap,
+              child: const Text('Kembali'),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            flex: 2,
+            child: ElevatedButton(
+              onPressed: _lanjutTahap,
+              child: const Text('Hitung & Evaluasi'),
+            ),
+          ),
+        ],
+      );
+    } else {
+      return Row(
+        children: [
+          Expanded(
+            child: OutlinedButton(
+              onPressed: _kembaliTahap,
+              child: const Text('Ubah Pakan'),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Selesai'),
+            ),
+          ),
+        ],
+      );
+    }
   }
 
   Widget _buildFormInput() {
@@ -807,6 +1119,15 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
                 suffix: '%',
                 hintText: 'Contoh: 3,5',
                 validator: _validasiLemakSusu,
+                onFieldSubmitted: (_) {
+                  if (_warningLemakSusu != null) {
+                    AppToast.showWarning(
+                      context,
+                      _warningLemakSusu!,
+                      title: 'Peringatan Lemak Susu',
+                    );
+                  }
+                },
               ),
               const SizedBox(height: 6),
               Row(
@@ -820,7 +1141,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
                   const SizedBox(width: 6),
                   const Expanded(
                     child: Text(
-                      'Tuliskan target persentase lemak susu.',
+                      'Tuliskan target lemak susu.',
                       style: TextStyle(
                         fontSize: 12,
                         color: AppColors.textLight,
@@ -924,11 +1245,6 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
     return IndonesianNumberFormatter.format(value, decimals: 2);
   }
 
-  String _formatPersen(double value) {
-    if (!IndonesianNumberFormatter.isSupportedMagnitude(value)) return '-';
-    return IndonesianNumberFormatter.format(value, decimals: 1);
-  }
-
   bool _nilaiValid(Iterable<double> values) => values.every(
     (value) =>
         IndonesianNumberFormatter.isSupportedMagnitude(value) && value >= 0,
@@ -1005,11 +1321,11 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
 
   Widget _buildNutrientChip(String label, String value, String satuan) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: AppColors.backgroundCream,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1017,25 +1333,25 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
           Text(
             label,
             style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
               color: AppColors.primaryBlue,
             ),
           ),
-          const SizedBox(width: 4),
+          const SizedBox(width: 6),
           Text(
             value,
             style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w800,
+              fontSize: 15,
+              fontWeight: FontWeight.w900,
               color: AppColors.textDark,
             ),
           ),
-          const SizedBox(width: 2),
+          const SizedBox(width: 3),
           Text(
             satuan,
             style: const TextStyle(
-              fontSize: 10,
+              fontSize: 11,
               fontWeight: FontWeight.w600,
               color: AppColors.textLight,
             ),
@@ -1128,144 +1444,94 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
   }
 
   Widget _buildKartuPakan(int index, CampuranPakanItem item) {
-    final kontribusi = KontribusiNutrisiBahanPakan.fromItem(item, index: index);
-    final feedColor = getFeedColor(index);
-    final isBahanValid =
-        item.bahan.isValidForCalculation(requirePositiveBk: true);
-
-    final nutrisiText = !isBahanValid
-        ? 'Data tidak valid'
-        : item.jumlahKg > 0
-        ? 'BK: ${_format(kontribusi.bkKg)}  •  PK: ${_format(kontribusi.pkKg)}  •  TDN: ${_format(kontribusi.tdnKg)} kg'
-        : 'BK: ${_formatPersen(item.bahan.bk)}%  •  PK: ${_formatPersen(item.bahan.protein)}%  •  TDN: ${_formatPersen(item.bahan.tdn)}%';
-
     return AppCard(
+      key: ValueKey('kartu_bahan_${item.bahan.id}'),
+      margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      width: double.infinity,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Row 1: Dot + Label + Dropdown + Delete
           Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Container(
-                width: 10,
-                height: 10,
-                decoration: BoxDecoration(
-                  color: feedColor,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                '${index + 1}.',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                  color: AppColors.primaryBlue,
-                ),
-              ),
-              const SizedBox(width: 8),
               Expanded(
-                child: DropdownButtonFormField<BahanPakan>(
-                  initialValue: item.bahan,
-                  isExpanded: true,
-                  isDense: true,
-                  items: _semuaBahan.map((bahan) {
-                    return DropdownMenuItem<BahanPakan>(
-                      value: bahan,
-                      child: Text(bahan.nama,
-                          style: const TextStyle(fontSize: 13)),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    if (value != null) _ubahBahanPakan(index, value);
-                  },
+                child: InkWell(
+                  onTap: () => _pilihAtauUbahBahan(index),
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.backgroundKrem,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: AppColors.textLight.withValues(alpha: 0.2),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item.bahan.nama,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  color: AppColors.textDark,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                '${item.bahan.kategori} • BK: ${IndonesianNumberFormatter.isSupportedMagnitude(item.bahan.bk) ? '${IndonesianNumberFormatter.format(item.bahan.bk, decimals: 1)}%' : '-'}',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.textGrey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(
+                          Icons.arrow_drop_down,
+                          color: AppColors.primaryBlue,
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(width: 4),
-              InkWell(
-                borderRadius: BorderRadius.circular(16),
-                onTap: () => _hapusBahanPakan(index),
-                child: const Padding(
-                  padding: EdgeInsets.all(4),
-                  child: Icon(
-                    Icons.close,
-                    size: 18,
-                    color: AppColors.errorRed,
-                  ),
+              IconButton(
+                onPressed: () => _hapusBahanPakan(index),
+                visualDensity: VisualDensity.compact,
+                icon: const Icon(
+                  Icons.close,
+                  color: AppColors.errorRed,
+                  size: 18,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 8),
-          // Row 2: Input Jumlah + Subtitle Nutrisi
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(
-                width: 100,
-                child: TextFormField(
-                  initialValue: item.jumlahKg == 0
-                      ? ''
-                      : IndonesianNumberFormatter.isSupportedMagnitude(
-                              item.jumlahKg)
-                          ? IndonesianNumberFormatter.format(item.jumlahKg,
-                              decimals: 2)
-                          : '',
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  style: const TextStyle(fontSize: 13),
-                  decoration: InputDecoration(
-                    hintText: '0',
-                    isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 10),
-                    suffixIcon: Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        widthFactor: 1.0,
-                        child: Text(
-                          'kg',
-                          style: TextStyle(
-                            color:
-                                AppColors.textLight.withValues(alpha: 0.85),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ),
-                    suffixIconConstraints: const BoxConstraints(
-                      minWidth: 0,
-                      minHeight: 0,
-                    ),
+          AppTextField(
+            key: ValueKey('jumlah_${item.bahan.id}'),
+            initialValue:
+                item.jumlahKg == 0 ||
+                    !IndonesianNumberFormatter.isSupportedMagnitude(
+                      item.jumlahKg,
+                    )
+                ? ''
+                : IndonesianNumberFormatter.format(
+                    item.jumlahKg,
+                    decimals: 2,
                   ),
-                  onChanged: (value) => _ubahJumlahPakan(index, value),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  nutrisiText,
-                  style: TextStyle(
-                    fontSize: 10.5,
-                    fontWeight: item.jumlahKg > 0 && isBahanValid
-                        ? FontWeight.w600
-                        : FontWeight.normal,
-                    color: !isBahanValid
-                        ? AppColors.errorRed
-                        : item.jumlahKg > 0
-                        ? AppColors.textDark
-                        : AppColors.textLight,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                ),
-              ),
-            ],
+            label: 'Jumlah (kg)',
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            onChanged: (v) => _ubahJumlahPakan(index, v),
           ),
         ],
       ),

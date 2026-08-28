@@ -4,12 +4,14 @@ import '../../core/constants/app_colors.dart';
 import '../../core/utils/app_toast.dart';
 import '../../core/utils/indonesian_number_formatter.dart';
 import '../../core/models/status_perhitungan.dart';
+import '../../core/widgets/app_card.dart';
 import '../../core/widgets/app_sliver_header.dart';
 import '../../core/widgets/app_text_field.dart';
 import '../../data/models/bahan_pakan.dart';
 import '../../data/models/fisiologi_sapi.dart';
 import '../../data/models/kebutuhan_nutrien_sapi.dart';
 import '../../data/sources/bahan_pakan_repository.dart';
+import '../cek_kandungan_nutrisi/widgets/searchable_bahan_pakan_dialog.dart';
 import '../cek_kecukupan_pakan/logic/perhitungan_kebutuhan_nutrien.dart';
 import 'logic/hasil_rekomendasi_pakan.dart';
 import 'logic/nutrien_helper.dart';
@@ -41,12 +43,12 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
   final TextEditingController _lemakSusuController = TextEditingController();
 
   FisiologiSapi _fisiologi = FisiologiSapi.dara;
+  List<BahanPakan> _semuaBahan = [];
   bool _isLoading = true;
   String? _errorMessage;
 
-  List<BahanPakan> _semuaBahan = [];
-  List<BahanPakan?> _hijauanTerpilih = [];
-  List<BahanPakan?> _konsentratTerpilih = [];
+  List<BahanPakan> _hijauanTerpilih = [];
+  List<BahanPakan> _konsentratTerpilih = [];
   final List<ValueKey<int>> _hijauanRowKeys = [];
   final List<ValueKey<int>> _konsentratRowKeys = [];
   int _nextFeedRowKey = 0;
@@ -57,6 +59,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
   String? _pesanPerhitungan;
   int _tahapAktif = 0;
   AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -71,6 +74,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _beratBadanController.removeListener(_perbaruiPreviewKebutuhan);
     _produksiSusuController.removeListener(_perbaruiPreviewKebutuhan);
     _lemakSusuController.removeListener(_perbaruiPreviewKebutuhan);
@@ -78,6 +82,14 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     _produksiSusuController.dispose();
     _lemakSusuController.dispose();
     super.dispose();
+  }
+
+  void _resetScrollPosition() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(0.0);
+      }
+    });
   }
 
   Future<void> _muatBahanPakan() async {
@@ -114,43 +126,6 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     });
   }
 
-  List<BahanPakan> get _opsiHijauan =>
-      _semuaBahan.where(isBahanHijauan).toList();
-  List<BahanPakan> get _opsiKonsentrat =>
-      _semuaBahan.where(isBahanKonsentrat).toList();
-
-  List<BahanPakan> _opsiHijauanUntuk(int index) {
-    final selectedIds = <int>{
-      ..._hijauanTerpilih
-          .asMap()
-          .entries
-          .where((entry) => entry.key != index)
-          .map((entry) => entry.value?.id)
-          .whereType<int>(),
-      ..._konsentratTerpilih.map((item) => item?.id).whereType<int>(),
-    };
-    final currentId = _hijauanTerpilih[index]?.id;
-    return _opsiHijauan
-        .where((item) => item.id == currentId || !selectedIds.contains(item.id))
-        .toList();
-  }
-
-  List<BahanPakan> _opsiKonsentratUntuk(int index) {
-    final selectedIds = <int>{
-      ..._konsentratTerpilih
-          .asMap()
-          .entries
-          .where((entry) => entry.key != index)
-          .map((entry) => entry.value?.id)
-          .whereType<int>(),
-      ..._hijauanTerpilih.map((item) => item?.id).whereType<int>(),
-    };
-    final currentId = _konsentratTerpilih[index]?.id;
-    return _opsiKonsentrat
-        .where((item) => item.id == currentId || !selectedIds.contains(item.id))
-        .toList();
-  }
-
   void _invalidasiRekomendasi() {
     _hasilRekomendasi = null;
     _statusPerhitungan = StatusPerhitungan.belumDihitung;
@@ -185,25 +160,84 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     });
   }
 
-  void _tambahHijauan() {
+  Future<void> _tambahHijauan() async {
     if (_hijauanTerpilih.length >= maxSelectedFeedsPerGroup) {
       _showSnackBar('Maksimal $maxSelectedFeedsPerGroup bahan hijauan.');
       return;
     }
+    final bahanSudahDipakai = <int>{
+      ..._hijauanTerpilih.map((item) => item.id),
+      ..._konsentratTerpilih.map((item) => item.id),
+    };
+    final opsiHijauan = _semuaBahan.where(isBahanHijauan).toList();
+    if (opsiHijauan.every((b) => bahanSudahDipakai.contains(b.id))) {
+      AppToast.showWarning(
+        context,
+        'Semua bahan hijauan sudah dipilih.',
+      );
+      return;
+    }
+
+    final bahanBaru = await SearchableBahanPakanDialog.show(
+      context: context,
+      semuaBahan: opsiHijauan,
+      bahanTerpilihIds: bahanSudahDipakai,
+    );
+
+    if (bahanBaru == null || !mounted) return;
+
+    if (bahanSudahDipakai.contains(bahanBaru.id)) {
+      AppToast.showWarning(
+        context,
+        'Bahan "${bahanBaru.nama}" sudah dipilih.',
+      );
+      return;
+    }
+
     setState(() {
-      _hijauanTerpilih = [..._hijauanTerpilih, null];
+      _hijauanTerpilih = [..._hijauanTerpilih, bahanBaru];
       _hijauanRowKeys.add(ValueKey(_nextFeedRowKey++));
       _invalidasiRekomendasi();
     });
   }
 
-  void _tambahKonsentrat() {
+  Future<void> _tambahKonsentrat() async {
     if (_konsentratTerpilih.length >= maxSelectedFeedsPerGroup) {
       _showSnackBar('Maksimal $maxSelectedFeedsPerGroup bahan konsentrat.');
       return;
     }
+    final bahanSudahDipakai = <int>{
+      ..._hijauanTerpilih.map((item) => item.id),
+      ..._konsentratTerpilih.map((item) => item.id),
+    };
+    final opsiKonsentrat =
+        _semuaBahan.where((b) => !isBahanHijauan(b)).toList();
+    if (opsiKonsentrat.every((b) => bahanSudahDipakai.contains(b.id))) {
+      AppToast.showWarning(
+        context,
+        'Semua bahan konsentrat sudah dipilih.',
+      );
+      return;
+    }
+
+    final bahanBaru = await SearchableBahanPakanDialog.show(
+      context: context,
+      semuaBahan: opsiKonsentrat,
+      bahanTerpilihIds: bahanSudahDipakai,
+    );
+
+    if (bahanBaru == null || !mounted) return;
+
+    if (bahanSudahDipakai.contains(bahanBaru.id)) {
+      AppToast.showWarning(
+        context,
+        'Bahan "${bahanBaru.nama}" sudah dipilih.',
+      );
+      return;
+    }
+
     setState(() {
-      _konsentratTerpilih = [..._konsentratTerpilih, null];
+      _konsentratTerpilih = [..._konsentratTerpilih, bahanBaru];
       _konsentratRowKeys.add(ValueKey(_nextFeedRowKey++));
       _invalidasiRekomendasi();
     });
@@ -225,17 +259,55 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     });
   }
 
-  void _ubahHijauan(int index, BahanPakan? value) {
-    if (value == null) return;
+  Future<void> _pilihAtauUbahHijauan(int index) async {
+    final bahanSudahDipakai = <int>{
+      ..._hijauanTerpilih.map((item) => item.id),
+      ..._konsentratTerpilih.map((item) => item.id),
+    };
+    final itemLama = _hijauanTerpilih[index];
+    final opsiHijauan = _semuaBahan.where(isBahanHijauan).toList();
+
+    final bahanBaru = await SearchableBahanPakanDialog.show(
+      context: context,
+      semuaBahan: opsiHijauan,
+      bahanTerpilihIds: bahanSudahDipakai,
+      bahanSaatIni: itemLama,
+    );
+
+    if (bahanBaru == null || bahanBaru.id == itemLama.id || !mounted) return;
+    _ubahHijauan(index, bahanBaru);
+  }
+
+  Future<void> _pilihAtauUbahKonsentrat(int index) async {
+    final bahanSudahDipakai = <int>{
+      ..._hijauanTerpilih.map((item) => item.id),
+      ..._konsentratTerpilih.map((item) => item.id),
+    };
+    final itemLama = _konsentratTerpilih[index];
+    final opsiKonsentrat =
+        _semuaBahan.where((b) => !isBahanHijauan(b)).toList();
+
+    final bahanBaru = await SearchableBahanPakanDialog.show(
+      context: context,
+      semuaBahan: opsiKonsentrat,
+      bahanTerpilihIds: bahanSudahDipakai,
+      bahanSaatIni: itemLama,
+    );
+
+    if (bahanBaru == null || bahanBaru.id == itemLama.id || !mounted) return;
+    _ubahKonsentrat(index, bahanBaru);
+  }
+
+  void _ubahHijauan(int index, BahanPakan value) {
     final duplikatKelompok = _hijauanTerpilih.asMap().entries.any((entry) {
-      return entry.key != index && entry.value?.id == value.id;
+      return entry.key != index && entry.value.id == value.id;
     });
     final duplikatLintasKelompok = _konsentratTerpilih.any(
-      (item) => item?.id == value.id,
+      (item) => item.id == value.id,
     );
 
     if (duplikatKelompok || duplikatLintasKelompok) {
-      _showSnackBar('Bahan pakan tersebut sudah dipilih.');
+      AppToast.showWarning(context, 'Bahan pakan tersebut sudah dipilih.');
       return;
     }
 
@@ -245,17 +317,16 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     });
   }
 
-  void _ubahKonsentrat(int index, BahanPakan? value) {
-    if (value == null) return;
+  void _ubahKonsentrat(int index, BahanPakan value) {
     final duplikatKelompok = _konsentratTerpilih.asMap().entries.any((entry) {
-      return entry.key != index && entry.value?.id == value.id;
+      return entry.key != index && entry.value.id == value.id;
     });
     final duplikatLintasKelompok = _hijauanTerpilih.any(
-      (item) => item?.id == value.id,
+      (item) => item.id == value.id,
     );
 
     if (duplikatKelompok || duplikatLintasKelompok) {
-      _showSnackBar('Bahan pakan tersebut sudah dipilih.');
+      AppToast.showWarning(context, 'Bahan pakan tersebut sudah dipilih.');
       return;
     }
 
@@ -279,8 +350,8 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
       return;
     }
 
-    final hijauan = _hijauanTerpilih.whereType<BahanPakan>().toList();
-    final konsentrat = _konsentratTerpilih.whereType<BahanPakan>().toList();
+    final hijauan = _hijauanTerpilih;
+    final konsentrat = _konsentratTerpilih;
 
     if (hijauan.isEmpty) {
       _gagalMenghitung('Tambahkan minimal satu hijauan.');
@@ -289,12 +360,6 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
 
     if (konsentrat.isEmpty) {
       _gagalMenghitung('Tambahkan minimal satu konsentrat.');
-      return;
-    }
-
-    if (_hijauanTerpilih.any((item) => item == null) ||
-        _konsentratTerpilih.any((item) => item == null)) {
-      _gagalMenghitung('Lengkapi semua pilihan bahan pakan terlebih dahulu.');
       return;
     }
 
@@ -327,7 +392,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
       });
 
       if (!hasil.isLkAman) {
-        _showSnackBar('LK melebihi batas 5% BK.');
+        AppToast.showWarning(context, 'LK melebihi batas 5% BK.');
       }
     } catch (_) {
       _gagalMenghitung('Rekomendasi pakan gagal dihitung.');
@@ -340,6 +405,9 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
       _statusPerhitungan = StatusPerhitungan.gagal;
       _pesanPerhitungan = pesan;
     });
+    if (mounted) {
+      AppToast.showError(context, pesan, title: 'Perhitungan Gagal');
+    }
   }
 
   bool _validasiTahapSatu() {
@@ -379,23 +447,25 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
       _gagalMenghitung('Tambahkan minimal satu konsentrat.');
       return false;
     }
-    if (_hijauanTerpilih.any((item) => item == null) ||
-        _konsentratTerpilih.any((item) => item == null)) {
-      _gagalMenghitung('Lengkapi semua pilihan bahan pakan terlebih dahulu.');
-      return false;
-    }
 
-    final hijauan = _hijauanTerpilih.whereType<BahanPakan>().toList();
-    final konsentrat = _konsentratTerpilih.whereType<BahanPakan>().toList();
+    final hijauan = _hijauanTerpilih;
+    final konsentrat = _konsentratTerpilih;
     if (!hijauan.any(isBahanHijauan)) {
-      _gagalMenghitung('Pilih minimal satu bahan kategori hijauan.');
+      _gagalMenghitung(
+        'Pilihan bahan hijauan harus memiliki pakan dengan kategori hijauan.',
+      );
       return false;
     }
     if (!konsentrat.any(isBahanKonsentrat)) {
-      _gagalMenghitung('Pilih minimal satu bahan non-hijauan.');
+      _gagalMenghitung(
+        'Pilihan bahan konsentrat harus memiliki pakan dengan kategori konsentrat.',
+      );
       return false;
     }
-    if ([...hijauan, ...konsentrat].any((item) => item.bk <= 0)) {
+
+    final semuaBahan = [...hijauan, ...konsentrat];
+    final adaBkKosong = semuaBahan.any((item) => item.bk <= 0);
+    if (adaBkKosong) {
       _gagalMenghitung(
         'Semua bahan pakan harus memiliki nilai BK lebih dari 0.',
       );
@@ -408,6 +478,26 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     if (_tahapAktif == 0) {
       if (_validasiTahapSatu()) {
         setState(() => _tahapAktif = 1);
+        _resetScrollPosition();
+        if (_warningLemakSusu != null) {
+          AppToast.showWarning(
+            context,
+            _warningLemakSusu!,
+            title: 'Peringatan Lemak Susu',
+          );
+        } else {
+          AppToast.showSuccess(
+            context,
+            'Data sapi tersimpan. Silakan pilih bahan pakan.',
+            title: 'Data Sapi Siap',
+          );
+        }
+      } else {
+        AppToast.showWarning(
+          context,
+          'Lengkapi data sapi terlebih dahulu.',
+          title: 'Data Belum Lengkap',
+        );
       }
       return;
     }
@@ -416,6 +506,12 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
       _hitungRekomendasi();
       if (_statusPerhitungan == StatusPerhitungan.berhasil) {
         setState(() => _tahapAktif = 2);
+        _resetScrollPosition();
+        AppToast.showSuccess(
+          context,
+          'Formulasi rekomendasi pakan berhasil dihitung!',
+          title: 'Rekomendasi Siap',
+        );
       }
     }
   }
@@ -426,6 +522,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
       return;
     }
     setState(() => _tahapAktif--);
+    _resetScrollPosition();
   }
 
   bool get _hasEnteredData =>
@@ -452,6 +549,9 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.errorRed,
+            ),
             child: const Text('Keluar'),
           ),
         ],
@@ -515,8 +615,8 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     if (_fisiologi != FisiologiSapi.laktasi) return null;
     final val = _parseDouble(_lemakSusuController.text);
     if (val <= 0) return null;
-    if (val < 2.5) return 'Kadar lemak susu terlalu rendah (< 2,5%)';
-    if (val > 4.0) return 'Kadar lemak susu melebihi standar (> 4,0%)';
+    if (val < 2.5) return 'Lemak terlalu rendah (< 2,5%)';
+    if (val > 4.0) return 'Lemak terlalu tinggi (> 4,0%)';
     return null;
   }
 
@@ -767,6 +867,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
         ),
         Expanded(
           child: SingleChildScrollView(
+            controller: _scrollController,
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -783,10 +884,11 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
   }
 
   Widget _buildCompactHeader() {
-    const labels = ['Data Sapi', 'Bahan Pakan Tersedia', 'Hasil Rekomendasi'];
-
     return Container(
-      color: AppColors.primaryBlue,
+      decoration: const BoxDecoration(
+        color: AppColors.primaryBlue,
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+      ),
       padding: EdgeInsets.only(
         top: MediaQuery.paddingOf(context).top,
         left: 8,
@@ -800,10 +902,10 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
               icon: const Icon(Icons.arrow_back, color: Colors.white),
               onPressed: _kembaliTahap,
             ),
-            Expanded(
+            const Expanded(
               child: Text(
-                'Tahap ${_tahapAktif + 1} · ${labels[_tahapAktif]}',
-                style: const TextStyle(
+                'Rekomendasi Pakan',
+                style: TextStyle(
                   color: Colors.white,
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
@@ -822,33 +924,160 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
   }
 
   Widget _buildProgressIndicator() {
-    const labels = ['Data Sapi', 'Bahan Pakan Tersedia', 'Hasil Rekomendasi'];
+    final stepTitles = ['Data Sapi', 'Pilihan Pakan', 'Hasil Rekomendasi'];
+    final labels = [
+      'Data Sapi & Kebutuhan Nutrien',
+      'Pemilihan Bahan Pakan Tersedia',
+      'Hasil & Rekomendasi Ransum',
+    ];
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
+    return AppCard(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Tahap ${_tahapAktif + 1} dari ${labels.length}',
-            style: const TextStyle(
-              color: AppColors.primaryBlue,
-              fontWeight: FontWeight.bold,
-            ),
+          Row(
+            children: List.generate(3, (index) {
+              final isCurrent = index == _tahapAktif;
+              final isCompleted = index < _tahapAktif;
+              final canTap = index < _tahapAktif;
+
+              return Expanded(
+                child: InkWell(
+                  onTap: canTap
+                      ? () {
+                          setState(() => _tahapAktif = index);
+                          _resetScrollPosition();
+                        }
+                      : null,
+                  borderRadius: BorderRadius.circular(8),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            if (index > 0)
+                              Expanded(
+                                child: Container(
+                                  height: 2.5,
+                                  color: index <= _tahapAktif
+                                      ? AppColors.secondaryGreen
+                                      : Colors.grey.shade300,
+                                ),
+                              ),
+                            Container(
+                              width: 28,
+                              height: 28,
+                              decoration: BoxDecoration(
+                                color: isCurrent
+                                    ? AppColors.primaryBlue
+                                    : isCompleted
+                                        ? AppColors.secondaryGreen
+                                        : Colors.grey.shade200,
+                                shape: BoxShape.circle,
+                                boxShadow: isCurrent
+                                    ? [
+                                        BoxShadow(
+                                          color: AppColors.primaryBlue
+                                              .withValues(alpha: 0.3),
+                                          blurRadius: 6,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ]
+                                    : null,
+                              ),
+                              child: Center(
+                                child: isCompleted
+                                    ? const Icon(
+                                        Icons.check,
+                                        size: 16,
+                                        color: Colors.white,
+                                      )
+                                    : Text(
+                                        '${index + 1}',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                          color: isCurrent
+                                              ? Colors.white
+                                              : Colors.grey.shade600,
+                                        ),
+                                      ),
+                              ),
+                            ),
+                            if (index < 2)
+                              Expanded(
+                                child: Container(
+                                  height: 2.5,
+                                  color: index < _tahapAktif
+                                      ? AppColors.secondaryGreen
+                                      : Colors.grey.shade300,
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          stepTitles[index],
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: isCurrent
+                                ? FontWeight.w800
+                                : isCompleted
+                                    ? FontWeight.w600
+                                    : FontWeight.normal,
+                            color: isCurrent
+                                ? AppColors.primaryBlue
+                                : isCompleted
+                                    ? AppColors.textDark
+                                    : AppColors.textLight,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }),
           ),
-          const SizedBox(height: 8),
-          Text(labels[_tahapAktif]),
-          const SizedBox(height: 12),
-          LinearProgressIndicator(
-            value: (_tahapAktif + 1) / labels.length,
-            minHeight: 8,
-            borderRadius: BorderRadius.circular(8),
+          const SizedBox(height: 10),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: AppColors.backgroundCream,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  _tahapAktif == 0
+                      ? Icons.pets
+                      : _tahapAktif == 1
+                          ? Icons.inventory_2_outlined
+                          : Icons.auto_awesome_rounded,
+                  size: 16,
+                  color: AppColors.primaryBlue,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Tahap ${_tahapAktif + 1} dari 3: ${labels[_tahapAktif]}',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textDark,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -889,10 +1118,9 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
               avatarColor: const Color(0xFFDFF5E7),
               items: _hijauanTerpilih,
               rowKeys: _hijauanRowKeys,
-              opsiForIndex: _opsiHijauanUntuk,
               onAdd: _tambahHijauan,
               onRemove: _hapusHijauan,
-              onChanged: _ubahHijauan,
+              onTapItem: _pilihAtauUbahHijauan,
               buttonLabel: 'Tambah Hijauan',
               emptyTitle: 'Belum ada hijauan yang dipilih.',
               emptyIcon: Icons.park_outlined,
@@ -907,10 +1135,9 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
               avatarColor: const Color(0xFFFFEBD1),
               items: _konsentratTerpilih,
               rowKeys: _konsentratRowKeys,
-              opsiForIndex: _opsiKonsentratUntuk,
               onAdd: _tambahKonsentrat,
               onRemove: _hapusKonsentrat,
-              onChanged: _ubahKonsentrat,
+              onTapItem: _pilihAtauUbahKonsentrat,
               buttonLabel: 'Tambah Konsentrat',
               emptyTitle: 'Belum ada konsentrat yang dipilih.',
               emptyIcon: Icons.food_bank_outlined,
@@ -931,68 +1158,228 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                       'Lengkapi tahap sebelumnya untuk melihat hasil rekomendasi.',
                 ),
               )
-            : Column(
-                children: [
-                  _buildSectionCard(
-                    title: 'Hasil Rekomendasi',
-                    icon: Icons.auto_awesome_rounded,
-                    child: _buildRecommendationResult(),
-                  ),
-                ],
-              );
+            : _buildRecommendationResult();
     }
     return const SizedBox.shrink();
   }
 
   Widget _buildNavigationControls() {
-    if (_tahapAktif == 2) return const SizedBox.shrink();
-    return SizedBox(
-      width: double.infinity,
-      child: FilledButton(onPressed: _lanjutTahap, child: const Text('Lanjut')),
-    );
+    if (_tahapAktif == 0) {
+      return SizedBox(
+        width: double.infinity,
+        child: FilledButton(
+          onPressed: _lanjutTahap,
+          child: const Text('Lanjut ke Pilihan Pakan'),
+        ),
+      );
+    } else if (_tahapAktif == 1) {
+      return Row(
+        children: [
+          Expanded(
+            child: OutlinedButton(
+              onPressed: _kembaliTahap,
+              child: const Text('Kembali'),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            flex: 2,
+            child: FilledButton(
+              onPressed: _lanjutTahap,
+              child: const Text('Hitung Rekomendasi'),
+            ),
+          ),
+        ],
+      );
+    } else {
+      return const SizedBox.shrink();
+    }
   }
 
   Widget _buildRecommendationResult() {
     final hasil = _hasilRekomendasi!;
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.expertPurple.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: AppColors.expertPurple.withValues(alpha: 0.18),
-          width: 1.5,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    final totalAsFed =
+        _hitungTotalAsFed(hasil.rekomendasiHijauan) +
+        _hitungTotalAsFed(hasil.rekomendasiKonsentrat);
+    final total = hasil.totalGabungan;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionCard(
+          title: 'Hasil Rekomendasi',
+          icon: Icons.auto_awesome_rounded,
+          subtitle:
+              'Proporsi pemberian pakan harian per ekor sapi berdasarkan target fisiologi.',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(
-                Icons.auto_awesome_rounded,
-                color: AppColors.expertPurple,
-                size: 24,
+              Row(
+                children: [
+                  const Icon(
+                    Icons.assignment_outlined,
+                    color: AppColors.expertPurple,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  const Expanded(
+                    child: Text(
+                      'Hasil Analisis Ransum Pakan',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.textDark,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.secondaryGreen.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.verified,
+                          size: 14,
+                          color: AppColors.secondaryGreen,
+                        ),
+                        SizedBox(width: 4),
+                        Text(
+                          'Optimal',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.secondaryGreen,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              Text(
-                'Hasil Analisis Ransum Pakan',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.expertPurple,
-                  letterSpacing: -0.5,
+              const SizedBox(height: 16),
+              _buildCombinedRecommendationCard(hasil),
+              const SizedBox(height: 14),
+              _buildTotalAsFedBox(totalAsFed, total.bkKg),
+              const SizedBox(height: 14),
+              _buildLkSafetyBanner(hasil),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: () => _tampilkanDetailEvaluasiModal(hasil),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.expertPurple,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon: const Icon(Icons.analytics_outlined, size: 20),
+                  label: const Text(
+                    'Lihat Detail Evaluasi Nutrisi',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => setState(() => _tahapAktif = 1),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon: const Icon(Icons.refresh_rounded, size: 18),
+                  label: const Text('Sesuaikan Pakan / Hitung Ulang'),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          _buildCombinedRecommendationCard(hasil),
-          const SizedBox(height: 16),
-          _buildTotalSummaryCard(hasil),
-          const SizedBox(height: 16),
-          _buildEvaluationCard(hasil),
-        ],
+        ),
+      ],
+    );
+  }
+
+  void _tampilkanDetailEvaluasiModal(HasilRekomendasiPakan hasil) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.85,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (context, scrollController) => Container(
+          decoration: const BoxDecoration(
+            color: AppColors.backgroundCream,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            children: [
+              Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 8),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade400,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 4, 12, 10),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.analytics_outlined,
+                      color: AppColors.expertPurple,
+                      size: 22,
+                    ),
+                    const SizedBox(width: 8),
+                    const Expanded(
+                      child: Text(
+                        'Detail Evaluasi Nutrisi Ransum',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.textDark,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      key: const ValueKey('close_detail_evaluasi_btn'),
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+              Expanded(
+                child: ListView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.all(16),
+                  children: [
+                    _buildTotalSummaryCard(hasil),
+                    const SizedBox(height: 16),
+                    _buildEvaluationCard(hasil),
+                    const SizedBox(height: 24),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -1112,6 +1499,15 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                 suffix: '%',
                 validator: _validasiLemakSusu,
                 hintText: 'Contoh: 3,5',
+                onFieldSubmitted: (_) {
+                  if (_warningLemakSusu != null) {
+                    AppToast.showWarning(
+                      context,
+                      _warningLemakSusu!,
+                      title: 'Peringatan Lemak Susu',
+                    );
+                  }
+                },
               ),
               const SizedBox(height: 8),
               Row(
@@ -1125,7 +1521,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                   const SizedBox(width: 8),
                   const Expanded(
                     child: Text(
-                      'Tuliskan target persentase lemak susu.',
+                      'Tuliskan target lemak susu.',
                       style: TextStyle(
                         fontSize: 12,
                         color: AppColors.textLight,
@@ -1150,42 +1546,64 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
             ],
             if (_kebutuhanNutrien != null) ...[
               const Divider(height: 32),
-              const Text(
-                'Target Kebutuhan Nutrien',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textGrey,
-                ),
+              Row(
+                children: [
+                  const Text(
+                    'Kebutuhan Nutrien',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.primaryBlue,
+                    ),
+                  ),
+                  const Spacer(),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryBlue.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      'Standar: ${_labelFisiologi(_fisiologi)}',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primaryBlue,
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 12),
-              GridView.count(
-                crossAxisCount: 3,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
-                childAspectRatio: 1.3,
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
                 children: [
-                  _buildNutrientMiniCard(
-                    'BK (kg)',
+                  _buildNutrientChip(
+                    'BK',
                     _format(_kebutuhanNutrien!.kebutuhanBkKg),
+                    'kg',
                   ),
-                  _buildNutrientMiniCard(
-                    'PK (kg)',
+                  _buildNutrientChip(
+                    'PK',
                     _format(_kebutuhanNutrien!.kebutuhanProteinKg),
+                    'kg',
                   ),
-                  _buildNutrientMiniCard(
-                    'TDN (kg)',
+                  _buildNutrientChip(
+                    'TDN',
                     _format(_kebutuhanNutrien!.kebutuhanTdnKg),
+                    'kg',
                   ),
-                  _buildNutrientMiniCard(
-                    'Ca (g)',
+                  _buildNutrientChip(
+                    'Ca',
                     _format(_kebutuhanNutrien!.kebutuhanCaGram),
+                    'g',
                   ),
-                  _buildNutrientMiniCard(
-                    'P (g)',
+                  _buildNutrientChip(
+                    'P',
                     _format(_kebutuhanNutrien!.kebutuhanPGram),
+                    'g',
                   ),
                 ],
               ),
@@ -1235,12 +1653,11 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     required IconData icon,
     required Color accentColor,
     required Color avatarColor,
-    required List<BahanPakan?> items,
+    required List<BahanPakan> items,
     required List<ValueKey<int>> rowKeys,
-    required List<BahanPakan> Function(int index) opsiForIndex,
     required VoidCallback onAdd,
     required void Function(int index) onRemove,
-    required void Function(int index, BahanPakan? value) onChanged,
+    required void Function(int index) onTapItem,
     required String buttonLabel,
     required String emptyTitle,
     required IconData emptyIcon,
@@ -1270,9 +1687,8 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                   key: rowKeys[index],
                   index: index,
                   item: items[index],
-                  opsi: opsiForIndex(index),
                   onRemove: () => onRemove(index),
-                  onChanged: (value) => onChanged(index, value),
+                  onTapSelect: () => onTapItem(index),
                   avatarColor: avatarColor,
                   accentColor: accentColor,
                 ),
@@ -1295,10 +1711,9 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
   Widget _buildFeedSelectionItem({
     required Key key,
     required int index,
-    required BahanPakan? item,
-    required List<BahanPakan> opsi,
+    required BahanPakan item,
     required VoidCallback onRemove,
-    required void Function(BahanPakan? value) onChanged,
+    required VoidCallback onTapSelect,
     required Color avatarColor,
     required Color accentColor,
   }) {
@@ -1328,12 +1743,54 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                 ),
               ),
               const SizedBox(width: 10),
-              const Expanded(
-                child: Text(
-                  'Pilih bahan pakan',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textDark,
+              Expanded(
+                child: InkWell(
+                  onTap: onTapSelect,
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.backgroundCream,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: AppColors.textLight.withValues(alpha: 0.2),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item.nama,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  color: AppColors.textDark,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                '${item.kategori} • BK: ${IndonesianNumberFormatter.isSupportedMagnitude(item.bk) ? '${IndonesianNumberFormatter.format(item.bk, decimals: 1)}%' : '-'}',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.textGrey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(
+                          Icons.arrow_drop_down,
+                          color: AppColors.primaryBlue,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -1347,38 +1804,22 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
             ],
           ),
           const SizedBox(height: 10),
-          DropdownButtonFormField<BahanPakan>(
-            initialValue: item,
-            isExpanded: true,
-            decoration: _dropdownDecoration(),
-            hint: const Text('Pilih bahan pakan'),
-            items: opsi.map((bahan) {
-              return DropdownMenuItem<BahanPakan>(
-                value: bahan,
-                child: Text(bahan.nama, overflow: TextOverflow.ellipsis),
-              );
-            }).toList(),
-            onChanged: onChanged,
-          ),
-          if (item != null) ...[
-            const SizedBox(height: 12),
-            if (!item.isValidForCalculation(requirePositiveBk: true))
-              const Text(
-                'Data bahan pakan tidak valid.',
-                style: TextStyle(color: AppColors.errorRed),
-              )
-            else
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  _buildInfoChip('BK ${_format(item.bk)}%'),
-                  _buildInfoChip('PK ${_format(item.protein)}%'),
-                  _buildInfoChip('TDN ${_format(item.tdn)}%'),
-                  _buildInfoChip('LK ${_format(item.lemak)}%'),
-                ],
-              ),
-          ],
+          if (!item.isValidForCalculation(requirePositiveBk: true))
+            const Text(
+              'Data bahan pakan tidak valid.',
+              style: TextStyle(color: AppColors.errorRed),
+            )
+          else
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _buildInfoChip('BK ${_format(item.bk)}%'),
+                _buildInfoChip('PK ${_format(item.protein)}%'),
+                _buildInfoChip('TDN ${_format(item.tdn)}%'),
+                _buildInfoChip('LK ${_format(item.lemak)}%'),
+              ],
+            ),
         ],
       ),
     );
@@ -1388,11 +1829,14 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     final hijauan = hasil.rekomendasiHijauan;
     final konsentrat = hasil.rekomendasiKonsentrat;
 
-    return _buildSectionCard(
-      title: 'Rencana Ransum Pakan',
-      icon: Icons.assignment_outlined,
-      subtitle:
-          'Proporsi pemberian pakan rekomendasi untuk memenuhi kebutuhan ternak.',
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundCream.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1402,23 +1846,23 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
               const Icon(
                 Icons.grass_rounded,
                 color: AppColors.secondaryGreen,
-                size: 20,
+                size: 18,
               ),
-              const SizedBox(width: 8),
-              Text(
+              const SizedBox(width: 6),
+              const Text(
                 'Hijauan',
                 style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
                   color: AppColors.secondaryGreen,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           if (hijauan.isEmpty)
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
+              padding: const EdgeInsets.symmetric(vertical: 6),
               child: Text(
                 'Tidak ada rekomendasi hijauan.',
                 style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
@@ -1427,7 +1871,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
           else
             ...hijauan.map(
               (item) => Padding(
-                padding: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.only(bottom: 8),
                 child: _buildRecommendationItem(
                   item: item,
                   tint: AppColors.secondaryGreen.withValues(alpha: 0.08),
@@ -1437,7 +1881,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
             ),
 
           const Padding(
-            padding: EdgeInsets.symmetric(vertical: 12),
+            padding: EdgeInsets.symmetric(vertical: 8),
             child: Divider(height: 1),
           ),
 
@@ -1447,23 +1891,23 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
               const Icon(
                 Icons.restaurant_menu_outlined,
                 color: AppColors.accentOrange,
-                size: 20,
+                size: 18,
               ),
-              const SizedBox(width: 8),
-              Text(
+              const SizedBox(width: 6),
+              const Text(
                 'Konsentrat',
                 style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
                   color: AppColors.accentOrange,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           if (konsentrat.isEmpty)
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
+              padding: const EdgeInsets.symmetric(vertical: 6),
               child: Text(
                 'Tidak ada rekomendasi konsentrat.',
                 style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
@@ -1472,7 +1916,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
           else
             ...konsentrat.map(
               (item) => Padding(
-                padding: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.only(bottom: 8),
                 child: _buildRecommendationItem(
                   item: item,
                   tint: AppColors.accentOrange.withValues(alpha: 0.08),
@@ -1492,32 +1936,182 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
   }) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: tint,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Text(
-            item.bahan.nama,
-            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            '${_format(item.asFedKg)} kg/ekor/hari',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              color: accent,
-              letterSpacing: -0.3,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.bahan.nama,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 15,
+                    color: AppColors.textDark,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'BK: ${_format(item.bkKg)} kg',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textLight,
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            'BK: ${_format(item.bkKg)} kg',
-            style: const TextStyle(fontSize: 12, color: AppColors.textLight),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '${_format(item.asFedKg)} kg',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                  color: accent,
+                ),
+              ),
+              const Text(
+                'per ekor/hari',
+                style: TextStyle(fontSize: 11, color: AppColors.textGrey),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTotalAsFedBox(double totalAsFed, double totalBk) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.primaryBlue.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: AppColors.primaryBlue.withValues(alpha: 0.12),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.primaryBlue.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(
+              Icons.scale_rounded,
+              color: AppColors.primaryBlue,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Total Pemberian Pakan (As Fed)',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textGrey,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '${_format(totalAsFed)} kg/ekor/hari',
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.primaryBlue,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 10,
+              vertical: 6,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: AppColors.primaryBlue.withValues(alpha: 0.15),
+              ),
+            ),
+            child: Text(
+              'Total BK: ${_format(totalBk)} kg',
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: AppColors.textDark,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLkSafetyBanner(HasilRekomendasiPakan hasil) {
+    final isAman = hasil.isLkAman;
+    final color = isAman ? AppColors.secondaryGreen : AppColors.accentOrange;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: color.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            isAman ? Icons.verified_outlined : Icons.warning_amber_rounded,
+            color: color,
+            size: 22,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isAman
+                      ? 'Evaluasi Lemak Kasar (LK): Memenuhi Standar'
+                      : 'Peringatan: Lemak Kasar (LK) Perlu Penyesuaian',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    color: color,
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  isAman
+                      ? 'Kandungan Lemak Kasar (LK) memenuhi batas standar (< 5% BK) yaitu ${_format(hasil.lkPersenDariBk)}% dari total Bahan Kering (BK).'
+                      : 'Kandungan Lemak Kasar (LK) melebihi batas toleransi 5% yaitu ${_format(hasil.lkPersenDariBk)}% dari total Bahan Kering (BK). Disarankan untuk mengurangi proporsi bahan kaya lemak.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade700,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -1530,31 +2124,68 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
         _hitungTotalAsFed(hasil.rekomendasiHijauan) +
         _hitungTotalAsFed(hasil.rekomendasiKonsentrat);
 
-    return _buildSectionCard(
-      title: 'Total Hijauan + Konsentrat',
-      icon: Icons.summarize_outlined,
-      child: GridView.count(
-        crossAxisCount: 2,
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 1.55,
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildNutrientMiniCard(
-            'Total As Fed',
-            '${_format(totalAsFed)} kg/ekor/hari',
+          Row(
+            children: [
+              Container(
+                width: 26,
+                height: 26,
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceLow,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Icon(
+                  Icons.summarize_outlined,
+                  size: 15,
+                  color: AppColors.secondaryGreen,
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'Total Hijauan + Konsentrat',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textDark,
+                ),
+              ),
+            ],
           ),
-          _buildNutrientMiniCard('Total BK', '${_format(total.bkKg)} kg'),
-          _buildNutrientMiniCard('Total PK', '${_format(total.pkKg)} kg'),
-          _buildNutrientMiniCard('Total TDN', '${_format(total.tdnKg)} kg'),
-          _buildNutrientMiniCard('Total Ca', '${_format(total.caGram)} gram'),
-          _buildNutrientMiniCard('Total P', '${_format(total.pGram)} gram'),
-          _buildNutrientMiniCard(
-            'LK',
-            '${_format(hasil.lkPersenDariBk)}% dari BK',
+          const SizedBox(height: 10),
+          GridView.count(
+            crossAxisCount: 2,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisSpacing: 8,
+            mainAxisSpacing: 8,
+            childAspectRatio: 2.3,
+            children: [
+              _buildNutrientMiniCard(
+                'Total As Fed',
+                '${_format(totalAsFed)} kg/ekor/hari',
+              ),
+              _buildNutrientMiniCard('Total BK', '${_format(total.bkKg)} kg'),
+              _buildNutrientMiniCard('Total PK', '${_format(total.pkKg)} kg'),
+              _buildNutrientMiniCard('Total TDN', '${_format(total.tdnKg)} kg'),
+              _buildNutrientMiniCard('Total Ca', '${_format(total.caGram)} gram'),
+              _buildNutrientMiniCard('Total P', '${_format(total.pGram)} gram'),
+              _buildNutrientMiniCard(
+                'LK',
+                '${_format(hasil.lkPersenDariBk)}% dari BK',
+              ),
+              _buildNutrientMiniCard('LK Total', '${_format(total.lkKg)} kg'),
+            ],
           ),
-          _buildNutrientMiniCard('LK Total', '${_format(total.lkKg)} kg'),
         ],
       ),
     );
@@ -1563,12 +2194,44 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
   Widget _buildEvaluationCard(HasilRekomendasiPakan hasil) {
     final total = hasil.totalGabungan;
 
-    return _buildSectionCard(
-      title: 'Evaluasi Terhadap Target',
-      icon: Icons.analytics_outlined,
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Row(
+            children: [
+              Container(
+                width: 26,
+                height: 26,
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceLow,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Icon(
+                  Icons.analytics_outlined,
+                  size: 15,
+                  color: AppColors.secondaryGreen,
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'Evaluasi Terhadap Target',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textDark,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
           _buildEvaluationItem(
             label: 'BK',
             hasilValue: total.bkKg,
@@ -1599,18 +2262,18 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
             target: hasil.kebutuhan.pGram,
             unit: 'gram',
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.expertPurple, // High-intensity brand purple
-              borderRadius: BorderRadius.circular(14),
+              color: AppColors.expertPurple,
+              borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.expertPurple.withValues(alpha: 0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 3),
+                  color: AppColors.expertPurple.withValues(alpha: 0.25),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
                 ),
               ],
             ),
@@ -1622,8 +2285,9 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                       ? Icons.verified_outlined
                       : Icons.warning_amber_rounded,
                   color: Colors.white,
+                  size: 20,
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1635,18 +2299,18 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                         style: const TextStyle(
                           fontWeight: FontWeight.w900,
                           color: Colors.white,
-                          fontSize: 14,
+                          fontSize: 13,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 2),
                       Text(
                         hasil.isLkAman
                             ? 'Kandungan Lemak Kasar (LK) memenuhi batas standar (< 5% BK) yaitu ${_format(hasil.lkPersenDariBk)}% dari total Bahan Kering (BK).'
                             : 'Kandungan Lemak Kasar (LK) melebihi batas toleransi 5% yaitu ${_format(hasil.lkPersenDariBk)}% dari total Bahan Kering (BK). Disarankan untuk mengurangi proporsi bahan kaya lemak seperti bungkil kelapa atau polar.',
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 11.5,
                           color: Colors.white.withValues(alpha: 0.9),
-                          height: 1.4,
+                          height: 1.35,
                         ),
                       ),
                     ],
@@ -1656,13 +2320,13 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
             ),
           ),
           if (!hasil.hasCaData || !hasil.hasPData) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             Text(
               'Catatan: sebagian bahan belum memiliki data Ca/P, sehingga nilai Ca dan P dapat masih terbaca 0.',
               style: const TextStyle(
-                fontSize: 12,
+                fontSize: 11,
                 color: AppColors.textLight,
-                height: 1.45,
+                height: 1.35,
               ),
             ),
           ],
@@ -1696,52 +2360,54 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
         : AppColors.statusBerlebih;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.only(bottom: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
         color: const Color(0xFFF7F7F5),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontWeight: FontWeight.w700,
-                color: AppColors.textDark,
-              ),
+          Text(
+            label,
+            style: const TextStyle(
+              fontWeight: FontWeight.w800,
+              fontSize: 13,
+              color: AppColors.textDark,
             ),
           ),
+          const SizedBox(width: 8),
           Expanded(
-            flex: 2,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
                   '${_format(hasilValue)} / ${_format(target)} $unit',
                   textAlign: TextAlign.end,
-                  style: const TextStyle(fontWeight: FontWeight.w700),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12.5,
+                  ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 1),
                 Text(
                   selisihText,
                   textAlign: TextAlign.end,
                   style: const TextStyle(
-                    fontSize: 12,
+                    fontSize: 11,
                     color: AppColors.textLight,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 8),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
             decoration: BoxDecoration(
               color: statusColor.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(8),
               border: Border.all(
                 color: statusColor.withValues(alpha: 0.3),
                 width: 1,
@@ -1751,8 +2417,8 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  width: 6,
-                  height: 6,
+                  width: 5,
+                  height: 5,
                   decoration: BoxDecoration(
                     color: statusColor,
                     shape: BoxShape.circle,
@@ -1763,7 +2429,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                   status,
                   style: TextStyle(
                     color: statusColor,
-                    fontSize: 12,
+                    fontSize: 11,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -1775,13 +2441,55 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     );
   }
 
+  Widget _buildNutrientChip(String label, String value, String satuan) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundCream,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              color: AppColors.primaryBlue,
+            ),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w900,
+              color: AppColors.textDark,
+            ),
+          ),
+          const SizedBox(width: 3),
+          Text(
+            satuan,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textLight,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildNutrientMiniCard(String title, String value) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.backgroundCream.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+        color: const Color(0xFFF7F7F5),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.black.withValues(alpha: 0.04)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1790,18 +2498,24 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
           Text(
             title,
             style: const TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
               color: AppColors.textGrey,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 2),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w800,
-              color: AppColors.primaryBlue,
+          const SizedBox(height: 3),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w900,
+                color: AppColors.primaryBlue,
+              ),
             ),
           ),
         ],
