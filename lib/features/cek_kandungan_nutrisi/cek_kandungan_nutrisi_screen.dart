@@ -46,6 +46,7 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
   final Set<CampuranPakanItem> _inputJumlahTidakValid = {};
   final Set<CampuranPakanItem> _inputHargaTidakValid = {};
 
+  final ScrollController _scrollController = ScrollController();
   bool _isLoading = true;
   String? _errorMessage;
 
@@ -54,6 +55,20 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
     super.initState();
     _repository = widget.repository ?? BahanPakanRepository();
     _muatBahanPakan();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _resetScrollPosition() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(0.0);
+      }
+    });
   }
 
   Future<void> _muatBahanPakan() async {
@@ -278,6 +293,7 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
         _statusPerhitungan = StatusPerhitungan.berhasil;
         _tahapAktif = 1;
       });
+      _resetScrollPosition();
       if (mounted) {
         AppToast.showSuccess(
           context,
@@ -326,6 +342,7 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
       return;
     }
     setState(() => _tahapAktif--);
+    _resetScrollPosition();
   }
 
   bool get _hasEnteredData => _campuran.isNotEmpty;
@@ -457,6 +474,7 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
         ),
         Expanded(
           child: SingleChildScrollView(
+            controller: _scrollController,
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -539,6 +557,7 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
                   onTap: canTap
                       ? () {
                           setState(() => _tahapAktif = index);
+                          _resetScrollPosition();
                         }
                       : null,
                   borderRadius: BorderRadius.circular(8),

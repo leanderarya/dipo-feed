@@ -59,6 +59,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
   String? _pesanPerhitungan;
   int _tahapAktif = 0;
   AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -73,6 +74,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _beratBadanController.removeListener(_perbaruiPreviewKebutuhan);
     _produksiSusuController.removeListener(_perbaruiPreviewKebutuhan);
     _lemakSusuController.removeListener(_perbaruiPreviewKebutuhan);
@@ -80,6 +82,14 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     _produksiSusuController.dispose();
     _lemakSusuController.dispose();
     super.dispose();
+  }
+
+  void _resetScrollPosition() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(0.0);
+      }
+    });
   }
 
   Future<void> _muatBahanPakan() async {
@@ -468,6 +478,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     if (_tahapAktif == 0) {
       if (_validasiTahapSatu()) {
         setState(() => _tahapAktif = 1);
+        _resetScrollPosition();
         if (_warningLemakSusu != null) {
           AppToast.showWarning(
             context,
@@ -495,6 +506,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
       _hitungRekomendasi();
       if (_statusPerhitungan == StatusPerhitungan.berhasil) {
         setState(() => _tahapAktif = 2);
+        _resetScrollPosition();
         AppToast.showSuccess(
           context,
           'Formulasi rekomendasi pakan berhasil dihitung!',
@@ -510,6 +522,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
       return;
     }
     setState(() => _tahapAktif--);
+    _resetScrollPosition();
   }
 
   bool get _hasEnteredData =>
@@ -851,6 +864,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
         ),
         Expanded(
           child: SingleChildScrollView(
+            controller: _scrollController,
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -930,6 +944,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                   onTap: canTap
                       ? () {
                           setState(() => _tahapAktif = index);
+                          _resetScrollPosition();
                         }
                       : null,
                   borderRadius: BorderRadius.circular(8),

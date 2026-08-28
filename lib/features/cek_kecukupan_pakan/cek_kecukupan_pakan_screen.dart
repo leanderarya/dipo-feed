@@ -51,6 +51,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
   StatusPerhitungan _statusPerhitungan = StatusPerhitungan.belumDihitung;
   int _tahapAktif = 0;
   AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -64,6 +65,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _beratBadanController.removeListener(_perbaruiKebutuhanOtomatis);
     _produksiSusuController.removeListener(_perbaruiKebutuhanOtomatis);
     _lemakSusuController.removeListener(_perbaruiKebutuhanOtomatis);
@@ -71,6 +73,14 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
     _produksiSusuController.dispose();
     _lemakSusuController.dispose();
     super.dispose();
+  }
+
+  void _resetScrollPosition() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(0.0);
+      }
+    });
   }
 
   Future<void> _muatBahanPakan() async {
@@ -412,6 +422,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
     if (_tahapAktif == 0) {
       if (_validasiTahapSatu()) {
         setState(() => _tahapAktif = 1);
+        _resetScrollPosition();
       }
     } else if (_tahapAktif == 1) {
       if (_validasiTahapDua()) {
@@ -419,6 +430,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
         if (_statusPerhitungan == StatusPerhitungan.berhasil &&
             _hasilEvaluasi != null) {
           setState(() => _tahapAktif = 2);
+          _resetScrollPosition();
           AppToast.showSuccess(
             context,
             'Kecukupan pakan berhasil dihitung!',
@@ -439,6 +451,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
       return;
     }
     setState(() => _tahapAktif--);
+    _resetScrollPosition();
   }
 
   bool get _hasEnteredData =>
@@ -643,6 +656,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
         ),
         Expanded(
           child: SingleChildScrollView(
+            controller: _scrollController,
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
             child: Column(
               children: [
@@ -721,6 +735,7 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
                   onTap: canTap
                       ? () {
                           setState(() => _tahapAktif = index);
+                          _resetScrollPosition();
                         }
                       : null,
                   borderRadius: BorderRadius.circular(8),
