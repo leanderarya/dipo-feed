@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import '../../core/constants/app_colors.dart';
 import '../home/home_screen.dart';
 
@@ -42,8 +41,15 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // DipoFeed Text
-            SvgPicture.asset('assets/images/logo.svg', height: 140),
+            // DipoFeed Logo
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Image.asset(
+                'assets/images/logo_dipofeed.jpeg',
+                height: 140,
+                fit: BoxFit.contain,
+              ),
+            ),
             const SizedBox(height: 40),
             // Loading Indicator
             const SizedBox(
