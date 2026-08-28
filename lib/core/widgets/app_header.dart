@@ -151,7 +151,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
 
   Widget _buildFeatureHeader(BuildContext context) {
     final bool canPop = Navigator.of(context).canPop();
-    final bool shouldShowBack = showBackButton ?? canPop;
+    final bool shouldShowBack = showBackButton ?? (onBackTap != null || canPop);
     final displayTitle = title.isNotEmpty ? title : (heading ?? '');
     final bool hasSubtitle = subtitle != null && subtitle!.isNotEmpty;
 

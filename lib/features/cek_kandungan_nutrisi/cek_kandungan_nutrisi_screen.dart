@@ -476,7 +476,7 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
                 ),
                 const SizedBox(height: 16),
                 StaggeredEntryCard(
-                  key: ValueKey<int>(_tahapAktif),
+                  key: ValueKey<String>('tahap_$_tahapAktif'),
                   delay: const Duration(milliseconds: 70),
                   child: _buildTahapAktif(hasil, evaluasiStandar),
                 ),

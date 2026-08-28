@@ -223,6 +223,72 @@ void main() {
         expect(hasil.totalGabungan.bkKg, greaterThan(hasil.totalHijauan.bkKg));
       },
     );
+
+    test(
+      'berhasil menghitung rekomendasi dengan lebih dari 4 hijauan dan konsentrat secara cepat',
+      () {
+        const kebutuhan = KebutuhanNutrienSapi(
+          kebutuhanBkKg: 12.0,
+          kebutuhanProteinKg: 1.5,
+          kebutuhanTdnKg: 8.0,
+          kebutuhanCaGram: 50,
+          kebutuhanPGram: 30,
+        );
+
+        final banyakHijauan = List.generate(
+          5,
+          (i) => BahanPakan(
+            id: 10 + i,
+            nama: 'Hijauan $i',
+            kategori: 'hijauan',
+            bk: 25.0 + i,
+            abu: 8.0,
+            lemak: 2.0,
+            serat: 30.0,
+            protein: 8.0 + i,
+            betn: 40.0,
+            tdn: 52.0 + i,
+            me: 0,
+            hargaDefault: 500,
+            isActive: true,
+          ),
+        );
+
+        final banyakKonsentrat = List.generate(
+          6,
+          (i) => BahanPakan(
+            id: 20 + i,
+            nama: 'Konsentrat $i',
+            kategori: 'konsentrat',
+            bk: 85.0,
+            abu: 6.0,
+            lemak: 3.5,
+            serat: 10.0,
+            protein: 14.0 + i,
+            betn: 55.0,
+            tdn: 75.0,
+            me: 0,
+            hargaDefault: 4000,
+            isActive: true,
+          ),
+        );
+
+        final stopwatch = Stopwatch()..start();
+        final hasil = PerhitunganRekomendasiPakan.hitung(
+          kebutuhan: kebutuhan,
+          bahanHijauan: banyakHijauan,
+          bahanKonsentrat: banyakKonsentrat,
+        );
+        stopwatch.stop();
+
+        // Eksekusi komputasi harus instan (< 100ms)
+        expect(stopwatch.elapsedMilliseconds, lessThan(150));
+        expect(hasil.rekomendasiHijauan, isNotEmpty);
+        expect(hasil.rekomendasiKonsentrat, isNotEmpty);
+        expect(hasil.totalGabungan.bkKg, greaterThan(0));
+        expect(hasil.isLkAman, isTrue);
+      },
+    );
   });
 }
 
