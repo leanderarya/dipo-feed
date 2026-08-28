@@ -549,6 +549,9 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.errorRed,
+            ),
             child: const Text('Keluar'),
           ),
         ],

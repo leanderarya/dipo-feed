@@ -368,6 +368,9 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.errorRed,
+            ),
             child: const Text('Keluar'),
           ),
         ],

@@ -477,6 +477,9 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.errorRed,
+            ),
             child: const Text('Keluar'),
           ),
         ],
