@@ -38,7 +38,7 @@ class QuickActionCard extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(20),
       child: Container(
-        padding: EdgeInsets.all(isHero ? 20 : 16),
+        padding: EdgeInsets.all(isHero ? 20 : 14),
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(20),
@@ -261,14 +261,14 @@ class QuickActionCard extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 12),
         // Title
         Text(
           title,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           style: GoogleFonts.inter(
-            fontSize: 15,
+            fontSize: 14.5,
             fontWeight: FontWeight.w700,
             color: AppColors.textPrimary,
             height: 1.2,
