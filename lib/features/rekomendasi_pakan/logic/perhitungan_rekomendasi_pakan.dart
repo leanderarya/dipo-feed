@@ -11,16 +11,6 @@ class PerhitunganRekomendasiPakan {
   static const _bobotP = 1.0;
   static const _batasLkPersen = 5.0;
   static const _penaltiBkKurangBerat = 25.0;
-  static const List<double> _multipliers = [
-    0,
-    0.4,
-    0.6,
-    0.8,
-    1.0,
-    1.2,
-    1.4,
-    1.6,
-  ];
 
   static HasilRekomendasiPakan hitung({
     required KebutuhanNutrienSapi kebutuhan,
@@ -134,13 +124,19 @@ class PerhitunganRekomendasiPakan {
         estimasiAsFed: estimasiAsFed,
         stepKg: stepKg,
         allowZero: !wajibPakaiSemuaBahan,
+        jumlahBahan: bahan.length,
       );
     }).toList();
 
     _HasilKombinasi? terbaikAman;
     _HasilKombinasi? terbaikFallback;
 
-    void telusuri(int index, List<double> pilihan) {
+    void telusuri(int index, List<double> pilihan, double currentBkKg) {
+      // Early pruning jika akumulasi BK sudah melampaui target kelompok secara berlebihan
+      if (currentBkKg > targetKelompok.bkKg * 1.75 && index < bahan.length) {
+        return;
+      }
+
       if (index == bahan.length) {
         final items = <RekomendasiPakanItem>[];
         var kontribusi = const KontribusiNutrien.zero();
@@ -179,25 +175,45 @@ class PerhitunganRekomendasiPakan {
         return;
       }
 
+      final itemBahan = bahan[index];
+      final itemBkPct = itemBahan.bk / 100;
       for (final kandidat in kandidatPerBahan[index]) {
-        telusuri(index + 1, [...pilihan, kandidat]);
+        final itemBkKg = kandidat * itemBkPct;
+        telusuri(index + 1, [...pilihan, kandidat], currentBkKg + itemBkKg);
       }
     }
 
-    telusuri(0, []);
+    telusuri(0, [], 0.0);
 
     if (terbaikAman != null) return terbaikAman!;
     return terbaikFallback!;
+  }
+
+  static List<double> _dapatkanMultipliers(int jumlahBahan, bool allowZero) {
+    List<double> basis;
+    if (jumlahBahan <= 4) {
+      basis = const [0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6];
+    } else if (jumlahBahan == 5) {
+      basis = const [0.6, 0.8, 1.0, 1.2, 1.4];
+    } else if (jumlahBahan == 6) {
+      basis = const [0.7, 0.9, 1.1, 1.3];
+    } else {
+      basis = const [0.8, 1.0, 1.2];
+    }
+
+    if (allowZero) {
+      return [0, ...basis];
+    }
+    return basis;
   }
 
   static List<double> _bangunKandidat({
     required double estimasiAsFed,
     required double stepKg,
     required bool allowZero,
+    required int jumlahBahan,
   }) {
-    final multipliers = allowZero
-        ? _multipliers
-        : _multipliers.where((item) => item > 0);
+    final multipliers = _dapatkanMultipliers(jumlahBahan, allowZero);
     final kandidat =
         multipliers
             .map((multiplier) {
