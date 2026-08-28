@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/widgets/animated_press_card.dart';
 import '../../core/widgets/staggered_entry_card.dart';
+import '../../core/widgets/partnership_branding_widget.dart';
+import '../../core/widgets/partnership_info_dialog.dart';
 import '../master_pakan/master_pakan_screen.dart';
 
 class PengaturanScreen extends StatelessWidget {
@@ -94,9 +96,9 @@ class PengaturanScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildSectionHeader('Informasi & Kemitraan'),
+                _buildSectionHeader('Kerja Sama & Kemitraan'),
                 const SizedBox(height: 10),
-                _buildInfoCard(),
+                _buildInfoCard(context),
               ],
             ),
           ),
@@ -231,49 +233,120 @@ class PengaturanScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoCard() {
+  Widget _buildInfoCard(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.primaryLight,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: AppColors.primaryBlue.withValues(alpha: 0.15),
-        ),
+        border: Border.all(color: AppColors.border),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x040F172A),
+            blurRadius: 10,
+            offset: Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Image.asset(
-                'assets/images/logo_undip.png',
-                height: 28,
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) =>
-                    const Icon(Icons.school, color: AppColors.primaryBlue),
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                alignment: Alignment.center,
+                child: const Icon(
+                  Icons.handshake_rounded,
+                  color: AppColors.primaryBlue,
+                  size: 20,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: Text(
-                  'FPP Universitas Diponegoro',
-                  style: GoogleFonts.inter(
-                    fontSize: 13.5,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.primaryBlue,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Kerja Sama Kemitraan',
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'UNDIP & ACIAR Australia',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 14),
+          // Logos Row
+          PartnershipBrandingWidget(
+            height: 32,
+            isCardStyle: false,
+            showInfoBadge: false,
+            onTap: () => PartnershipInfoDialog.show(context),
+          ),
+          const SizedBox(height: 12),
           Text(
-            'DipoFeed dikembangkan oleh Tim Riset Fakultas Peternakan dan Pertanian (FPP) Universitas Diponegoro bekerjasama dengan Australian Centre for International Agricultural Research (ACIAR).',
+            'DipoFeed dikembangkan oleh Tim Riset Fakultas Peternakan dan Pertanian (FPP) Universitas Diponegoro bekerja sama dengan Australian Centre for International Agricultural Research (ACIAR) Australia.',
             style: GoogleFonts.inter(
               fontSize: 12,
-              color: AppColors.textPrimary.withValues(alpha: 0.8),
+              color: AppColors.textSecondary,
               fontWeight: FontWeight.w400,
-              height: 1.4,
+              height: 1.45,
+            ),
+          ),
+          const SizedBox(height: 12),
+          InkWell(
+            onTap: () => PartnershipInfoDialog.show(context),
+            borderRadius: BorderRadius.circular(10),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.primaryBlue.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.info_outline_rounded,
+                    size: 14,
+                    color: AppColors.primaryBlue,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Lihat Detail Kolaborasi',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primaryBlue,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  const Icon(
+                    Icons.chevron_right_rounded,
+                    size: 16,
+                    color: AppColors.primaryBlue,
+                  ),
+                ],
+              ),
             ),
           ),
         ],
