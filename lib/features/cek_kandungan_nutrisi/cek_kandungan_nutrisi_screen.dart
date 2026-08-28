@@ -521,7 +521,7 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
   }
 
   Widget _buildProgressIndicator() {
-    final stepTitles = ['Komposisi Pakan', 'Hasil & Evaluasi'];
+    final stepTitles = ['Komposisi Pakan', 'Hasil Evaluasi'];
     final labels = [
       'Komposisi Campuran Pakan',
       'Hasil Analisis & Evaluasi Nutrien',
@@ -533,85 +533,104 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: List.generate(stepTitles.length, (index) {
-              final isCurrent = _tahapAktif == index;
-              final isCompleted = _tahapAktif > index;
-              final numberText = isCompleted ? '✓' : '${index + 1}';
+            children: List.generate(2, (index) {
+              final isCurrent = index == _tahapAktif;
+              final isCompleted = index < _tahapAktif;
+              final canTap = index < _tahapAktif;
 
               return Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    left: index == 0 ? 0 : 4,
-                    right: index == stepTitles.length - 1 ? 0 : 4,
-                  ),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isCurrent
-                          ? AppColors.primaryBlue.withValues(alpha: 0.1)
-                          : isCompleted
-                              ? const Color(0xFFE8F7EC)
-                              : Colors.grey.shade50,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: isCurrent
-                            ? AppColors.primaryBlue
-                            : isCompleted
-                                ? AppColors.secondaryGreen.withValues(alpha: 0.5)
-                                : Colors.grey.shade200,
-                        width: isCurrent ? 1.5 : 1.0,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                child: InkWell(
+                  onTap: canTap
+                      ? () {
+                          setState(() => _tahapAktif = index);
+                        }
+                      : null,
+                  borderRadius: BorderRadius.circular(8),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Column(
                       children: [
-                        Container(
-                          width: 22,
-                          height: 22,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
+                        Row(
+                          children: [
+                            if (index > 0)
+                              Expanded(
+                                child: Container(
+                                  height: 2.5,
+                                  color: index <= _tahapAktif
+                                      ? AppColors.secondaryGreen
+                                      : Colors.grey.shade300,
+                                ),
+                              ),
+                            Container(
+                              width: 28,
+                              height: 28,
+                              decoration: BoxDecoration(
+                                color: isCurrent
+                                    ? AppColors.primaryBlue
+                                    : isCompleted
+                                        ? AppColors.secondaryGreen
+                                        : Colors.grey.shade200,
+                                shape: BoxShape.circle,
+                                boxShadow: isCurrent
+                                    ? [
+                                        BoxShadow(
+                                          color: AppColors.primaryBlue
+                                              .withValues(alpha: 0.3),
+                                          blurRadius: 6,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ]
+                                    : null,
+                              ),
+                              child: Center(
+                                child: isCompleted
+                                    ? const Icon(
+                                        Icons.check,
+                                        size: 16,
+                                        color: Colors.white,
+                                      )
+                                    : Text(
+                                        '${index + 1}',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                          color: isCurrent
+                                              ? Colors.white
+                                              : Colors.grey.shade600,
+                                        ),
+                                      ),
+                              ),
+                            ),
+                            if (index < 1)
+                              Expanded(
+                                child: Container(
+                                  height: 2.5,
+                                  color: index < _tahapAktif
+                                      ? AppColors.secondaryGreen
+                                      : Colors.grey.shade300,
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          stepTitles[index],
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: isCurrent
+                                ? FontWeight.w800
+                                : isCompleted
+                                    ? FontWeight.w600
+                                    : FontWeight.normal,
                             color: isCurrent
                                 ? AppColors.primaryBlue
                                 : isCompleted
-                                    ? AppColors.secondaryGreen
-                                    : Colors.grey.shade300,
+                                    ? AppColors.textDark
+                                    : AppColors.textLight,
                           ),
-                          child: Text(
-                            numberText,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: isCurrent || isCompleted
-                                  ? Colors.white
-                                  : AppColors.textDark,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Flexible(
-                          child: Text(
-                            stepTitles[index],
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: isCurrent
-                                  ? FontWeight.w800
-                                  : isCompleted
-                                      ? FontWeight.w600
-                                      : FontWeight.normal,
-                              color: isCurrent
-                                  ? AppColors.primaryBlue
-                                  : isCompleted
-                                      ? AppColors.textDark
-                                      : AppColors.textLight,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
