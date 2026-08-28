@@ -104,7 +104,7 @@ class PengaturanScreen extends StatelessWidget {
                 icon: Icons.info_outline_rounded,
                 iconColor: AppColors.textSecondary,
                 title: 'Versi Aplikasi',
-                subtitle: 'DipoFeed v1.3.2 (Build 6)',
+                subtitle: 'DipoFeed v1.4.0 (Build 7)',
                 trailing: Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
