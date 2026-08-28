@@ -371,6 +371,13 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
       );
       return false;
     }
+    if (_warningLemakSusu != null) {
+      AppToast.showWarning(
+        context,
+        _warningLemakSusu!,
+        title: 'Peringatan Lemak Susu',
+      );
+    }
     return true;
   }
 
@@ -1091,6 +1098,15 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
                 suffix: '%',
                 hintText: 'Contoh: 3,5',
                 validator: _validasiLemakSusu,
+                onFieldSubmitted: (_) {
+                  if (_warningLemakSusu != null) {
+                    AppToast.showWarning(
+                      context,
+                      _warningLemakSusu!,
+                      title: 'Peringatan Lemak Susu',
+                    );
+                  }
+                },
               ),
               const SizedBox(height: 6),
               Row(

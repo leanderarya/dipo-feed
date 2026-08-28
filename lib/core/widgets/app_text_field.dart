@@ -9,6 +9,8 @@ class AppTextField extends StatelessWidget {
   final bool isInteger;
   final String? Function(String?)? validator;
   final void Function(String)? onChanged;
+  final VoidCallback? onEditingComplete;
+  final void Function(String)? onFieldSubmitted;
   final String? initialValue;
   final TextInputType? keyboardType;
   final String? hintText;
@@ -23,6 +25,8 @@ class AppTextField extends StatelessWidget {
     this.isInteger = false,
     this.validator,
     this.onChanged,
+    this.onEditingComplete,
+    this.onFieldSubmitted,
     this.initialValue,
     this.keyboardType,
     this.hintText,
@@ -47,6 +51,8 @@ class AppTextField extends StatelessWidget {
               keyboardType ??
               TextInputType.numberWithOptions(decimal: !isInteger),
           onChanged: onChanged,
+          onEditingComplete: onEditingComplete,
+          onFieldSubmitted: onFieldSubmitted,
           inputFormatters: inputFormatters,
           validator:
               validator ??
