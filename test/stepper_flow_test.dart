@@ -5,6 +5,7 @@ import 'package:dipo_feed/data/sources/bahan_pakan_local_source.dart';
 import 'package:dipo_feed/data/sources/bahan_pakan_repository.dart';
 import 'package:dipo_feed/core/widgets/app_sliver_header.dart';
 import 'package:dipo_feed/core/widgets/app_text_field.dart';
+import 'package:dipo_feed/features/cek_kandungan_nutrisi/cek_kandungan_nutrisi_screen.dart';
 import 'package:dipo_feed/features/cek_kecukupan_pakan/cek_kecukupan_pakan_screen.dart';
 import 'package:dipo_feed/features/rekomendasi_pakan/rekomendasi_pakan_screen.dart';
 import 'package:flutter/material.dart';
@@ -140,6 +141,27 @@ void main() {
       ),
     );
     await tester.pump(const Duration(seconds: 1));
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+  }
+
+  Future<void> pumpKandunganScreen(
+    WidgetTester tester, {
+    bool twoFeeds = true,
+  }) async {
+    tester.view.physicalSize = const Size(800, 1200);
+    tester.view.devicePixelRatio = 1;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: CekKandunganNutrisiScreen(
+          repository: createRepository(twoFeeds: twoFeeds),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
     addTearDown(() {
       tester.view.resetPhysicalSize();
       tester.view.resetDevicePixelRatio();
@@ -683,30 +705,56 @@ void main() {
     expect(find.text('Hasil Analisis Ransum Pakan'), findsOneWidget);
   });
 
-  testWidgets('recommendation opens detail evaluation bottom sheet modal', (
+  testWidgets('cek kandungan pakan starts at Komposisi Pakan stage', (
     tester,
   ) async {
-    await pumpRecommendationScreen(tester);
-    await tester.enterText(find.byType(TextFormField).first, '500');
-    await tapButton(tester, 'Lanjut');
-    await tapRecommendationFeed(tester, 'Tambah Hijauan', 'Rumput Gajah');
-    await tapRecommendationFeed(tester, 'Tambah Konsentrat', 'Dedak Padi');
-    await tapButton(tester, 'Lanjut');
+    await pumpKandunganScreen(tester);
 
-    expect(find.text('Hasil Analisis Ransum Pakan'), findsOneWidget);
-    expect(find.text('Lihat Detail Evaluasi Nutrisi'), findsOneWidget);
-    expect(find.text('Detail Evaluasi Nutrisi Ransum'), findsNothing);
+    expect(find.text('Cek Kandungan Pakan'), findsWidgets);
+    expect(find.text('Tahap 1 dari 2: Komposisi Campuran Pakan'), findsOneWidget);
+    expect(find.text('Belum ada bahan campuran.'), findsOneWidget);
+    expect(find.text('Hitung Kandungan Nutrisi'), findsOneWidget);
+  });
 
-    await tester.tap(find.text('Lihat Detail Evaluasi Nutrisi'));
+  testWidgets('cek kandungan pakan calculates and transitions to Stage 2', (
+    tester,
+  ) async {
+    await pumpKandunganScreen(tester);
+    await tapButton(tester, 'Susun Pakan');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Rumput Gajah').last);
     await tester.pumpAndSettle();
 
-    expect(find.text('Detail Evaluasi Nutrisi Ransum'), findsOneWidget);
-    expect(find.text('Total Hijauan + Konsentrat'), findsOneWidget);
-    expect(find.text('Evaluasi Terhadap Target'), findsOneWidget);
+    await tester.enterText(find.byType(TextField).first, '10');
+    await tester.pump();
 
-    await tester.tap(find.byKey(const ValueKey('close_detail_evaluasi_btn')));
+    await tapButton(tester, 'Hitung Kandungan Nutrisi');
     await tester.pumpAndSettle();
 
-    expect(find.text('Detail Evaluasi Nutrisi Ransum'), findsNothing);
+    expect(find.text('Tahap 2 dari 2: Hasil Analisis & Evaluasi Nutrien'), findsOneWidget);
+    expect(find.text('Kandungan Campuran Pakan'), findsOneWidget);
+    expect(find.text('Biaya Pakan'), findsOneWidget);
+  });
+
+  testWidgets('cek kandungan pakan stage two header back returns to stage one', (
+    tester,
+  ) async {
+    await pumpKandunganScreen(tester);
+    await tapButton(tester, 'Susun Pakan');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Rumput Gajah').last);
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField).first, '10');
+    await tester.pump();
+
+    await tapButton(tester, 'Hitung Kandungan Nutrisi');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Tahap 2 dari 2: Hasil Analisis & Evaluasi Nutrien'), findsOneWidget);
+
+    await tapHeaderBack(tester);
+    expect(find.text('Tahap 1 dari 2: Komposisi Campuran Pakan'), findsOneWidget);
+    expect(find.text('Rumput Gajah'), findsOneWidget);
   });
 }

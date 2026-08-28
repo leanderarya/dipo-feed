@@ -659,7 +659,10 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
 
   Widget _buildCompactHeader() {
     return Container(
-      color: AppColors.primaryBlue,
+      decoration: const BoxDecoration(
+        color: AppColors.primaryBlue,
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+      ),
       padding: EdgeInsets.only(
         top: MediaQuery.paddingOf(context).top,
         left: 8,

@@ -312,6 +312,8 @@ void main() {
 
     expect(find.text('Perhitungan berhasil'), findsOneWidget);
     await tester.pump(const Duration(seconds: 4));
+    await tapText(tester, 'Kembali');
+    await tester.pumpAndSettle();
     await tapText(tester, 'Tambah Bahan Pakan');
     await tester.pumpAndSettle();
     if (find.text('Rumput Odot').evaluate().isNotEmpty) {
@@ -331,6 +333,8 @@ void main() {
     await tapText(tester, 'Hitung');
 
     expect(find.text('Perhitungan berhasil'), findsOneWidget);
+    await tapText(tester, 'Kembali');
+    await tester.pumpAndSettle();
     final closeButton = find.byIcon(Icons.close).first;
     await tester.scrollUntilVisible(
       closeButton,
@@ -352,6 +356,8 @@ void main() {
     await tapText(tester, 'Hitung');
 
     expect(find.text('Perhitungan berhasil'), findsOneWidget);
+    await tapText(tester, 'Kembali');
+    await tester.pumpAndSettle();
     final cardHeader = find.text('Rumput Gajah').first;
     await tester.scrollUntilVisible(
       cardHeader,
@@ -373,6 +379,8 @@ void main() {
     await tapText(tester, 'Hitung');
 
     expect(find.text('Perhitungan berhasil'), findsOneWidget);
+    await tapText(tester, 'Kembali');
+    await tester.pumpAndSettle();
     await enterDraftValue(tester, 1, '600');
 
     expect(find.text('Belum dihitung'), findsOneWidget);
@@ -399,6 +407,8 @@ void main() {
     await tapText(tester, 'Hitung');
 
     expect(find.text('Perhitungan berhasil'), findsOneWidget);
+    await tapText(tester, 'Kembali');
+    await tester.pumpAndSettle();
     await enterDraftValue(tester, 0, '5');
     await tapText(tester, 'Gunakan untuk Evaluasi');
 
@@ -414,6 +424,8 @@ void main() {
     await tapText(tester, 'Hitung');
 
     expect(find.text('Perhitungan berhasil'), findsOneWidget);
+    await tapText(tester, 'Kembali');
+    await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextFormField).first, '5');
     await tester.pump();
 
