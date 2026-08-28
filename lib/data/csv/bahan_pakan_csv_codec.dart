@@ -37,10 +37,10 @@ class BahanPakanCsvRow {
 
 class BahanPakanCsvCodec {
   static const header =
-      'nama;kategori;BK;abu;lemak;serat;PK;BETN;TDN;ME;harga;Ca;P';
+      'nama;harga;kategori;BK;abu;lemak;serat;PK;BETN;TDN;ME;Ca;P';
 
   static const _fieldCount = 13;
-  static const _numericFields = <String>[
+  static const _nutrientFields = <String>[
     'BK',
     'abu',
     'lemak',
@@ -49,7 +49,6 @@ class BahanPakanCsvCodec {
     'BETN',
     'TDN',
     'ME',
-    'harga',
     'Ca',
     'P',
   ];
@@ -72,7 +71,8 @@ class BahanPakanCsvCodec {
         throw FormatException('Invalid CSV row at line ${index + 1}');
       }
       final nama = fields[0].trim();
-      final kategori = fields[1].trim().toLowerCase();
+      final hargaStr = fields[1].trim();
+      final kategori = fields[2].trim().toLowerCase();
       if (nama.isEmpty || kategori.isEmpty) {
         throw FormatException(
           'Name and category are required at line ${index + 1}',
@@ -87,14 +87,21 @@ class BahanPakanCsvCodec {
         throw FormatException('Invalid category at line ${index + 1}');
       }
 
+      final harga = IndonesianNumberFormatter.tryParse(hargaStr);
+      if (harga == null ||
+          !IndonesianNumberFormatter.isSupportedMagnitude(harga) ||
+          harga < 0) {
+        throw FormatException('Invalid harga at line ${index + 1}');
+      }
+
       final values = <double>[];
-      for (var fieldIndex = 2; fieldIndex < _fieldCount; fieldIndex++) {
+      for (var fieldIndex = 3; fieldIndex < _fieldCount; fieldIndex++) {
         final value = IndonesianNumberFormatter.tryParse(fields[fieldIndex]);
         if (value == null ||
             !IndonesianNumberFormatter.isSupportedMagnitude(value) ||
             value < 0) {
           throw FormatException(
-            'Invalid ${_numericFields[fieldIndex - 2]} at line ${index + 1}',
+            'Invalid ${_nutrientFields[fieldIndex - 3]} at line ${index + 1}',
           );
         }
         values.add(value.toDouble());
@@ -103,6 +110,7 @@ class BahanPakanCsvCodec {
       final row = BahanPakanCsvRow(
         nama: nama,
         kategori: kategori,
+        harga: harga.toDouble(),
         bk: values[0],
         abu: values[1],
         lemak: values[2],
@@ -111,9 +119,8 @@ class BahanPakanCsvCodec {
         betn: values[5],
         tdn: values[6],
         me: values[7],
-        harga: values[8],
-        ca: values[9],
-        p: values[10],
+        ca: values[8],
+        p: values[9],
       );
       rows.remove(row.namaNormalisasi);
       rows[row.namaNormalisasi] = row;
@@ -125,6 +132,7 @@ class BahanPakanCsvCodec {
     final lines = <String>[header];
     for (final bahan in bahanPakan) {
       final numericValues = <String, double>{
+        'harga': bahan.hargaDefault,
         'BK': bahan.bk,
         'abu': bahan.abu,
         'lemak': bahan.lemak,
@@ -133,7 +141,6 @@ class BahanPakanCsvCodec {
         'BETN': bahan.betn,
         'TDN': bahan.tdn,
         'ME': bahan.me,
-        'harga': bahan.hargaDefault,
         'Ca': bahan.ca,
         'P': bahan.p,
       };
@@ -160,6 +167,7 @@ class BahanPakanCsvCodec {
       lines.add(
         [
           _quote(nama),
+          IndonesianNumberFormatter.format(bahan.hargaDefault, decimals: 0),
           _quote(kategori),
           IndonesianNumberFormatter.format(bahan.bk, decimals: 2),
           IndonesianNumberFormatter.format(bahan.abu, decimals: 2),
@@ -169,7 +177,6 @@ class BahanPakanCsvCodec {
           IndonesianNumberFormatter.format(bahan.betn, decimals: 2),
           IndonesianNumberFormatter.format(bahan.tdn, decimals: 2),
           IndonesianNumberFormatter.format(bahan.me, decimals: 2),
-          IndonesianNumberFormatter.format(bahan.hargaDefault, decimals: 0),
           IndonesianNumberFormatter.format(bahan.ca, decimals: 2),
           IndonesianNumberFormatter.format(bahan.p, decimals: 2),
         ].join(';'),

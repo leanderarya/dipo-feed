@@ -9,7 +9,7 @@ Dokumen ini merangkum kontrak data, impor/ekspor, angka, perhitungan, status, da
 - CSV memakai pemisah field `;`, pemisah record baris baru, dan header persis:
 
   ```text
-  nama;kategori;BK;abu;lemak;serat;PK;BETN;TDN;ME;harga;Ca;P
+  nama;harga;kategori;BK;abu;lemak;serat;PK;BETN;TDN;ME;Ca;P
   ```
 
 - Field nutrisi `BK`, `abu`, `lemak`, `serat`, `PK`, `BETN`, `TDN`, `ME`, `Ca`, dan `P` diekspor dengan 2 angka desimal. `harga` diekspor dengan 0 angka desimal.
