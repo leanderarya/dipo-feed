@@ -7,6 +7,7 @@ import '../../core/models/status_perhitungan.dart';
 import '../../core/widgets/app_card.dart';
 import '../../core/widgets/app_header.dart';
 import '../../core/widgets/app_text_field.dart';
+import '../../core/widgets/staggered_entry_card.dart';
 import '../../data/models/bahan_pakan.dart';
 import '../../data/models/fisiologi_sapi.dart';
 import '../../data/models/kebutuhan_nutrien_sapi.dart';
@@ -846,18 +847,10 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
   Widget _buildStepperBody() {
     return Column(
       children: [
-        AnimatedSize(
-          duration: const Duration(milliseconds: 275),
-          curve: Curves.easeInOut,
-          alignment: Alignment.topCenter,
-          child: _tahapAktif == 0
-              ? AppHeader(
-                  title: 'Rekomendasi Pakan',
-                  subtitle:
-                      'Dapatkan rekomendasi pakan sesuai kebutuhan sapi.',
-                  onBackTap: _handleSystemBack,
-                )
-              : _buildCompactHeader(),
+        AppHeader(
+          title: 'Rekomendasi Pakan',
+          subtitle: 'Formulasi pakan ternak',
+          onBackTap: _tahapAktif == 0 ? _handleSystemBack : _kembaliTahap,
         ),
         Expanded(
           child: SingleChildScrollView(
@@ -866,54 +859,21 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildProgressIndicator(),
+                StaggeredEntryCard(
+                  delay: Duration.zero,
+                  child: _buildProgressIndicator(),
+                ),
                 const SizedBox(height: 16),
-                _buildTahapAktif(),
+                StaggeredEntryCard(
+                  key: ValueKey<int>(_tahapAktif),
+                  delay: const Duration(milliseconds: 70),
+                  child: _buildTahapAktif(),
+                ),
               ],
             ),
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildCompactHeader() {
-    return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.primaryBlue,
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
-      ),
-      padding: EdgeInsets.only(
-        top: MediaQuery.paddingOf(context).top,
-        left: 8,
-        right: 16,
-      ),
-      child: SizedBox(
-        height: 56,
-        child: Row(
-          children: [
-            IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.white),
-              onPressed: _kembaliTahap,
-            ),
-            const Expanded(
-              child: Text(
-                'Rekomendasi Pakan',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            Text(
-              '${_tahapAktif + 1}/3',
-              style: const TextStyle(color: Colors.white),
-            ),
-          ],
-        ),
-      ),
     );
   }
 

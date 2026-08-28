@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/widgets/partnership_branding_widget.dart';
 import '../../core/widgets/partnership_info_dialog.dart';
+import '../../core/widgets/staggered_entry_card.dart';
 import '../master_pakan/master_pakan_screen.dart';
 
 class PengaturanScreen extends StatelessWidget {
@@ -19,110 +20,150 @@ class PengaturanScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header title
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Pengaturan',
-                style: GoogleFonts.inter(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.textPrimary,
-                  letterSpacing: -0.4,
-                ),
+          // Header title (only when opened as a standalone page without AppHeader)
+          if (!isTab) ...[
+            StaggeredEntryCard(
+              delay: Duration.zero,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Pengaturan',
+                    style: GoogleFonts.inter(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.textPrimary,
+                      letterSpacing: -0.4,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Kelola data lokal dan informasi aplikasi DipoFeed',
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 4),
-              Text(
-                'Kelola data lokal dan informasi aplikasi DipoFeed',
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  color: AppColors.textSecondary,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
+            ),
+            const SizedBox(height: 20),
+          ],
 
           // Section 1: Basis Data
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildSectionHeader('Basis Data & Pakan'),
-              const SizedBox(height: 10),
-              _buildSettingsTile(
-                context,
-                icon: Icons.inventory_2_outlined,
-                iconColor: AppColors.primaryBlue,
-                title: 'Katalog Master Pakan',
-                subtitle: 'Tambah, ubah, atau impor/ekspor data pakan via CSV',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const MasterPakanScreen(),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 10),
-              _buildSettingsTile(
-                context,
-                icon: Icons.restore_rounded,
-                iconColor: AppColors.accentOrange,
-                title: 'Reset Data ke Standar',
-                subtitle:
-                    'Kembalikan komposisi nutrien bahan pakan ke nilai riset awal',
-                onTap: () {
-                  _showResetDialog(context);
-                },
-              ),
-            ],
+          StaggeredEntryCard(
+            delay: const Duration(milliseconds: 60),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSectionHeader('Basis Data & Pakan'),
+                const SizedBox(height: 10),
+                _buildSettingsTile(
+                  context,
+                  icon: Icons.inventory_2_outlined,
+                  iconColor: AppColors.primaryBlue,
+                  title: 'Katalog Master Pakan',
+                  subtitle: 'Tambah, ubah, atau impor/ekspor data pakan via CSV',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      PageRouteBuilder(
+                        pageBuilder: (context, animation, secondaryAnimation) =>
+                            const MasterPakanScreen(),
+                        transitionsBuilder:
+                            (context, animation, secondaryAnimation, child) {
+                          const begin = Offset(0.0, 0.05);
+                          const end = Offset.zero;
+                          const curve = Curves.easeOutCubic;
+
+                          var slideTween = Tween(
+                            begin: begin,
+                            end: end,
+                          ).chain(CurveTween(curve: curve));
+                          var fadeTween = Tween<double>(
+                            begin: 0.0,
+                            end: 1.0,
+                          ).chain(CurveTween(curve: curve));
+
+                          return FadeTransition(
+                            opacity: animation.drive(fadeTween),
+                            child: SlideTransition(
+                              position: animation.drive(slideTween),
+                              child: child,
+                            ),
+                          );
+                        },
+                        transitionDuration:
+                            const Duration(milliseconds: 500),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 10),
+                _buildSettingsTile(
+                  context,
+                  icon: Icons.restore_rounded,
+                  iconColor: AppColors.accentOrange,
+                  title: 'Reset Data ke Standar',
+                  subtitle:
+                      'Kembalikan komposisi nutrien bahan pakan ke nilai riset awal',
+                  onTap: () {
+                    _showResetDialog(context);
+                  },
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 24),
 
           // Section 2: Informasi & Kemitraan
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildSectionHeader('Kerja Sama & Kemitraan'),
-              const SizedBox(height: 10),
-              _buildInfoCard(context),
-            ],
+          StaggeredEntryCard(
+            delay: const Duration(milliseconds: 140),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSectionHeader('Kerja Sama & Kemitraan'),
+                const SizedBox(height: 10),
+                _buildInfoCard(context),
+              ],
+            ),
           ),
           const SizedBox(height: 24),
 
           // Section 3: Pengembang & Versi
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildSectionHeader('Tentang Aplikasi'),
-              const SizedBox(height: 10),
-              _buildSettingsTile(
-                context,
-                icon: Icons.info_outline_rounded,
-                iconColor: AppColors.textSecondary,
-                title: 'Versi Aplikasi',
-                subtitle: 'DipoFeed v1.3.2 (Build 6)',
-                trailing: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppColors.secondaryGreen.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    'Terbaru',
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.secondaryGreen,
+          StaggeredEntryCard(
+            delay: const Duration(milliseconds: 220),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSectionHeader('Tentang Aplikasi'),
+                const SizedBox(height: 10),
+                _buildSettingsTile(
+                  context,
+                  icon: Icons.info_outline_rounded,
+                  iconColor: AppColors.textSecondary,
+                  title: 'Versi Aplikasi',
+                  subtitle: 'DipoFeed v1.3.2 (Build 6)',
+                  trailing: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.secondaryGreen.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      'Terbaru',
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.secondaryGreen,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),

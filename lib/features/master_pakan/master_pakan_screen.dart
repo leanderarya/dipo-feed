@@ -353,7 +353,7 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
         slivers: [
           AppSliverHeader(
             title: 'Database Pakan',
-            subtitle: 'Database bahan pakan.',
+            subtitle: 'Katalog bahan pakan',
             actions: [
               if (_isProcessing)
                 const Padding(

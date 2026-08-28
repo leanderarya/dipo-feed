@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/constants/app_colors.dart';
-import '../../core/widgets/app_header.dart';
 import '../../core/widgets/app_bottom_nav.dart';
+import '../../core/widgets/app_header.dart';
 import '../../core/widgets/quick_action_card.dart';
+import '../../core/widgets/staggered_entry_card.dart';
 import '../cek_kandungan_nutrisi/cek_kandungan_nutrisi_screen.dart';
 import '../cek_kecukupan_pakan/cek_kecukupan_pakan_screen.dart';
 import '../master_pakan/master_pakan_screen.dart';
 import '../rekomendasi_pakan/rekomendasi_pakan_screen.dart';
+import '../panduan/panduan_screen.dart';
 import '../pengaturan/pengaturan_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -21,24 +24,6 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
   void _onTapBottomNav(int index) {
-    if (index == 1) {
-      // Show "Under Development" for Panduan
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text(
-            'Fitur Panduan segera hadir.',
-            style: TextStyle(fontWeight: FontWeight.w600),
-          ),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          backgroundColor: AppColors.primaryBlue,
-          duration: const Duration(seconds: 2),
-        ),
-      );
-      return;
-    }
-
     setState(() {
       _selectedIndex = index;
     });
@@ -105,12 +90,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.backgroundCream,
-      appBar: const AppHeader(isHome: true),
       body: Stack(
         children: [
-          _selectedIndex == 2
-              ? const PengaturanScreen(isTab: true)
-              : _buildHomeContent(),
+          _buildBody(context),
           Align(
             alignment: Alignment.bottomCenter,
             child: AppBottomNav(
@@ -123,42 +105,129 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildHomeContent() {
+  Widget _buildBody(BuildContext context) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 350),
+      switchInCurve: Curves.easeOutCubic,
+      switchOutCurve: Curves.easeInCubic,
+      layoutBuilder: (currentChild, previousChildren) {
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            ...previousChildren,
+            ?currentChild,
+          ],
+        );
+      },
+      transitionBuilder: (child, animation) {
+        final slideTween = Tween<Offset>(
+          begin: const Offset(0.0, 0.04),
+          end: Offset.zero,
+        ).chain(CurveTween(curve: Curves.easeOutCubic));
+
+        return FadeTransition(
+          opacity: animation,
+          child: SlideTransition(
+            position: animation.drive(slideTween),
+            child: child,
+          ),
+        );
+      },
+      child: KeyedSubtree(
+        key: ValueKey<int>(_selectedIndex),
+        child: _getActiveTabContent(context),
+      ),
+    );
+  }
+
+  Widget _getActiveTabContent(BuildContext context) {
+    switch (_selectedIndex) {
+      case 1:
+        return const Column(
+          children: [
+            AppHeader(
+              title: 'Panduan Nutrisi',
+              subtitle: 'Edukasi formulasi pakan',
+              showBackButton: false,
+            ),
+            Expanded(
+              child: PanduanScreen(isTab: true),
+            ),
+          ],
+        );
+      case 2:
+        return const Column(
+          children: [
+            AppHeader(
+              title: 'Pengaturan',
+              subtitle: 'Kelola data & aplikasi',
+              showBackButton: false,
+            ),
+            Expanded(
+              child: PengaturanScreen(isTab: true),
+            ),
+          ],
+        );
+      case 0:
+      default:
+        return _buildHomeContent(context);
+    }
+  }
+
+  Widget _buildHomeContent(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(
-        20,
-        16,
-        20,
-        110,
-      ), // Optimized padding for iOS and screen viewports
+      padding: const EdgeInsets.only(bottom: 110),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildHeroBanner(),
-          const SizedBox(height: 20), // Reduced from 32
-          const Text(
-            'Fitur Utama',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: AppColors.primaryBlue,
-              letterSpacing: -0.5,
+          StaggeredEntryCard(
+            delay: Duration.zero,
+            child: _buildTopDisplay(context),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 22, 20, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                StaggeredEntryCard(
+                  delay: const Duration(milliseconds: 60),
+                  child: const Text(
+                    'Fitur Utama',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primaryBlue,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _buildFeatureGrid(),
+              ],
             ),
           ),
-          const SizedBox(height: 12), // Reduced from 16
-          _buildFeatureGrid(),
         ],
       ),
     );
   }
 
-  Widget _buildHeroBanner() {
+  Widget _buildTopDisplay(BuildContext context) {
+    final topPadding = MediaQuery.of(context).padding.top;
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: AppColors.surfaceLow,
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+        color: AppColors.primaryBlue,
+        borderRadius: const BorderRadius.vertical(
+          bottom: Radius.circular(32),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.12),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       clipBehavior: Clip.antiAlias,
       child: Stack(
@@ -170,7 +239,7 @@ class _HomeScreenState extends State<HomeScreen> {
               fit: BoxFit.cover,
             ),
           ),
-          // Rich Overlay to ensure high readability of both dark blue title and white description text
+          // Multi-layer rich gradient overlay for crystal clear contrast
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
@@ -178,39 +247,153 @@ class _HomeScreenState extends State<HomeScreen> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    const Color(
-                      0xFF0F172A,
-                    ).withValues(alpha: 0.2), // Light at the top
-                    const Color(
-                      0xFF0F172A,
-                    ).withValues(alpha: 0.8), // Dark at the bottom
+                    const Color(0xFF071120).withValues(alpha: 0.82), // Dark header area for logos
+                    const Color(0xFF0F172A).withValues(alpha: 0.35), // Visible cow middle
+                    const Color(0xFF071120).withValues(alpha: 0.88), // High-contrast bottom for title
                   ],
+                  stops: const [0.0, 0.45, 1.0],
                 ),
               ),
             ),
           ),
-          // Content
+          // Content inside Top Display
           Padding(
-            padding: const EdgeInsets.all(20), // Reduced from 24
+            padding: EdgeInsets.fromLTRB(
+              20,
+              topPadding > 0 ? topPadding + 10 : 20,
+              20,
+              24,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Top Row: DipoFeed Brand Badge + Partner Logos
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // DipoFeed Brand Display
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.35),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.asset(
+                              'assets/images/logo_dipofeed.jpeg',
+                              height: 30,
+                              width: 30,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.baseline,
+                            textBaseline: TextBaseline.alphabetic,
+                            children: [
+                              Text(
+                                'DIPO',
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.white,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                              const SizedBox(width: 3),
+                              Text(
+                                'Feed',
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w900,
+                                  color: const Color(0xFF4ADE80), // Vibrant Green
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Partner Badges (UNDIP & ACIAR)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.92),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.15),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Image.asset(
+                            'assets/images/logo_undip.png',
+                            height: 22,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const SizedBox.shrink(),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            height: 16,
+                            width: 1,
+                            color: Colors.black.withValues(alpha: 0.15),
+                          ),
+                          const SizedBox(width: 8),
+                          Image.asset(
+                            'assets/images/logo_aciar.png',
+                            height: 20,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const SizedBox.shrink(),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 36),
+                // Research Pill
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 10,
-                    vertical: 6,
+                    vertical: 5,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(
-                      0xFF004AAD,
-                    ), // Solid Royal Blue for high visibility
+                    color: const Color(0xFF004AAD),
                     borderRadius: BorderRadius.circular(100),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.25),
+                      width: 1,
+                    ),
                   ),
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.eco_rounded, size: 14, color: Colors.white),
-                      SizedBox(width: 6),
+                      Icon(Icons.eco_rounded, size: 13, color: Colors.white),
+                      SizedBox(width: 5),
                       Text(
                         'RESEARCH-BASED',
                         style: TextStyle(
@@ -223,36 +406,19 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 12), // Reduced from 16
+                const SizedBox(height: 10),
+                // Main Tagline
                 const Text(
                   'Optimalkan Nutrisi\nTernak Anda',
                   style: TextStyle(
-                    fontSize: 28,
+                    fontSize: 26,
                     fontWeight: FontWeight.w900,
-                    color: Colors.white, // High-contrast premium white
-                    height: 1.1,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black38,
-                        blurRadius: 8,
-                        offset: Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 8), // Reduced from 12
-                const Text(
-                  'Standar riset terkini dari Fakultas Peternakan dan Pertanian (FPP) Universitas Diponegoro',
-                  style: TextStyle(
-                    fontSize: 13,
                     color: Colors.white,
-                    fontWeight:
-                        FontWeight.w600, // Thicker weight for premium contrast
-                    height: 1.4,
+                    height: 1.15,
                     shadows: [
                       Shadow(
-                        color: Colors.black45, // Darker shadow for solid pop
-                        blurRadius: 6,
+                        color: Colors.black54,
+                        blurRadius: 10,
                         offset: Offset(0, 2),
                       ),
                     ],
@@ -275,34 +441,46 @@ class _HomeScreenState extends State<HomeScreen> {
       mainAxisSpacing: 12,
       childAspectRatio: 0.88,
       children: [
-        QuickActionCard(
-          title: 'Cek Kecukupan Pakan',
-          description: 'Evaluasi kecukupan nutrien pada pemberian pakan ternak',
-          svgAsset: 'assets/icons/ic_evaluasi.svg',
-          baseColor: AppColors.secondaryGreen,
-          onTap: _bukaCekKecukupan,
+        StaggeredEntryCard(
+          delay: const Duration(milliseconds: 100),
+          child: QuickActionCard(
+            title: 'Cek Kecukupan Pakan',
+            description: 'Evaluasi kecukupan nutrien pada pemberian pakan ternak',
+            svgAsset: 'assets/icons/ic_evaluasi.svg',
+            baseColor: AppColors.secondaryGreen,
+            onTap: _bukaCekKecukupan,
+          ),
         ),
-        QuickActionCard(
-          title: 'Database Pakan',
-          description: 'Database bahan pakan',
-          svgAsset: 'assets/icons/ic_database.svg',
-          baseColor: AppColors.primaryBlue,
-          onTap: _bukaMasterPakan,
+        StaggeredEntryCard(
+          delay: const Duration(milliseconds: 160),
+          child: QuickActionCard(
+            title: 'Database Pakan',
+            description: 'Database bahan pakan',
+            svgAsset: 'assets/icons/ic_database.svg',
+            baseColor: AppColors.primaryBlue,
+            onTap: _bukaMasterPakan,
+          ),
         ),
-        QuickActionCard(
-          title: 'Cek Kandungan Pakan',
-          description: 'Cek kandungan nutrisi pada pakan',
-          icon: Icons.analytics_rounded,
-          baseColor: AppColors.expertPurple,
-          onTap: _bukaCekKandungan,
+        StaggeredEntryCard(
+          delay: const Duration(milliseconds: 220),
+          child: QuickActionCard(
+            title: 'Cek Kandungan Pakan',
+            description: 'Cek kandungan nutrisi pada pakan',
+            icon: Icons.analytics_rounded,
+            baseColor: AppColors.expertPurple,
+            onTap: _bukaCekKandungan,
+          ),
         ),
-        QuickActionCard(
-          title: 'Rekomendasi Pakan',
-          description:
-              'Rekomendasi pemberian pakan untuk mencukupi kebutuhan nutrisi ternak',
-          svgAsset: 'assets/icons/ic_rekomendasi.svg',
-          baseColor: AppColors.accentOrange,
-          onTap: _bukaFormulasi,
+        StaggeredEntryCard(
+          delay: const Duration(milliseconds: 280),
+          child: QuickActionCard(
+            title: 'Rekomendasi Pakan',
+            description:
+                'Rekomendasi pemberian pakan untuk mencukupi kebutuhan nutrisi ternak',
+            svgAsset: 'assets/icons/ic_rekomendasi.svg',
+            baseColor: AppColors.accentOrange,
+            onTap: _bukaFormulasi,
+          ),
         ),
       ],
     );
