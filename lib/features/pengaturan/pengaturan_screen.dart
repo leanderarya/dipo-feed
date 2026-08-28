@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../core/constants/app_colors.dart';
 import '../../core/widgets/partnership_branding_widget.dart';
@@ -99,33 +100,55 @@ class PengaturanScreen extends StatelessWidget {
             children: [
               _buildSectionHeader('Tentang Aplikasi'),
               const SizedBox(height: 10),
-              _buildSettingsTile(
-                context,
-                icon: Icons.info_outline_rounded,
-                iconColor: AppColors.textSecondary,
-                title: 'Versi Aplikasi',
-                subtitle: 'DipoFeed v1.4.0 (Build 7)',
-                trailing: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppColors.secondaryGreen.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    'Terbaru',
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.secondaryGreen,
-                    ),
-                  ),
-                ),
-              ),
+              _buildVersionTile(context),
             ],
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildVersionTile(BuildContext context) {
+    return FutureBuilder<PackageInfo>(
+      future: PackageInfo.fromPlatform(),
+      builder: (context, snapshot) {
+        String versionText = 'DipoFeed v1.4.0 (Build 7)';
+        bool isBeta = false;
+
+        if (snapshot.hasData && snapshot.data != null) {
+          final info = snapshot.data!;
+          final v = info.version.isNotEmpty ? info.version : '1.4.0';
+          final b = info.buildNumber.isNotEmpty ? info.buildNumber : '7';
+          versionText = 'DipoFeed v$v (Build $b)';
+          isBeta = v.contains('beta') || v.contains('dev');
+        }
+
+        final badgeColor =
+            isBeta ? AppColors.primaryBlue : AppColors.secondaryGreen;
+
+        return _buildSettingsTile(
+          context,
+          icon: Icons.info_outline_rounded,
+          iconColor: AppColors.textSecondary,
+          title: 'Versi Aplikasi',
+          subtitle: versionText,
+          trailing: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: badgeColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              isBeta ? 'Beta' : 'Terbaru',
+              style: GoogleFonts.inter(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: badgeColor,
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
