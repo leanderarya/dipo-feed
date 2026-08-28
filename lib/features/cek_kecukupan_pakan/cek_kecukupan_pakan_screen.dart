@@ -553,8 +553,8 @@ class _CekKecukupanPakanScreenState extends State<CekKecukupanPakanScreen> {
     if (_fisiologi != FisiologiSapi.laktasi) return null;
     final val = _parseDouble(_lemakSusuController.text);
     if (val <= 0) return null;
-    if (val < 2.5) return 'Kadar lemak susu terlalu rendah (< 2,5%)';
-    if (val > 4.0) return 'Kadar lemak susu melebihi standar (> 4,0%)';
+    if (val < 2.5) return 'Lemak terlalu rendah (< 2,5%)';
+    if (val > 4.0) return 'Lemak terlalu tinggi (> 4,0%)';
     return null;
   }
 
