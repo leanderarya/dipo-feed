@@ -219,7 +219,7 @@ void main() {
 
       expect(
         BahanPakanCsvCodec.serialize([bahan]),
-        '$header\nRumput Gajah;4.500;hijauan;29,24;17,90;1,27;31,21;9,35;40,27;54,58;8,24;0,00;0,00\n',
+        '$header\nRumput Gajah;4500;hijauan;29,24;17,90;1,27;31,21;9,35;40,27;54,58;8,24;0,00;0,00\n',
       );
     });
 

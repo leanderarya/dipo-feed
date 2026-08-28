@@ -167,7 +167,7 @@ class BahanPakanCsvCodec {
       lines.add(
         [
           _quote(nama),
-          IndonesianNumberFormatter.format(bahan.hargaDefault, decimals: 0),
+          bahan.hargaDefault.toInt().toString(), // plain integer, no thousands dot
           _quote(kategori),
           IndonesianNumberFormatter.format(bahan.bk, decimals: 2),
           IndonesianNumberFormatter.format(bahan.abu, decimals: 2),
