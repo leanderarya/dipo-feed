@@ -245,7 +245,9 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextFormField).first, '400');
-    await tester.tap(find.widgetWithText(FilledButton, 'Lanjut'));
+    await tester.tap(
+      find.widgetWithText(FilledButton, 'Lanjut ke Pilihan Pakan'),
+    );
     await tester.pumpAndSettle();
 
     await tester.scrollUntilVisible(
@@ -272,7 +274,7 @@ void main() {
     await tester.tap(find.text('Konsentrat Valid'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.widgetWithText(FilledButton, 'Lanjut'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Hitung Rekomendasi'));
     await tester.pumpAndSettle();
 
     expect(find.text('Gagal menghitung'), findsOneWidget);
@@ -308,7 +310,9 @@ void main() {
     );
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextFormField).first, '400');
-    await tester.tap(find.widgetWithText(FilledButton, 'Lanjut'));
+    await tester.tap(
+      find.widgetWithText(FilledButton, 'Lanjut ke Pilihan Pakan'),
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(OutlinedButton, 'Tambah Hijauan'));
     await tester.pumpAndSettle();

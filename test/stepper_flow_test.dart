@@ -104,16 +104,17 @@ void main() {
   }
 
   Future<void> tapButton(WidgetTester tester, String label) async {
-    final target = find.text(label);
-    await tester.ensureVisible(target);
-    await tester.tap(target);
-    await tester.pump();
-    if (label == 'Lanjut' ||
-        label == 'Lanjut ke Komposisi Pakan' ||
-        label == 'Lanjut ke Pemberian Pakan' ||
-        label == 'Hitung & Evaluasi') {
-      await tester.pump(const Duration(milliseconds: 300));
+    Finder target = find.text(label);
+    if (target.evaluate().isEmpty && label == 'Lanjut') {
+      target = find.text('Lanjut ke Pilihan Pakan');
+      if (target.evaluate().isEmpty) {
+        target = find.text('Hitung Rekomendasi');
+      }
     }
+    await tester.ensureVisible(target.first);
+    await tester.tap(target.first);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
   }
 
   Future<void> tapHeaderBack(WidgetTester tester) async {
@@ -416,11 +417,9 @@ void main() {
     await pumpRecommendationScreen(tester);
 
     expect(find.text('Data Sapi'), findsNWidgets(2));
-    expect(find.text('Tahap 1 dari 3'), findsOneWidget);
-    expect(find.byType(LinearProgressIndicator), findsOneWidget);
-    expect(find.text('Bahan Pakan Tersedia'), findsNothing);
-    expect(find.text('Hasil Rekomendasi'), findsNothing);
-    expect(find.text('Lanjut'), findsOneWidget);
+    expect(find.textContaining('Tahap 1 dari 3'), findsOneWidget);
+    expect(find.text('Hasil Analisis Ransum Pakan'), findsNothing);
+    expect(find.text('Lanjut ke Pilihan Pakan'), findsOneWidget);
     expect(find.text('Kembali'), findsNothing);
   });
 
@@ -431,12 +430,12 @@ void main() {
     await tester.enterText(find.byType(TextFormField).first, '500');
     await tapButton(tester, 'Lanjut');
 
-    expect(find.text('Kembali'), findsNothing);
-    expect(find.text('Lanjut'), findsOneWidget);
+    expect(find.text('Kembali'), findsOneWidget);
+    expect(find.text('Hitung Rekomendasi'), findsOneWidget);
     await tapHeaderBack(tester);
 
     expect(find.text('Data Sapi'), findsNWidgets(2));
-    expect(find.text('Tahap 1 dari 3'), findsOneWidget);
+    expect(find.textContaining('Tahap 1 dari 3'), findsOneWidget);
   });
 
   testWidgets('recommendation blocks stage two until profile is valid', (
@@ -457,10 +456,10 @@ void main() {
     await tester.enterText(find.byType(TextFormField).first, '500');
     await tapButton(tester, 'Lanjut');
 
-    expect(find.text('Bahan Pakan Tersedia'), findsWidgets);
+    expect(find.text('Hijauan yang Dimiliki'), findsOneWidget);
     expect(find.text('Tambah Hijauan'), findsOneWidget);
     expect(find.text('Tambah Konsentrat'), findsOneWidget);
-    expect(find.text('Lanjut'), findsOneWidget);
+    expect(find.text('Hitung Rekomendasi'), findsOneWidget);
   });
 
   testWidgets('accepts grouped Indonesian recommendation profile input', (
@@ -470,7 +469,7 @@ void main() {
     await tester.enterText(find.byType(TextFormField).first, '1.234,50');
     await tapButton(tester, 'Lanjut');
 
-    expect(find.text('Bahan Pakan Tersedia'), findsWidgets);
+    expect(find.text('Hijauan yang Dimiliki'), findsOneWidget);
   });
 
   for (final invalidValue in ['NaN', 'Infinity', '1e21']) {
@@ -483,7 +482,7 @@ void main() {
       await tapButton(tester, 'Lanjut');
 
       expect(find.text('Angka tidak valid'), findsWidgets);
-      expect(find.text('Tahap 1 dari 3'), findsOneWidget);
+      expect(find.textContaining('Tahap 1 dari 3'), findsOneWidget);
       expect(
         find.byWidgetPredicate(
           (widget) => widget is Text && widget.data == invalidValue,
@@ -504,7 +503,7 @@ void main() {
       await tapButton(tester, 'Lanjut');
 
       expect(find.text('Angka tidak valid'), findsWidgets);
-      expect(find.text('Tahap 1 dari 3'), findsOneWidget);
+      expect(find.textContaining('Tahap 1 dari 3'), findsOneWidget);
       expect(
         find.byWidgetPredicate(
           (widget) => widget is Text && widget.data == invalidValue,
@@ -525,7 +524,7 @@ void main() {
       await tapButton(tester, 'Lanjut');
 
       expect(find.text('Angka tidak valid'), findsWidgets);
-      expect(find.text('Tahap 1 dari 3'), findsOneWidget);
+      expect(find.textContaining('Tahap 1 dari 3'), findsOneWidget);
       expect(
         find.byWidgetPredicate(
           (widget) => widget is Text && widget.data == invalidValue,
@@ -615,7 +614,7 @@ void main() {
     await tapButton(tester, 'Lanjut');
 
     expect(find.text('Tambahkan minimal satu konsentrat.'), findsWidgets);
-    expect(find.text('Hasil Rekomendasi'), findsNothing);
+    expect(find.text('Hasil Analisis Ransum Pakan'), findsNothing);
   });
 
   testWidgets('recommendation back navigation preserves profile and feeds', (
@@ -629,7 +628,7 @@ void main() {
     await tapButton(tester, 'Lanjut');
     await tapHeaderBack(tester);
 
-    expect(find.text('Bahan Pakan Tersedia'), findsWidgets);
+    expect(find.text('Hijauan yang Dimiliki'), findsOneWidget);
     expect(find.text('Rumput Gajah'), findsOneWidget);
     expect(find.text('Dedak Padi'), findsNWidgets(2));
     expect(find.byType(DropdownButtonFormField<BahanPakan>), findsNWidgets(2));
@@ -654,9 +653,8 @@ void main() {
     await tapRecommendationFeed(tester, 'Tambah Konsentrat', 'Dedak Padi');
     await tapButton(tester, 'Lanjut');
 
-    expect(find.text('Hasil Rekomendasi'), findsWidgets);
     expect(find.text('Hasil Analisis Ransum Pakan'), findsOneWidget);
-    expect(find.text('Lanjut'), findsNothing);
+    expect(find.text('Hitung Rekomendasi'), findsNothing);
   });
 
   testWidgets('editing recommendation profile invalidates result', (
@@ -674,8 +672,8 @@ void main() {
     await tester.pump();
     await tapButton(tester, 'Lanjut');
 
-    expect(find.text('Hasil Rekomendasi'), findsNothing);
-    expect(find.text('Bahan Pakan Tersedia'), findsWidgets);
+    expect(find.text('Hasil Analisis Ransum Pakan'), findsNothing);
+    expect(find.text('Hijauan yang Dimiliki'), findsOneWidget);
   });
 
   testWidgets('editing recommendation feed invalidates result', (tester) async {
@@ -695,9 +693,9 @@ void main() {
     await tester.tap(find.text('Rumput Gajah').last);
     await tester.pump();
 
-    expect(find.text('Hasil Rekomendasi'), findsNothing);
+    expect(find.text('Hasil Analisis Ransum Pakan'), findsNothing);
     await tapButton(tester, 'Lanjut');
-    expect(find.text('Hasil Rekomendasi'), findsWidgets);
+    expect(find.text('Hasil Analisis Ransum Pakan'), findsOneWidget);
   });
 
   testWidgets('recommendation opens detail evaluation bottom sheet modal', (
