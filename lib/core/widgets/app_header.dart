@@ -258,5 +258,19 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
   }
 
   @override
-  Size get preferredSize => const Size.fromHeight(60);
+  Size get preferredSize {
+    if (isHome) return const Size.fromHeight(62);
+
+    double height = 56;
+
+    if (heading != null || subtitle != null) {
+      height += 128;
+    }
+
+    if ((subtitle?.length ?? 0) > 80) {
+      height += 24;
+    }
+
+    return Size.fromHeight(height);
+  }
 }

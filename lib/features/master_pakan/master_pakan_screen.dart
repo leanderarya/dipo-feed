@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../core/constants/app_colors.dart';
@@ -12,7 +11,6 @@ import '../../core/utils/indonesian_number_formatter.dart';
 import '../../core/widgets/app_card.dart';
 import '../../core/widgets/app_text_field.dart';
 import '../../core/widgets/app_sliver_header.dart';
-import '../../core/widgets/staggered_entry_card.dart';
 import '../../data/csv/bahan_pakan_csv_codec.dart';
 import '../../data/csv/hasil_import_bahan_pakan.dart';
 import '../../data/models/bahan_pakan.dart';
@@ -281,6 +279,7 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
 
   Future<void> _ubahStatusAktif(BahanPakan bahan, bool isActive) async {
     if (_isLoading || _isProcessing) return;
+    setState(() => _isProcessing = true);
 
     try {
       await _repository.updateBahan(
@@ -292,6 +291,8 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
     } catch (error) {
       if (!mounted) return;
       AppToast.showError(context, 'Gagal mengubah status bahan pakan: $error');
+    } finally {
+      if (mounted) setState(() => _isProcessing = false);
     }
   }
 
@@ -357,23 +358,25 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
               if (_isProcessing)
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 8),
-                  child: Icon(Icons.hourglass_top, color: AppColors.textPrimary),
+                  child: Icon(
+                    Icons.hourglass_top_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
                 ),
               PopupMenuButton<String>(
-                tooltip: 'Menu Aksi',
+                key: _exportButtonKey,
                 icon: const Icon(
                   Icons.more_vert_rounded,
-                  color: AppColors.textPrimary,
+                  color: Colors.white,
                 ),
+                tooltip: 'Menu Opsi',
+                enabled: !_isLoading && !_isProcessing,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
-                  side: const BorderSide(color: AppColors.border),
                 ),
-                color: AppColors.surface,
-                elevation: 4,
-                enabled: !_isLoading && !_isProcessing,
-                onSelected: (aksi) {
-                  switch (aksi) {
+                onSelected: (value) {
+                  switch (value) {
                     case 'impor':
                       _imporCsv();
                       break;
@@ -386,66 +389,69 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
                   }
                 },
                 itemBuilder: (context) => [
-                  PopupMenuItem(
+                  const PopupMenuItem(
                     value: 'impor',
                     child: Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.file_upload_outlined,
-                          size: 20,
+                          size: 18,
                           color: AppColors.primaryBlue,
                         ),
-                        const SizedBox(width: 12),
-                        Text(
-                          'Impor CSV',
-                          style: GoogleFonts.inter(
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Impor CSV',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
                   if (defaultTargetPlatform != TargetPlatform.linux)
-                    PopupMenuItem(
-                      key: _exportButtonKey,
+                    const PopupMenuItem(
                       value: 'ekspor',
                       child: Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.file_download_outlined,
-                            size: 20,
+                            size: 18,
                             color: AppColors.secondaryGreen,
                           ),
-                          const SizedBox(width: 12),
-                          Text(
-                            'Ekspor CSV',
-                            style: GoogleFonts.inter(
-                              fontSize: 13.5,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textPrimary,
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Ekspor CSV',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
-                  PopupMenuItem(
+                  const PopupMenuDivider(),
+                  const PopupMenuItem(
                     value: 'reset',
                     child: Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.refresh_rounded,
-                          size: 20,
+                          size: 18,
                           color: AppColors.accentOrange,
                         ),
-                        const SizedBox(width: 12),
-                        Text(
-                          'Reset Data Awal',
-                          style: GoogleFonts.inter(
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Reset ke Data Awal',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ],
@@ -474,26 +480,15 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
                   const SizedBox(height: 24),
-                  StaggeredEntryCard(
-                    delay: Duration.zero,
-                    child: _buildRingkasan(
-                      totalSemua: semuaData.length,
-                      totalAktif: totalAktif,
-                    ),
+                  _buildRingkasan(
+                    totalSemua: semuaData.length,
+                    totalAktif: totalAktif,
                   ),
                   const SizedBox(height: 16),
                   if (semuaData.isEmpty)
                     _buildEmptyState()
                   else
-                    ...semuaData.asMap().entries.map((entry) {
-                      final index = entry.key;
-                      final bahan = entry.value;
-                      return StaggeredEntryCard(
-                        key: ValueKey('staggered_bahan_${bahan.id}'),
-                        delay: Duration(milliseconds: (index.clamp(0, 10)) * 70),
-                        child: _buildBahanCard(bahan),
-                      );
-                    }),
+                    ...semuaData.map(_buildBahanCard),
                 ]),
               ),
             ),
@@ -585,81 +580,45 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
   }
 
   Widget _buildBahanCard(BahanPakan bahan) {
-    return AnimatedOpacity(
-      duration: const Duration(milliseconds: 250),
-      opacity: bahan.isActive ? 1.0 : 0.55,
-      child: AppCard(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Flexible(
-                            child: Text(
-                              bahan.nama,
-                              style: GoogleFonts.inter(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w800,
-                                color: bahan.isActive
-                                    ? AppColors.textPrimary
-                                    : AppColors.textSecondary,
-                                letterSpacing: -0.3,
-                              ),
-                            ),
-                          ),
-                          if (!bahan.isActive) ...[
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.border,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                'Nonaktif',
-                                style: GoogleFonts.inter(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ],
+    return AppCard(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      bahan.nama,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        bahan.kategori.toUpperCase(),
-                        style: GoogleFonts.inter(
-                          fontSize: 10.5,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textSecondary,
-                          letterSpacing: 0.8,
-                        ),
+                    ),
+                    Text(
+                      bahan.kategori.toUpperCase(),
+                      style: const TextStyle(
+                        fontSize: 10,
+                        color: AppColors.textGrey,
+                        letterSpacing: 1,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                Switch(
-                  value: bahan.isActive,
-                  activeThumbColor: AppColors.secondaryGreen,
-                  onChanged: _isLoading || _isProcessing
-                      ? null
-                      : (value) => _ubahStatusAktif(bahan, value),
-                ),
-              ],
-            ),
+              ),
+              Switch(
+                value: bahan.isActive,
+                activeThumbColor: AppColors.secondaryGreen,
+                onChanged: _isLoading || _isProcessing
+                    ? null
+                    : (value) => _ubahStatusAktif(bahan, value),
+              ),
+            ],
+          ),
           const Divider(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -711,61 +670,22 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
           ),
         ],
       ),
-    ),
-  );
-}
+    );
+  }
 
   Widget _buildMetric(String label, String value) {
-    final Color bgColor;
-    final Color textColor;
-
-    switch (label) {
-      case 'BK':
-        bgColor = AppColors.secondaryLight;
-        textColor = AppColors.secondaryGreen;
-        break;
-      case 'PK':
-        bgColor = AppColors.primaryLight;
-        textColor = AppColors.primaryBlue;
-        break;
-      case 'TDN':
-        bgColor = AppColors.accentLight;
-        textColor = AppColors.accentOrange;
-        break;
-      default:
-        bgColor = AppColors.surfaceLow;
-        textColor = AppColors.textDark;
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: textColor.withValues(alpha: 0.15), width: 0.8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 9.5,
-              fontWeight: FontWeight.w600,
-              color: textColor.withValues(alpha: 0.8),
-            ),
-          ),
-          const SizedBox(height: 1),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 12.5,
-              fontWeight: FontWeight.w800,
-              color: textColor,
-            ),
-          ),
-        ],
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontSize: 10, color: AppColors.textGrey),
+        ),
+        Text(
+          value,
+          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+        ),
+      ],
     );
   }
 }

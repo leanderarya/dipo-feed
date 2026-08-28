@@ -53,7 +53,7 @@ class PartnershipInfoDialog extends StatelessWidget {
                     children: [
                       // Partner Logos Display
                       const PartnershipBrandingWidget(
-                        height: 36,
+                        height: 44,
                         isCardStyle: true,
                         showInfoBadge: false,
                       ),

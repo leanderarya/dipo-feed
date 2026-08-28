@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/app_toast.dart';
+import '../../../core/utils/indonesian_number_formatter.dart';
 import '../../../data/models/bahan_pakan.dart';
 
 class SearchableBahanPakanDialog extends StatefulWidget {
@@ -174,7 +175,7 @@ class _SearchableBahanPakanDialogState
                           ),
                         ),
                         subtitle: Text(
-                          'Kategori: ${bahan.kategori} • BK: ${bahan.bk}%',
+                          'Kategori: ${bahan.kategori} • BK: ${IndonesianNumberFormatter.isSupportedMagnitude(bahan.bk) ? '${IndonesianNumberFormatter.format(bahan.bk, decimals: 1)}%' : '-'}',
                           style: const TextStyle(fontSize: 12),
                         ),
                         trailing: isSelectedCurrent

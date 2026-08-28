@@ -8,7 +8,6 @@ import '../../core/utils/indonesian_number_formatter.dart';
 import '../../core/widgets/app_card.dart';
 import '../../core/widgets/app_sliver_header.dart';
 import '../../core/widgets/app_text_field.dart';
-import '../../core/widgets/staggered_entry_card.dart';
 import '../../data/models/bahan_pakan.dart';
 import '../../data/models/campuran_pakan_item.dart';
 import '../../data/models/fisiologi_sapi.dart';
@@ -43,10 +42,11 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
   FisiologiSapi _fisiologi = FisiologiSapi.laktasi;
   HasilPerhitunganNutrisi? _hasilTerhitung;
   StatusPerhitungan _statusPerhitungan = StatusPerhitungan.belumDihitung;
-  String? _pesanPerhitungan;
+  int _tahapAktif = 0;
   final Set<CampuranPakanItem> _inputJumlahTidakValid = {};
   final Set<CampuranPakanItem> _inputHargaTidakValid = {};
 
+  final ScrollController _scrollController = ScrollController();
   bool _isLoading = true;
   String? _errorMessage;
 
@@ -55,6 +55,20 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
     super.initState();
     _repository = widget.repository ?? BahanPakanRepository();
     _muatBahanPakan();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _resetScrollPosition() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(0.0);
+      }
+    });
   }
 
   Future<void> _muatBahanPakan() async {
@@ -204,8 +218,8 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
       item.jumlahKg = jumlah ?? double.nan;
       if (input.isNotEmpty &&
           (jumlah == null ||
-            jumlah.isNegative ||
-            !IndonesianNumberFormatter.isSupportedMagnitude(jumlah))) {
+              jumlah.isNegative ||
+              !IndonesianNumberFormatter.isSupportedMagnitude(jumlah))) {
         _inputJumlahTidakValid.add(item);
       } else {
         _inputJumlahTidakValid.remove(item);
@@ -224,8 +238,8 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
       item.hargaPerKg = parsed?.toDouble() ?? double.nan;
       if (input.isNotEmpty &&
           (parsed == null ||
-            parsed.isNegative ||
-            !IndonesianNumberFormatter.isSupportedMagnitude(parsed))) {
+              parsed.isNegative ||
+              !IndonesianNumberFormatter.isSupportedMagnitude(parsed))) {
         _inputHargaTidakValid.add(item);
       } else {
         _inputHargaTidakValid.remove(item);
@@ -237,7 +251,9 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
   void _invalidasiPerhitungan() {
     _hasilTerhitung = null;
     _statusPerhitungan = StatusPerhitungan.belumDihitung;
-    _pesanPerhitungan = null;
+    if (_tahapAktif > 0) {
+      _tahapAktif = 0;
+    }
   }
 
   void _hitungManual() {
@@ -275,8 +291,9 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
       setState(() {
         _hasilTerhitung = hasil;
         _statusPerhitungan = StatusPerhitungan.berhasil;
-        _pesanPerhitungan = null;
+        _tahapAktif = 1;
       });
+      _resetScrollPosition();
       if (mounted) {
         AppToast.showSuccess(
           context,
@@ -291,7 +308,6 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
       setState(() {
         _hasilTerhitung = null;
         _statusPerhitungan = StatusPerhitungan.gagal;
-        _pesanPerhitungan = pesan;
       });
       if (mounted) {
         AppToast.showError(context, pesan, title: 'Perhitungan Gagal');
@@ -318,6 +334,49 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
       (value) =>
           IndonesianNumberFormatter.isSupportedMagnitude(value) && value >= 0,
     );
+  }
+
+  void _kembaliTahap() {
+    if (_tahapAktif == 0) {
+      Navigator.of(context).pop();
+      return;
+    }
+    setState(() => _tahapAktif--);
+    _resetScrollPosition();
+  }
+
+  bool get _hasEnteredData => _campuran.isNotEmpty;
+
+  Future<void> _handleSystemBack() async {
+    if (_tahapAktif > 0) {
+      _kembaliTahap();
+      return;
+    }
+    if (!_hasEnteredData) {
+      if (mounted) Navigator.of(context).pop();
+      return;
+    }
+    final shouldExit = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Keluar dari fitur?'),
+        content: const Text('Data yang sudah diisi akan hilang.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.errorRed,
+            ),
+            child: const Text('Keluar'),
+          ),
+        ],
+      ),
+    );
+    if (shouldExit == true && mounted) Navigator.of(context).pop();
   }
 
   void _gunakanUntukEvaluasi() {
@@ -353,66 +412,298 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
             fisiologi: _fisiologi,
           );
 
-    return Scaffold(
-      backgroundColor: AppColors.backgroundKrem,
-      body: CustomScrollView(
-        slivers: [
-          AppSliverHeader(
-            title: 'Cek Kandungan Pakan',
-            subtitle: 'Cek kandungan nutrisi pada pakan.',
-            actions: [
-              IconButton(
-                tooltip: 'Database Pakan',
-                onPressed: _isLoading ? null : _bukaManajemenMaster,
-                icon: const Icon(
-                  Icons.inventory_2_outlined,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-            ],
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        _handleSystemBack();
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.backgroundKrem,
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _errorMessage != null
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Text(_errorMessage!, textAlign: TextAlign.center),
+                    ),
+                  )
+                : _buildStepperBody(hasil, evaluasiStandar),
+        bottomNavigationBar: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+            child: _buildNavigationControls(),
           ),
-          SliverToBoxAdapter(child: _buildBody(hasil, evaluasiStandar)),
-        ],
+        ),
       ),
-      bottomNavigationBar: widget.modePilihUntukEvaluasi && _campuran.isNotEmpty
-          ? Padding(
-              padding: const EdgeInsets.all(16),
-              child: FilledButton(
-                onPressed: _gunakanUntukEvaluasi,
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.accentOrange,
-                  minimumSize: const Size(double.infinity, 48),
-                ),
-                child: const Text('Gunakan untuk Evaluasi'),
-              ),
-            )
-          : null,
     );
   }
 
-  Widget _buildBody(
+  Widget _buildStepperBody(
     HasilPerhitunganNutrisi? hasil,
     HasilEvaluasiStandarNutrien? evaluasiStandar,
   ) {
-    if (_isLoading) return const Center(child: CircularProgressIndicator());
-    if (_errorMessage != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Text(_errorMessage!, textAlign: TextAlign.center),
+    return Column(
+      children: [
+        AnimatedSize(
+          duration: const Duration(milliseconds: 275),
+          curve: Curves.easeInOut,
+          alignment: Alignment.topCenter,
+          child: _tahapAktif == 0
+              ? SizedBox(
+                  height: 210,
+                  child: CustomScrollView(
+                    slivers: [
+                      AppSliverHeader(
+                        title: 'Cek Kandungan Pakan',
+                        subtitle: 'Cek kandungan nutrisi pada pakan.',
+                        onBackTap: _handleSystemBack,
+                        actions: [
+                          IconButton(
+                            tooltip: 'Database Pakan',
+                            onPressed: _isLoading ? null : _bukaManajemenMaster,
+                            icon: const Icon(
+                              Icons.inventory_2_outlined,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                )
+              : _buildCompactHeader(),
         ),
-      );
-    }
+        Expanded(
+          child: SingleChildScrollView(
+            controller: _scrollController,
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildProgressIndicator(),
+                const SizedBox(height: 16),
+                _buildTahapAktif(hasil, evaluasiStandar),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 24, 16, 120),
+  Widget _buildCompactHeader() {
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.primaryBlue,
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+      ),
+      padding: EdgeInsets.only(
+        top: MediaQuery.paddingOf(context).top,
+        left: 8,
+        right: 16,
+      ),
+      child: SizedBox(
+        height: 56,
+        child: Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: _kembaliTahap,
+            ),
+            const Expanded(
+              child: Text(
+                'Cek Kandungan Pakan',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            IconButton(
+              tooltip: 'Database Pakan',
+              onPressed: _isLoading ? null : _bukaManajemenMaster,
+              icon: const Icon(
+                Icons.inventory_2_outlined,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProgressIndicator() {
+    final stepTitles = ['Komposisi Pakan', 'Hasil Evaluasi'];
+    final labels = [
+      'Komposisi Campuran Pakan',
+      'Hasil Analisis & Evaluasi Nutrien',
+    ];
+
+    return AppCard(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          StaggeredEntryCard(
-            delay: Duration.zero,
-            child: _buildKartuStandarFisiologi(),
+          Row(
+            children: List.generate(2, (index) {
+              final isCurrent = index == _tahapAktif;
+              final isCompleted = index < _tahapAktif;
+              final canTap = index < _tahapAktif;
+
+              return Expanded(
+                child: InkWell(
+                  onTap: canTap
+                      ? () {
+                          setState(() => _tahapAktif = index);
+                          _resetScrollPosition();
+                        }
+                      : null,
+                  borderRadius: BorderRadius.circular(8),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            if (index > 0)
+                              Expanded(
+                                child: Container(
+                                  height: 2.5,
+                                  color: index <= _tahapAktif
+                                      ? AppColors.secondaryGreen
+                                      : Colors.grey.shade300,
+                                ),
+                              ),
+                            Container(
+                              width: 28,
+                              height: 28,
+                              decoration: BoxDecoration(
+                                color: isCurrent
+                                    ? AppColors.primaryBlue
+                                    : isCompleted
+                                        ? AppColors.secondaryGreen
+                                        : Colors.grey.shade200,
+                                shape: BoxShape.circle,
+                                boxShadow: isCurrent
+                                    ? [
+                                        BoxShadow(
+                                          color: AppColors.primaryBlue
+                                              .withValues(alpha: 0.3),
+                                          blurRadius: 6,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ]
+                                    : null,
+                              ),
+                              child: Center(
+                                child: isCompleted
+                                    ? const Icon(
+                                        Icons.check,
+                                        size: 16,
+                                        color: Colors.white,
+                                      )
+                                    : Text(
+                                        '${index + 1}',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                          color: isCurrent
+                                              ? Colors.white
+                                              : Colors.grey.shade600,
+                                        ),
+                                      ),
+                              ),
+                            ),
+                            if (index < 1)
+                              Expanded(
+                                child: Container(
+                                  height: 2.5,
+                                  color: index < _tahapAktif
+                                      ? AppColors.secondaryGreen
+                                      : Colors.grey.shade300,
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          stepTitles[index],
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: isCurrent
+                                ? FontWeight.w800
+                                : isCompleted
+                                    ? FontWeight.w600
+                                    : FontWeight.normal,
+                            color: isCurrent
+                                ? AppColors.primaryBlue
+                                : isCompleted
+                                    ? AppColors.textDark
+                                    : AppColors.textLight,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }),
           ),
+          const SizedBox(height: 10),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: AppColors.backgroundCream,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  _tahapAktif == 0
+                      ? Icons.science_outlined
+                      : Icons.auto_awesome_rounded,
+                  size: 16,
+                  color: AppColors.primaryBlue,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Tahap ${_tahapAktif + 1} dari 2: ${labels[_tahapAktif]}',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textDark,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTahapAktif(
+    HasilPerhitunganNutrisi? hasil,
+    HasilEvaluasiStandarNutrien? evaluasiStandar,
+  ) {
+    if (_tahapAktif == 0) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildKartuStandarFisiologi(),
           const SizedBox(height: 16),
           if (_campuran.isEmpty)
             _buildEmptyState()
@@ -423,63 +714,91 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
             ),
             const SizedBox(height: 12),
             ..._campuran.asMap().entries.map(
-              (entry) => StaggeredEntryCard(
-                key: ValueKey('staggered_campuran_${entry.value.bahan.id}'),
-                delay: Duration(milliseconds: (entry.key.clamp(0, 8)) * 60),
-                child: _buildKartuBahan(entry.key, entry.value),
-              ),
+              (entry) => _buildKartuBahan(entry.key, entry.value),
             ),
             const SizedBox(height: 8),
-            OutlinedButton.icon(
-              onPressed: _tambahBahan,
-              icon: const Icon(Icons.add_circle_outline, size: 18),
-              label: const Text('Tambah Bahan Pakan'),
-            ),
-            if (evaluasiStandar != null && hasil != null) ...[
-              const SizedBox(height: 16),
-              StaggeredEntryCard(
-                delay: const Duration(milliseconds: 140),
-                child: EvaluasiStandarCard(
-                  evaluasi: evaluasiStandar,
-                  totalBeratKg: hasil.totalBerat,
-                  totalBiaya: hasil.totalBiaya,
-                ),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _tambahBahan,
+                icon: const Icon(Icons.add_circle_outline, size: 18),
+                label: const Text('Tambah Bahan Pakan'),
               ),
-            ],
+            ),
           ],
-          const SizedBox(height: 16),
-          _buildPerhitunganStatus(),
         ],
-      ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (evaluasiStandar != null && hasil != null)
+          EvaluasiStandarCard(
+            evaluasi: evaluasiStandar,
+            totalBeratKg: hasil.totalBerat,
+            totalBiaya: hasil.totalBiaya,
+          )
+        else
+          const AppCard(
+            child: Text(
+              'Lengkapi komposisi campuran pakan terlebih dahulu untuk melihat hasil.',
+            ),
+          ),
+      ],
     );
   }
 
-  Widget _buildPerhitunganStatus() {
-    final statusText = switch (_statusPerhitungan) {
-      StatusPerhitungan.belumDihitung => 'Belum dihitung',
-      StatusPerhitungan.berhasil => 'Perhitungan berhasil',
-      StatusPerhitungan.gagal => 'Gagal menghitung',
-    };
-    final statusMessage = switch (_statusPerhitungan) {
-      StatusPerhitungan.belumDihitung =>
-        'Tekan Hitung untuk menghitung kandungan campuran.',
-      StatusPerhitungan.berhasil =>
-        'Hasil merupakan snapshot dari input terakhir.',
-      StatusPerhitungan.gagal =>
-        _pesanPerhitungan ?? 'Perhitungan nutrisi gagal dilakukan.',
-    };
-
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildNavigationControls() {
+    if (_tahapAktif == 0) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Text(statusText, style: const TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 6),
-          Text(statusMessage),
-          const SizedBox(height: 12),
-          FilledButton(onPressed: _hitungManual, child: const Text('Hitung')),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              onPressed: _hitungManual,
+              child: const Text('Hitung Kandungan Nutrisi'),
+            ),
+          ),
+          if (widget.modePilihUntukEvaluasi && _campuran.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: _gunakanUntukEvaluasi,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.accentOrange,
+                ),
+                child: const Text('Gunakan untuk Evaluasi'),
+              ),
+            ),
+          ],
         ],
-      ),
+      );
+    }
+
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton(
+            onPressed: _kembaliTahap,
+            child: const Text('Kembali'),
+          ),
+        ),
+        if (widget.modePilihUntukEvaluasi) ...[
+          const SizedBox(width: 12),
+          Expanded(
+            child: FilledButton(
+              onPressed: _gunakanUntukEvaluasi,
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.accentOrange,
+              ),
+              child: const Text('Gunakan untuk Evaluasi'),
+            ),
+          ),
+        ],
+      ],
     );
   }
 
@@ -606,15 +925,12 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              const SizedBox(height: 4),
-                              Row(
-                                children: [
-                                  _buildMiniTag('BK ${IndonesianNumberFormatter.isSupportedMagnitude(item.bahan.bk) ? IndonesianNumberFormatter.format(item.bahan.bk, decimals: 1) : '-'}%', AppColors.secondaryLight, AppColors.secondaryGreen),
-                                  const SizedBox(width: 4),
-                                  _buildMiniTag('PK ${IndonesianNumberFormatter.isSupportedMagnitude(item.bahan.protein) ? IndonesianNumberFormatter.format(item.bahan.protein, decimals: 1) : '-'}%', AppColors.primaryLight, AppColors.primaryBlue),
-                                  const SizedBox(width: 4),
-                                  _buildMiniTag('TDN ${IndonesianNumberFormatter.isSupportedMagnitude(item.bahan.tdn) ? IndonesianNumberFormatter.format(item.bahan.tdn, decimals: 1) : '-'}%', AppColors.accentLight, AppColors.accentOrange),
-                                ],
+                              Text(
+                                '${item.bahan.kategori} • BK: ${IndonesianNumberFormatter.isSupportedMagnitude(item.bahan.bk) ? '${IndonesianNumberFormatter.format(item.bahan.bk, decimals: 1)}%' : '-'}',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.textGrey,
+                                ),
                               ),
                             ],
                           ),
@@ -698,23 +1014,5 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
       case FisiologiSapi.keringKandang:
         return 'Kering Kandang';
     }
-  }
-
-  Widget _buildMiniTag(String text, Color bgColor, Color textColor) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.w700,
-          color: textColor,
-        ),
-      ),
-    );
   }
 }

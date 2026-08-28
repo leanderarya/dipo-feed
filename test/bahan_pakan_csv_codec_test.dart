@@ -3,10 +3,11 @@ import 'package:dipo_feed/data/csv/hasil_import_bahan_pakan.dart';
 import 'package:dipo_feed/data/models/bahan_pakan.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-const header = 'nama;kategori;BK;abu;lemak;serat;PK;BETN;TDN;ME;harga;Ca;P';
+const header = 'nama;harga;kategori;BK;abu;lemak;serat;PK;BETN;TDN;ME;Ca;P';
 
 String row({
   String nama = 'Rumput Gajah',
+  String harga = '500',
   String kategori = 'hijauan',
   String bk = '29,24',
   String abu = '17,90',
@@ -16,12 +17,12 @@ String row({
   String betn = '40,27',
   String tdn = '54,58',
   String me = '8,24',
-  String harga = '500',
   String ca = '0,00',
   String p = '0,00',
 }) {
   return [
     nama,
+    harga,
     kategori,
     bk,
     abu,
@@ -31,7 +32,6 @@ String row({
     betn,
     tdn,
     me,
-    harga,
     ca,
     p,
   ].join(';');
@@ -81,36 +81,60 @@ void main() {
     });
 
     test('rejects invalid values in every numeric column', () {
-      final numericColumns = header.split(';').sublist(2);
-      for (var index = 0; index < numericColumns.length; index++) {
+      final numericIndices = <int, String>{
+        1: 'harga',
+        3: 'BK',
+        4: 'abu',
+        5: 'lemak',
+        6: 'serat',
+        7: 'PK',
+        8: 'BETN',
+        9: 'TDN',
+        10: 'ME',
+        11: 'Ca',
+        12: 'P',
+      };
+      for (final entry in numericIndices.entries) {
         final fields = row().split(';');
-        fields[index + 2] = 'invalid';
+        fields[entry.key] = 'invalid';
 
         expect(
           () => BahanPakanCsvCodec.parse('$header\n${fields.join(';')}'),
           throwsFormatException,
-          reason: numericColumns[index],
+          reason: entry.value,
         );
       }
     });
 
     test('rejects negative values in every numeric column', () {
-      final numericColumns = header.split(';').sublist(2);
-      for (var index = 0; index < numericColumns.length; index++) {
+      final numericIndices = <int, String>{
+        1: 'harga',
+        3: 'BK',
+        4: 'abu',
+        5: 'lemak',
+        6: 'serat',
+        7: 'PK',
+        8: 'BETN',
+        9: 'TDN',
+        10: 'ME',
+        11: 'Ca',
+        12: 'P',
+      };
+      for (final entry in numericIndices.entries) {
         final fields = row().split(';');
-        fields[index + 2] = '-1';
+        fields[entry.key] = '-1';
 
         expect(
           () => BahanPakanCsvCodec.parse('$header\n${fields.join(';')}'),
           throwsFormatException,
-          reason: numericColumns[index],
+          reason: entry.value,
         );
       }
     });
 
     test('rejects numeric values formatter cannot export', () {
       final fields = row().split(';');
-      fields[2] = '1e21';
+      fields[3] = '1e21';
 
       expect(
         () => BahanPakanCsvCodec.parse('$header\n${fields.join(';')}'),
@@ -133,11 +157,12 @@ void main() {
       final rows = BahanPakanCsvCodec.parse(
         [
           header,
-          '"Pakan; ""Spesial""\nBaru";hijauan;29,24;17,90;1,27;31,21;9,35;40,27;54,58;8,24;500;0,00;0,00',
+          '"Pakan; ""Spesial""\nBaru";500;hijauan;29,24;17,90;1,27;31,21;9,35;40,27;54,58;8,24;0,00;0,00',
         ].join('\n'),
       );
 
       expect(rows.single.nama, 'Pakan; "Spesial"\nBaru');
+      expect(rows.single.harga, 500);
     });
 
     test('rejects wrong header', () {
@@ -161,7 +186,7 @@ void main() {
 
     test('rejects malformed quoting', () {
       expect(
-        () => BahanPakanCsvCodec.parse('$header\n"Rumput Gajah;hijauan;29,24'),
+        () => BahanPakanCsvCodec.parse('$header\n"Rumput Gajah;500;hijauan;29,24'),
         throwsFormatException,
       );
       expect(
@@ -194,7 +219,7 @@ void main() {
 
       expect(
         BahanPakanCsvCodec.serialize([bahan]),
-        '$header\nRumput Gajah;hijauan;29,24;17,90;1,27;31,21;9,35;40,27;54,58;8,24;4.500;0,00;0,00\n',
+        '$header\nRumput Gajah;4500;hijauan;29,24;17,90;1,27;31,21;9,35;40,27;54,58;8,24;0,00;0,00\n',
       );
     });
 
@@ -217,7 +242,7 @@ void main() {
 
       expect(
         BahanPakanCsvCodec.serialize([bahan]),
-        '$header\n"Pakan; ""Spesial""\nBaru";lainnya;1,00;2,00;3,00;4,00;5,00;6,00;7,00;8,00;9;0,00;0,00\n',
+        '$header\n"Pakan; ""Spesial""\nBaru";9;lainnya;1,00;2,00;3,00;4,00;5,00;6,00;7,00;8,00;0,00;0,00\n',
       );
     });
 
@@ -241,7 +266,7 @@ void main() {
       final rows = BahanPakanCsvCodec.parse(csv);
 
       expect(rows.single.kategori, 'lainnya');
-      expect(csv, contains('Energi Lama;lainnya;'));
+      expect(csv, contains('Energi Lama;9;lainnya;'));
     });
 
     test('rejects unknown categories during serialization', () {
@@ -287,6 +312,7 @@ void main() {
 
       expect(rows.single.nama, 'Rumput Gajah');
       expect(rows.single.kategori, 'hijauan');
+      expect(rows.single.harga, 9);
     });
 
     test('uses formatter rounding and rejects non-finite numeric values', () {
@@ -339,6 +365,7 @@ void main() {
         isActive: true,
       );
       final negativeValues = [
+        bahan.copyWith(hargaDefault: -1),
         bahan.copyWith(bk: -1),
         bahan.copyWith(abu: -1),
         bahan.copyWith(lemak: -1),
@@ -347,7 +374,6 @@ void main() {
         bahan.copyWith(betn: -1),
         bahan.copyWith(tdn: -1),
         bahan.copyWith(me: -1),
-        bahan.copyWith(hargaDefault: -1),
         bahan.copyWith(ca: -1),
         bahan.copyWith(p: -1),
       ];

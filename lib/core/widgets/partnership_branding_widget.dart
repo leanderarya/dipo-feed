@@ -50,7 +50,7 @@ class PartnershipBrandingWidget extends StatelessWidget {
           assetPath: 'assets/images/logo_aciar.png',
           fallbackLabel: 'ACIAR',
           fallbackColor: const Color(0xFF006644),
-          height: height * 0.85, // Scale proportionally to match UNDIP crest height
+          height: height * 0.92, // Scale proportionally to match UNDIP crest height
           fit: BoxFit.contain,
         ),
 

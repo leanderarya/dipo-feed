@@ -79,7 +79,7 @@ Future<void> _pumpMaster(
   )
   shareCsv,
 }) async {
-  tester.view.physicalSize = const Size(800, 1600);
+  tester.view.physicalSize = const Size(1080, 1920);
   tester.view.devicePixelRatio = 1;
   await tester.pumpWidget(
     MaterialApp(
@@ -114,6 +114,30 @@ PlatformFile _csvStreamFile(String csv) {
     size: bytes.length,
     readStream: Stream<List<int>>.value(bytes),
   );
+}
+
+Future<void> _bukaMenuImpor(WidgetTester tester) async {
+  await tester.tap(find.byType(PopupMenuButton<String>));
+  await tester.pump(); // let menu route start
+  await tester.pump(const Duration(milliseconds: 300)); // let route animate in
+  await tester.tap(find.text('Impor CSV').last);
+  await tester.pumpAndSettle();
+}
+
+Future<void> _bukaMenuEkspor(WidgetTester tester) async {
+  await tester.tap(find.byType(PopupMenuButton<String>));
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 300));
+  await tester.tap(find.text('Ekspor CSV').last);
+  await tester.pumpAndSettle();
+}
+
+Future<void> _bukaMenuReset(WidgetTester tester) async {
+  await tester.tap(find.byType(PopupMenuButton<String>));
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 300));
+  await tester.tap(find.text('Reset ke Data Awal').last);
+  await tester.pumpAndSettle();
 }
 
 void main() {
@@ -169,10 +193,12 @@ void main() {
       shareCsv: (_, _) async => ShareResult('', ShareResultStatus.dismissed),
     );
 
-    await tester.tap(find.byTooltip('Menu Aksi'));
+    expect(find.byType(PopupMenuButton<String>), findsOneWidget);
+    await tester.tap(find.byType(PopupMenuButton<String>));
     await tester.pumpAndSettle();
     expect(find.text('Impor CSV'), findsOneWidget);
     expect(find.text('Ekspor CSV'), findsOneWidget);
+    expect(find.text('Reset ke Data Awal'), findsOneWidget);
   });
 
   testWidgets('feed category options exclude legacy categories', (
@@ -338,10 +364,9 @@ void main() {
     tester
         .state<ScaffoldMessengerState>(find.byType(ScaffoldMessenger))
         .removeCurrentSnackBar();
-    await tester.tap(find.byTooltip('Menu Aksi'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Reset Data Awal'));
-    await tester.pumpAndSettle();
+    await tester.pump();
+
+    await _bukaMenuReset(tester);
     expect(find.text('Reset master pakan'), findsOneWidget);
     await tester.tap(find.text('Reset'));
     await tester.pumpAndSettle();
@@ -398,9 +423,10 @@ void main() {
       shareCsv: (_, _) async => ShareResult('', ShareResultStatus.dismissed),
     );
 
-    await tester.tap(find.byTooltip('Menu Aksi'));
+    await tester.tap(find.byType(PopupMenuButton<String>));
     await tester.pumpAndSettle();
     expect(find.text('Ekspor CSV'), findsNothing);
+    expect(find.text('Impor CSV'), findsOneWidget);
     debugDefaultTargetPlatformOverride = previousTarget;
   });
 
@@ -418,10 +444,7 @@ void main() {
       shareCsv: (_, _) async => ShareResult('', ShareResultStatus.dismissed),
     );
 
-    await tester.tap(find.byTooltip('Menu Aksi'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Impor CSV'));
-    await tester.pumpAndSettle();
+    await _bukaMenuImpor(tester);
     expect(find.textContaining('permanen'), findsOneWidget);
 
     await tester.tap(find.text('Batal'));
@@ -449,10 +472,7 @@ void main() {
     );
     final readsAfterLoad = source.readCalls;
 
-    await tester.tap(find.byTooltip('Menu Aksi'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Impor CSV'));
-    await tester.pumpAndSettle();
+    await _bukaMenuImpor(tester);
     await tester.tap(find.text('Impor dan Ganti'));
     await tester.pumpAndSettle();
 
@@ -478,10 +498,7 @@ void main() {
       shareCsv: (_, _) async => ShareResult('', ShareResultStatus.dismissed),
     );
 
-    await tester.tap(find.byTooltip('Menu Aksi'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Impor CSV'));
-    await tester.pumpAndSettle();
+    await _bukaMenuImpor(tester);
 
     expect(find.textContaining('Gagal mengimpor CSV'), findsOneWidget);
     expect(find.text('Impor dan Ganti'), findsNothing);
@@ -505,10 +522,7 @@ void main() {
         shareCsv: (_, _) async => ShareResult('', ShareResultStatus.dismissed),
       );
 
-      await tester.tap(find.byTooltip('Menu Aksi'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Impor CSV'));
-      await tester.pumpAndSettle();
+      await _bukaMenuImpor(tester);
 
       expect(find.textContaining('Gagal mengimpor CSV'), findsOneWidget);
       expect(find.text('Impor dan Ganti'), findsNothing);
@@ -529,10 +543,7 @@ void main() {
         shareCsv: (_, _) async => ShareResult('', ShareResultStatus.dismissed),
       );
 
-      await tester.tap(find.byTooltip('Menu Aksi'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Impor CSV'));
-      await tester.pumpAndSettle();
+      await _bukaMenuImpor(tester);
 
       expect(find.textContaining('Gagal mengimpor CSV'), findsOneWidget);
       expect(find.text('Impor dan Ganti'), findsNothing);
@@ -556,10 +567,7 @@ void main() {
       shareCsv: (_, _) async => ShareResult('', ShareResultStatus.dismissed),
     );
 
-    await tester.tap(find.byTooltip('Menu Aksi'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Impor CSV'));
-    await tester.pumpAndSettle();
+    await _bukaMenuImpor(tester);
     await tester.tap(find.text('Impor dan Ganti'));
     await tester.pumpAndSettle();
 
@@ -580,9 +588,7 @@ void main() {
         shareCsv: (_, _) async => ShareResult('', ShareResultStatus.dismissed),
       );
 
-      await tester.tap(find.byTooltip('Menu Aksi'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Impor CSV'));
+      await _bukaMenuImpor(tester);
       await tester.pump();
 
       expect(
@@ -606,7 +612,9 @@ void main() {
             .widget<ButtonStyleButton>(
               find.ancestor(
                 of: find.text('Edit'),
-                matching: find.byWidgetPredicate((w) => w is ButtonStyleButton),
+                matching: find.byWidgetPredicate(
+                  (widget) => widget is ButtonStyleButton,
+                ),
               ),
             )
             .onPressed,
@@ -617,7 +625,9 @@ void main() {
             .widget<ButtonStyleButton>(
               find.ancestor(
                 of: find.text('Hapus'),
-                matching: find.byWidgetPredicate((w) => w is ButtonStyleButton),
+                matching: find.byWidgetPredicate(
+                  (widget) => widget is ButtonStyleButton,
+                ),
               ),
             )
             .onPressed,
@@ -652,10 +662,7 @@ void main() {
       shareCsv: (_, _) async => ShareResult('', ShareResultStatus.dismissed),
     );
 
-    await tester.tap(find.byTooltip('Menu Aksi'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Impor CSV'));
-    await tester.pumpAndSettle();
+    await _bukaMenuImpor(tester);
     await tester.tap(find.text('Impor dan Ganti'));
     await tester.pumpAndSettle();
 
@@ -684,10 +691,7 @@ void main() {
       },
     );
 
-    await tester.tap(find.byTooltip('Menu Aksi'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Ekspor CSV'));
-    await tester.pumpAndSettle();
+    await _bukaMenuEkspor(tester);
 
     expect(sharedCsv, BahanPakanCsvCodec.serialize([_activeFeed]));
     expect(sharedCsv, isNot(contains('Feed Inactive')));
