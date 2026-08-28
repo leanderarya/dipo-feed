@@ -8,8 +8,7 @@ import '../cek_kandungan_nutrisi/cek_kandungan_nutrisi_screen.dart';
 import '../cek_kecukupan_pakan/cek_kecukupan_pakan_screen.dart';
 import '../master_pakan/master_pakan_screen.dart';
 import '../rekomendasi_pakan/rekomendasi_pakan_screen.dart';
-import '../../core/widgets/partnership_branding_widget.dart';
-import '../../core/widgets/partnership_info_dialog.dart';
+import '../pengaturan/pengaturan_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -22,29 +21,27 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
   void _onTapBottomNav(int index) {
-    if (index == 0) {
-      setState(() {
-        _selectedIndex = index;
-      });
+    if (index == 1) {
+      // Show "Under Development" for Panduan
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Fitur Panduan segera hadir.',
+            style: TextStyle(fontWeight: FontWeight.w600),
+          ),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          backgroundColor: AppColors.primaryBlue,
+          duration: const Duration(seconds: 2),
+        ),
+      );
       return;
     }
 
-    // Show "Under Development" for Panduan and Pengaturan
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          index == 1
-              ? 'Fitur Panduan segera hadir.'
-              : 'Fitur Pengaturan segera hadir.',
-          style: const TextStyle(fontWeight: FontWeight.w600),
-        ),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        backgroundColor: AppColors.primaryBlue,
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 
   void _bukaCekKecukupan() {
@@ -111,34 +108,9 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: const AppHeader(isHome: true),
       body: Stack(
         children: [
-          SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(
-              20,
-              16,
-              20,
-              110,
-            ), // Optimized padding for iOS and screen viewports
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildHeroBanner(),
-                const SizedBox(height: 20), // Reduced from 32
-                const Text(
-                  'Fitur Utama',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primaryBlue,
-                    letterSpacing: -0.5,
-                  ),
-                ),
-                const SizedBox(height: 12), // Reduced from 16
-                _buildFeatureGrid(),
-                const SizedBox(height: 20),
-                _buildPartnershipSection(),
-              ],
-            ),
-          ),
+          _selectedIndex == 2
+              ? const PengaturanScreen(isTab: true)
+              : _buildHomeContent(),
           Align(
             alignment: Alignment.bottomCenter,
             child: AppBottomNav(
@@ -146,6 +118,35 @@ class _HomeScreenState extends State<HomeScreen> {
               onTap: _onTapBottomNav,
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHomeContent() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(
+        20,
+        16,
+        20,
+        110,
+      ), // Optimized padding for iOS and screen viewports
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHeroBanner(),
+          const SizedBox(height: 20), // Reduced from 32
+          const Text(
+            'Fitur Utama',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: AppColors.primaryBlue,
+              letterSpacing: -0.5,
+            ),
+          ),
+          const SizedBox(height: 12), // Reduced from 16
+          _buildFeatureGrid(),
         ],
       ),
     );
@@ -303,59 +304,6 @@ class _HomeScreenState extends State<HomeScreen> {
           svgAsset: 'assets/icons/ic_rekomendasi.svg',
           baseColor: AppColors.accentOrange,
           onTap: _bukaFormulasi,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPartnershipSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'Kerja Sama & Kemitraan',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColors.primaryBlue,
-                letterSpacing: -0.3,
-              ),
-            ),
-            InkWell(
-              onTap: () => PartnershipInfoDialog.show(context),
-              borderRadius: BorderRadius.circular(20),
-              child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.info_outline_rounded,
-                      size: 14,
-                      color: AppColors.textSecondary,
-                    ),
-                    SizedBox(width: 4),
-                    Text(
-                      'Info Kolaborasi',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        PartnershipBrandingWidget(
-          height: 38,
-          onTap: () => PartnershipInfoDialog.show(context),
         ),
       ],
     );
