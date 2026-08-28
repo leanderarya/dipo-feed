@@ -152,11 +152,9 @@ void main() {
     String feedLabel,
   ) async {
     await tapButton(tester, addLabel);
-    final dropdowns = find.byType(DropdownButtonFormField<BahanPakan>);
-    await tester.tap(dropdowns.last);
     await tester.pumpAndSettle();
     await tester.tap(find.text(feedLabel).last);
-    await tester.pump();
+    await tester.pumpAndSettle();
   }
 
   Future<void> tapFeedAdd(WidgetTester tester) async {
@@ -542,14 +540,9 @@ void main() {
     await tapButton(tester, 'Lanjut');
     await tapRecommendationFeed(tester, 'Tambah Hijauan', 'Rumput Gajah');
     await tapButton(tester, 'Tambah Hijauan');
-
-    final secondDropdown = find
-        .byType(DropdownButtonFormField<BahanPakan>)
-        .last;
-    await tester.tap(secondDropdown);
     await tester.pumpAndSettle();
 
-    expect(find.text('Rumput Gajah'), findsOneWidget);
+    expect(find.text('Rumput Gajah'), findsNWidgets(2));
     expect(find.text('Rumput Odot'), findsOneWidget);
   });
 
@@ -575,15 +568,11 @@ void main() {
     await tester.enterText(find.byType(TextFormField).first, '500');
     await tapButton(tester, 'Lanjut');
 
-    for (var i = 0; i < 4; i++) {
-      await tapButton(tester, 'Tambah Hijauan');
-    }
-    expect(find.byType(DropdownButtonFormField<BahanPakan>), findsNWidgets(4));
-
+    await tapRecommendationFeed(tester, 'Tambah Hijauan', 'Rumput Gajah');
+    await tapRecommendationFeed(tester, 'Tambah Hijauan', 'Rumput Odot');
     await tapButton(tester, 'Tambah Hijauan');
 
-    expect(find.byType(DropdownButtonFormField<BahanPakan>), findsNWidgets(4));
-    expect(find.text('Maksimal 4 bahan hijauan.'), findsOneWidget);
+    expect(find.text('Semua bahan hijauan sudah dipilih.'), findsOneWidget);
   });
 
   testWidgets('recommendation rejects finite overflowed nutrient targets', (
@@ -630,8 +619,7 @@ void main() {
 
     expect(find.text('Hijauan yang Dimiliki'), findsOneWidget);
     expect(find.text('Rumput Gajah'), findsOneWidget);
-    expect(find.text('Dedak Padi'), findsNWidgets(2));
-    expect(find.byType(DropdownButtonFormField<BahanPakan>), findsNWidgets(2));
+    expect(find.text('Dedak Padi'), findsOneWidget);
 
     await tapHeaderBack(tester);
     expect(
@@ -685,13 +673,10 @@ void main() {
     await tapButton(tester, 'Lanjut');
     await tapHeaderBack(tester);
 
-    final forageDropdown = find
-        .byType(DropdownButtonFormField<BahanPakan>)
-        .first;
-    await tester.tap(forageDropdown);
+    await tester.tap(find.text('Rumput Gajah').first);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Rumput Gajah').last);
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     expect(find.text('Hasil Analisis Ransum Pakan'), findsNothing);
     await tapButton(tester, 'Lanjut');

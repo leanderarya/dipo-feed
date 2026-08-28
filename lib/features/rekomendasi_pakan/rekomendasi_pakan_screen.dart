@@ -11,6 +11,7 @@ import '../../data/models/bahan_pakan.dart';
 import '../../data/models/fisiologi_sapi.dart';
 import '../../data/models/kebutuhan_nutrien_sapi.dart';
 import '../../data/sources/bahan_pakan_repository.dart';
+import '../cek_kandungan_nutrisi/widgets/searchable_bahan_pakan_dialog.dart';
 import '../cek_kecukupan_pakan/logic/perhitungan_kebutuhan_nutrien.dart';
 import 'logic/hasil_rekomendasi_pakan.dart';
 import 'logic/nutrien_helper.dart';
@@ -42,12 +43,12 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
   final TextEditingController _lemakSusuController = TextEditingController();
 
   FisiologiSapi _fisiologi = FisiologiSapi.dara;
+  List<BahanPakan> _semuaBahan = [];
   bool _isLoading = true;
   String? _errorMessage;
 
-  List<BahanPakan> _semuaBahan = [];
-  List<BahanPakan?> _hijauanTerpilih = [];
-  List<BahanPakan?> _konsentratTerpilih = [];
+  List<BahanPakan> _hijauanTerpilih = [];
+  List<BahanPakan> _konsentratTerpilih = [];
   final List<ValueKey<int>> _hijauanRowKeys = [];
   final List<ValueKey<int>> _konsentratRowKeys = [];
   int _nextFeedRowKey = 0;
@@ -115,43 +116,6 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     });
   }
 
-  List<BahanPakan> get _opsiHijauan =>
-      _semuaBahan.where(isBahanHijauan).toList();
-  List<BahanPakan> get _opsiKonsentrat =>
-      _semuaBahan.where(isBahanKonsentrat).toList();
-
-  List<BahanPakan> _opsiHijauanUntuk(int index) {
-    final selectedIds = <int>{
-      ..._hijauanTerpilih
-          .asMap()
-          .entries
-          .where((entry) => entry.key != index)
-          .map((entry) => entry.value?.id)
-          .whereType<int>(),
-      ..._konsentratTerpilih.map((item) => item?.id).whereType<int>(),
-    };
-    final currentId = _hijauanTerpilih[index]?.id;
-    return _opsiHijauan
-        .where((item) => item.id == currentId || !selectedIds.contains(item.id))
-        .toList();
-  }
-
-  List<BahanPakan> _opsiKonsentratUntuk(int index) {
-    final selectedIds = <int>{
-      ..._konsentratTerpilih
-          .asMap()
-          .entries
-          .where((entry) => entry.key != index)
-          .map((entry) => entry.value?.id)
-          .whereType<int>(),
-      ..._hijauanTerpilih.map((item) => item?.id).whereType<int>(),
-    };
-    final currentId = _konsentratTerpilih[index]?.id;
-    return _opsiKonsentrat
-        .where((item) => item.id == currentId || !selectedIds.contains(item.id))
-        .toList();
-  }
-
   void _invalidasiRekomendasi() {
     _hasilRekomendasi = null;
     _statusPerhitungan = StatusPerhitungan.belumDihitung;
@@ -186,25 +150,84 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     });
   }
 
-  void _tambahHijauan() {
+  Future<void> _tambahHijauan() async {
     if (_hijauanTerpilih.length >= maxSelectedFeedsPerGroup) {
       _showSnackBar('Maksimal $maxSelectedFeedsPerGroup bahan hijauan.');
       return;
     }
+    final bahanSudahDipakai = <int>{
+      ..._hijauanTerpilih.map((item) => item.id),
+      ..._konsentratTerpilih.map((item) => item.id),
+    };
+    final opsiHijauan = _semuaBahan.where(isBahanHijauan).toList();
+    if (opsiHijauan.every((b) => bahanSudahDipakai.contains(b.id))) {
+      AppToast.showWarning(
+        context,
+        'Semua bahan hijauan sudah dipilih.',
+      );
+      return;
+    }
+
+    final bahanBaru = await SearchableBahanPakanDialog.show(
+      context: context,
+      semuaBahan: opsiHijauan,
+      bahanTerpilihIds: bahanSudahDipakai,
+    );
+
+    if (bahanBaru == null || !mounted) return;
+
+    if (bahanSudahDipakai.contains(bahanBaru.id)) {
+      AppToast.showWarning(
+        context,
+        'Bahan "${bahanBaru.nama}" sudah dipilih.',
+      );
+      return;
+    }
+
     setState(() {
-      _hijauanTerpilih = [..._hijauanTerpilih, null];
+      _hijauanTerpilih = [..._hijauanTerpilih, bahanBaru];
       _hijauanRowKeys.add(ValueKey(_nextFeedRowKey++));
       _invalidasiRekomendasi();
     });
   }
 
-  void _tambahKonsentrat() {
+  Future<void> _tambahKonsentrat() async {
     if (_konsentratTerpilih.length >= maxSelectedFeedsPerGroup) {
       _showSnackBar('Maksimal $maxSelectedFeedsPerGroup bahan konsentrat.');
       return;
     }
+    final bahanSudahDipakai = <int>{
+      ..._hijauanTerpilih.map((item) => item.id),
+      ..._konsentratTerpilih.map((item) => item.id),
+    };
+    final opsiKonsentrat =
+        _semuaBahan.where((b) => !isBahanHijauan(b)).toList();
+    if (opsiKonsentrat.every((b) => bahanSudahDipakai.contains(b.id))) {
+      AppToast.showWarning(
+        context,
+        'Semua bahan konsentrat sudah dipilih.',
+      );
+      return;
+    }
+
+    final bahanBaru = await SearchableBahanPakanDialog.show(
+      context: context,
+      semuaBahan: opsiKonsentrat,
+      bahanTerpilihIds: bahanSudahDipakai,
+    );
+
+    if (bahanBaru == null || !mounted) return;
+
+    if (bahanSudahDipakai.contains(bahanBaru.id)) {
+      AppToast.showWarning(
+        context,
+        'Bahan "${bahanBaru.nama}" sudah dipilih.',
+      );
+      return;
+    }
+
     setState(() {
-      _konsentratTerpilih = [..._konsentratTerpilih, null];
+      _konsentratTerpilih = [..._konsentratTerpilih, bahanBaru];
       _konsentratRowKeys.add(ValueKey(_nextFeedRowKey++));
       _invalidasiRekomendasi();
     });
@@ -226,13 +249,51 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     });
   }
 
-  void _ubahHijauan(int index, BahanPakan? value) {
-    if (value == null) return;
+  Future<void> _pilihAtauUbahHijauan(int index) async {
+    final bahanSudahDipakai = <int>{
+      ..._hijauanTerpilih.map((item) => item.id),
+      ..._konsentratTerpilih.map((item) => item.id),
+    };
+    final itemLama = _hijauanTerpilih[index];
+    final opsiHijauan = _semuaBahan.where(isBahanHijauan).toList();
+
+    final bahanBaru = await SearchableBahanPakanDialog.show(
+      context: context,
+      semuaBahan: opsiHijauan,
+      bahanTerpilihIds: bahanSudahDipakai,
+      bahanSaatIni: itemLama,
+    );
+
+    if (bahanBaru == null || bahanBaru.id == itemLama.id || !mounted) return;
+    _ubahHijauan(index, bahanBaru);
+  }
+
+  Future<void> _pilihAtauUbahKonsentrat(int index) async {
+    final bahanSudahDipakai = <int>{
+      ..._hijauanTerpilih.map((item) => item.id),
+      ..._konsentratTerpilih.map((item) => item.id),
+    };
+    final itemLama = _konsentratTerpilih[index];
+    final opsiKonsentrat =
+        _semuaBahan.where((b) => !isBahanHijauan(b)).toList();
+
+    final bahanBaru = await SearchableBahanPakanDialog.show(
+      context: context,
+      semuaBahan: opsiKonsentrat,
+      bahanTerpilihIds: bahanSudahDipakai,
+      bahanSaatIni: itemLama,
+    );
+
+    if (bahanBaru == null || bahanBaru.id == itemLama.id || !mounted) return;
+    _ubahKonsentrat(index, bahanBaru);
+  }
+
+  void _ubahHijauan(int index, BahanPakan value) {
     final duplikatKelompok = _hijauanTerpilih.asMap().entries.any((entry) {
-      return entry.key != index && entry.value?.id == value.id;
+      return entry.key != index && entry.value.id == value.id;
     });
     final duplikatLintasKelompok = _konsentratTerpilih.any(
-      (item) => item?.id == value.id,
+      (item) => item.id == value.id,
     );
 
     if (duplikatKelompok || duplikatLintasKelompok) {
@@ -246,13 +307,12 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     });
   }
 
-  void _ubahKonsentrat(int index, BahanPakan? value) {
-    if (value == null) return;
+  void _ubahKonsentrat(int index, BahanPakan value) {
     final duplikatKelompok = _konsentratTerpilih.asMap().entries.any((entry) {
-      return entry.key != index && entry.value?.id == value.id;
+      return entry.key != index && entry.value.id == value.id;
     });
     final duplikatLintasKelompok = _hijauanTerpilih.any(
-      (item) => item?.id == value.id,
+      (item) => item.id == value.id,
     );
 
     if (duplikatKelompok || duplikatLintasKelompok) {
@@ -280,8 +340,8 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
       return;
     }
 
-    final hijauan = _hijauanTerpilih.whereType<BahanPakan>().toList();
-    final konsentrat = _konsentratTerpilih.whereType<BahanPakan>().toList();
+    final hijauan = _hijauanTerpilih;
+    final konsentrat = _konsentratTerpilih;
 
     if (hijauan.isEmpty) {
       _gagalMenghitung('Tambahkan minimal satu hijauan.');
@@ -290,12 +350,6 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
 
     if (konsentrat.isEmpty) {
       _gagalMenghitung('Tambahkan minimal satu konsentrat.');
-      return;
-    }
-
-    if (_hijauanTerpilih.any((item) => item == null) ||
-        _konsentratTerpilih.any((item) => item == null)) {
-      _gagalMenghitung('Lengkapi semua pilihan bahan pakan terlebih dahulu.');
       return;
     }
 
@@ -383,14 +437,9 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
       _gagalMenghitung('Tambahkan minimal satu konsentrat.');
       return false;
     }
-    if (_hijauanTerpilih.any((item) => item == null) ||
-        _konsentratTerpilih.any((item) => item == null)) {
-      _gagalMenghitung('Lengkapi semua pilihan bahan pakan terlebih dahulu.');
-      return false;
-    }
 
-    final hijauan = _hijauanTerpilih.whereType<BahanPakan>().toList();
-    final konsentrat = _konsentratTerpilih.whereType<BahanPakan>().toList();
+    final hijauan = _hijauanTerpilih;
+    final konsentrat = _konsentratTerpilih;
     if (!hijauan.any(isBahanHijauan)) {
       _gagalMenghitung(
         'Pilihan bahan hijauan harus memiliki pakan dengan kategori hijauan.',
@@ -1048,10 +1097,9 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
               avatarColor: const Color(0xFFDFF5E7),
               items: _hijauanTerpilih,
               rowKeys: _hijauanRowKeys,
-              opsiForIndex: _opsiHijauanUntuk,
               onAdd: _tambahHijauan,
               onRemove: _hapusHijauan,
-              onChanged: _ubahHijauan,
+              onTapItem: _pilihAtauUbahHijauan,
               buttonLabel: 'Tambah Hijauan',
               emptyTitle: 'Belum ada hijauan yang dipilih.',
               emptyIcon: Icons.park_outlined,
@@ -1066,10 +1114,9 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
               avatarColor: const Color(0xFFFFEBD1),
               items: _konsentratTerpilih,
               rowKeys: _konsentratRowKeys,
-              opsiForIndex: _opsiKonsentratUntuk,
               onAdd: _tambahKonsentrat,
               onRemove: _hapusKonsentrat,
-              onChanged: _ubahKonsentrat,
+              onTapItem: _pilihAtauUbahKonsentrat,
               buttonLabel: 'Tambah Konsentrat',
               emptyTitle: 'Belum ada konsentrat yang dipilih.',
               emptyIcon: Icons.food_bank_outlined,
@@ -1585,12 +1632,11 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     required IconData icon,
     required Color accentColor,
     required Color avatarColor,
-    required List<BahanPakan?> items,
+    required List<BahanPakan> items,
     required List<ValueKey<int>> rowKeys,
-    required List<BahanPakan> Function(int index) opsiForIndex,
     required VoidCallback onAdd,
     required void Function(int index) onRemove,
-    required void Function(int index, BahanPakan? value) onChanged,
+    required void Function(int index) onTapItem,
     required String buttonLabel,
     required String emptyTitle,
     required IconData emptyIcon,
@@ -1620,9 +1666,8 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                   key: rowKeys[index],
                   index: index,
                   item: items[index],
-                  opsi: opsiForIndex(index),
                   onRemove: () => onRemove(index),
-                  onChanged: (value) => onChanged(index, value),
+                  onTapSelect: () => onTapItem(index),
                   avatarColor: avatarColor,
                   accentColor: accentColor,
                 ),
@@ -1645,10 +1690,9 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
   Widget _buildFeedSelectionItem({
     required Key key,
     required int index,
-    required BahanPakan? item,
-    required List<BahanPakan> opsi,
+    required BahanPakan item,
     required VoidCallback onRemove,
-    required void Function(BahanPakan? value) onChanged,
+    required VoidCallback onTapSelect,
     required Color avatarColor,
     required Color accentColor,
   }) {
@@ -1678,12 +1722,54 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                 ),
               ),
               const SizedBox(width: 10),
-              const Expanded(
-                child: Text(
-                  'Pilih bahan pakan',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textDark,
+              Expanded(
+                child: InkWell(
+                  onTap: onTapSelect,
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.backgroundCream,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: AppColors.textLight.withValues(alpha: 0.2),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item.nama,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  color: AppColors.textDark,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                '${item.kategori} • BK: ${IndonesianNumberFormatter.isSupportedMagnitude(item.bk) ? '${IndonesianNumberFormatter.format(item.bk, decimals: 1)}%' : '-'}',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.textGrey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(
+                          Icons.arrow_drop_down,
+                          color: AppColors.primaryBlue,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -1697,38 +1783,22 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
             ],
           ),
           const SizedBox(height: 10),
-          DropdownButtonFormField<BahanPakan>(
-            initialValue: item,
-            isExpanded: true,
-            decoration: _dropdownDecoration(),
-            hint: const Text('Pilih bahan pakan'),
-            items: opsi.map((bahan) {
-              return DropdownMenuItem<BahanPakan>(
-                value: bahan,
-                child: Text(bahan.nama, overflow: TextOverflow.ellipsis),
-              );
-            }).toList(),
-            onChanged: onChanged,
-          ),
-          if (item != null) ...[
-            const SizedBox(height: 12),
-            if (!item.isValidForCalculation(requirePositiveBk: true))
-              const Text(
-                'Data bahan pakan tidak valid.',
-                style: TextStyle(color: AppColors.errorRed),
-              )
-            else
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  _buildInfoChip('BK ${_format(item.bk)}%'),
-                  _buildInfoChip('PK ${_format(item.protein)}%'),
-                  _buildInfoChip('TDN ${_format(item.tdn)}%'),
-                  _buildInfoChip('LK ${_format(item.lemak)}%'),
-                ],
-              ),
-          ],
+          if (!item.isValidForCalculation(requirePositiveBk: true))
+            const Text(
+              'Data bahan pakan tidak valid.',
+              style: TextStyle(color: AppColors.errorRed),
+            )
+          else
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _buildInfoChip('BK ${_format(item.bk)}%'),
+                _buildInfoChip('PK ${_format(item.protein)}%'),
+                _buildInfoChip('TDN ${_format(item.tdn)}%'),
+                _buildInfoChip('LK ${_format(item.lemak)}%'),
+              ],
+            ),
         ],
       ),
     );

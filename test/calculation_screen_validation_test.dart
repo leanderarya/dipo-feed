@@ -257,8 +257,6 @@ void main() {
     );
     await tester.tap(find.widgetWithText(OutlinedButton, 'Tambah Hijauan'));
     await tester.pumpAndSettle();
-    await tester.tap(find.byType(DropdownButtonFormField<BahanPakan>).first);
-    await tester.pumpAndSettle();
     await tester.tap(find.text('Hijauan Harga Rusak'));
     await tester.pumpAndSettle();
 
@@ -268,8 +266,6 @@ void main() {
       scrollable: find.byType(Scrollable).first,
     );
     await tester.tap(find.widgetWithText(OutlinedButton, 'Tambah Konsentrat'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byType(DropdownButtonFormField<BahanPakan>).last);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Konsentrat Valid'));
     await tester.pumpAndSettle();
@@ -315,8 +311,6 @@ void main() {
     );
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(OutlinedButton, 'Tambah Hijauan'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byType(DropdownButtonFormField<BahanPakan>).first);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Hijauan Ekstrem'));
     await tester.pumpAndSettle();
