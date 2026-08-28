@@ -128,7 +128,9 @@ void main() {
     );
     final target = buttonFinder.evaluate().isNotEmpty
         ? buttonFinder
-        : textFinder;
+        : textFinder.evaluate().isNotEmpty
+            ? textFinder
+            : find.textContaining(text);
     await tester.scrollUntilVisible(
       target,
       300,
@@ -150,14 +152,11 @@ void main() {
     await tester.pump();
   }
 
-  testWidgets('starts in belumDihitung state', (tester) async {
+  testWidgets('starts in initial stage with empty state', (tester) async {
     await pumpScreen(tester);
 
-    expect(find.text('Belum dihitung'), findsOneWidget);
-    expect(
-      find.text('Tekan Hitung untuk menghitung kandungan campuran.'),
-      findsOneWidget,
-    );
+    expect(find.text('Tahap 1 dari 2: Komposisi Campuran Pakan'), findsOneWidget);
+    expect(find.text('Belum ada bahan campuran.'), findsOneWidget);
   });
 
   testWidgets('empty calculation sets gagal with specific message', (
@@ -165,9 +164,9 @@ void main() {
   ) async {
     await pumpScreen(tester);
 
-    await tapText(tester, 'Hitung');
+    await tapText(tester, 'Hitung Kandungan Nutrisi');
 
-    expect(find.text('Gagal menghitung'), findsOneWidget);
+    expect(find.text('Perhitungan Gagal'), findsOneWidget);
     expect(find.text('Tambahkan minimal satu bahan pakan.'), findsWidgets);
   });
 
@@ -182,9 +181,9 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    await tapText(tester, 'Hitung');
+    await tapText(tester, 'Hitung Kandungan Nutrisi');
 
-    expect(find.text('Gagal menghitung'), findsOneWidget);
+    expect(find.text('Perhitungan Gagal'), findsOneWidget);
     expect(
       find.text('Total campuran pakan harus lebih dari 0 kg.'),
       findsWidgets,
@@ -204,9 +203,9 @@ void main() {
     await tester.enterText(find.byType(TextField).first, 'abc');
     await tester.pump();
 
-    await tapText(tester, 'Hitung');
+    await tapText(tester, 'Hitung Kandungan Nutrisi');
 
-    expect(find.text('Gagal menghitung'), findsOneWidget);
+    expect(find.text('Perhitungan Gagal'), findsOneWidget);
     expect(find.text('Jumlah atau harga pakan tidak valid.'), findsWidgets);
   });
 
@@ -216,9 +215,9 @@ void main() {
     await pumpScreen(tester);
     await addFeedAndSetWeight(tester, '10');
 
-    await tapText(tester, 'Hitung');
+    await tapText(tester, 'Hitung Kandungan Nutrisi');
 
-    expect(find.text('Perhitungan berhasil'), findsOneWidget);
+    expect(find.text('Tahap 2 dari 2: Hasil Analisis & Evaluasi Nutrien'), findsOneWidget);
     expect(find.text('Kandungan Campuran Pakan'), findsOneWidget);
   });
 
@@ -229,9 +228,9 @@ void main() {
     await pumpScreen(tester, repository: createRepository(data: [invalidFeed]));
     await addFeedAndSetWeight(tester, '10');
 
-    await tapText(tester, 'Hitung');
+    await tapText(tester, 'Hitung Kandungan Nutrisi');
 
-    expect(find.text('Gagal menghitung'), findsOneWidget);
+    expect(find.text('Perhitungan Gagal'), findsOneWidget);
     expect(
       find.text('Data bahan pakan yang dipilih tidak valid.'),
       findsWidgets,
@@ -245,9 +244,9 @@ void main() {
     await pumpScreen(tester, repository: createRepository(data: [invalidFeed]));
     await addFeedAndSetWeight(tester, '10');
 
-    await tapText(tester, 'Hitung');
+    await tapText(tester, 'Hitung Kandungan Nutrisi');
 
-    expect(find.text('Gagal menghitung'), findsOneWidget);
+    expect(find.text('Perhitungan Gagal'), findsOneWidget);
     expect(
       find.text('Data bahan pakan yang dipilih tidak valid.'),
       findsWidgets,
@@ -261,9 +260,9 @@ void main() {
     await pumpScreen(tester, repository: createRepository(data: [invalidFeed]));
     await addFeedAndSetWeight(tester, '10');
 
-    await tapText(tester, 'Hitung');
+    await tapText(tester, 'Hitung Kandungan Nutrisi');
 
-    expect(find.text('Gagal menghitung'), findsOneWidget);
+    expect(find.text('Perhitungan Gagal'), findsOneWidget);
     expect(
       find.text('Data bahan pakan yang dipilih tidak valid.'),
       findsWidgets,
@@ -274,9 +273,9 @@ void main() {
     await pumpScreen(tester);
     await addFeedAndSetWeight(tester, '1.234,50');
 
-    await tapText(tester, 'Hitung');
+    await tapText(tester, 'Hitung Kandungan Nutrisi');
 
-    expect(find.text('Perhitungan berhasil'), findsOneWidget);
+    expect(find.text('Tahap 2 dari 2: Hasil Analisis & Evaluasi Nutrien'), findsOneWidget);
     expect(find.text('Kandungan Campuran Pakan'), findsOneWidget);
   });
 
@@ -285,9 +284,9 @@ void main() {
       await pumpScreen(tester);
       await addFeedAndSetWeight(tester, value);
 
-      await tapText(tester, 'Hitung');
+      await tapText(tester, 'Hitung Kandungan Nutrisi');
 
-      expect(find.text('Gagal menghitung'), findsOneWidget);
+      expect(find.text('Perhitungan Gagal'), findsOneWidget);
       expect(find.text('Jumlah atau harga pakan tidak valid.'), findsWidgets);
     });
   }
@@ -298,9 +297,9 @@ void main() {
       await addFeedAndSetWeight(tester, '10');
       await enterDraftValue(tester, 1, value);
 
-      await tapText(tester, 'Hitung');
+      await tapText(tester, 'Hitung Kandungan Nutrisi');
 
-      expect(find.text('Gagal menghitung'), findsOneWidget);
+      expect(find.text('Perhitungan Gagal'), findsOneWidget);
       expect(find.text('Jumlah atau harga pakan tidak valid.'), findsWidgets);
     });
   }
@@ -308,9 +307,9 @@ void main() {
   testWidgets('add mutation invalidates successful snapshot', (tester) async {
     await pumpScreen(tester);
     await addFeedAndSetWeight(tester, '10');
-    await tapText(tester, 'Hitung');
+    await tapText(tester, 'Hitung Kandungan Nutrisi');
 
-    expect(find.text('Perhitungan berhasil'), findsOneWidget);
+    expect(find.text('Tahap 2 dari 2: Hasil Analisis & Evaluasi Nutrien'), findsOneWidget);
     await tester.pump(const Duration(seconds: 4));
     await tapText(tester, 'Kembali');
     await tester.pumpAndSettle();
@@ -321,7 +320,7 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    expect(find.text('Belum dihitung'), findsOneWidget);
+    expect(find.text('Tahap 1 dari 2: Komposisi Campuran Pakan'), findsOneWidget);
     expect(find.text('Kandungan Campuran Pakan'), findsNothing);
   });
 
@@ -330,9 +329,9 @@ void main() {
   ) async {
     await pumpScreen(tester);
     await addFeedAndSetWeight(tester, '10');
-    await tapText(tester, 'Hitung');
+    await tapText(tester, 'Hitung Kandungan Nutrisi');
 
-    expect(find.text('Perhitungan berhasil'), findsOneWidget);
+    expect(find.text('Tahap 2 dari 2: Hasil Analisis & Evaluasi Nutrien'), findsOneWidget);
     await tapText(tester, 'Kembali');
     await tester.pumpAndSettle();
     final closeButton = find.byIcon(Icons.close).first;
@@ -344,7 +343,7 @@ void main() {
     await tester.tap(closeButton);
     await tester.pump();
 
-    expect(find.text('Belum dihitung'), findsOneWidget);
+    expect(find.text('Tahap 1 dari 2: Komposisi Campuran Pakan'), findsOneWidget);
     expect(find.text('Kandungan Campuran Pakan'), findsNothing);
   });
 
@@ -353,9 +352,9 @@ void main() {
   ) async {
     await pumpScreen(tester);
     await addFeedAndSetWeight(tester, '10');
-    await tapText(tester, 'Hitung');
+    await tapText(tester, 'Hitung Kandungan Nutrisi');
 
-    expect(find.text('Perhitungan berhasil'), findsOneWidget);
+    expect(find.text('Tahap 2 dari 2: Hasil Analisis & Evaluasi Nutrien'), findsOneWidget);
     await tapText(tester, 'Kembali');
     await tester.pumpAndSettle();
     final cardHeader = find.text('Rumput Gajah').first;
@@ -369,21 +368,21 @@ void main() {
     await tester.tap(find.text('Rumput Odot').first);
     await tester.pumpAndSettle();
 
-    expect(find.text('Belum dihitung'), findsOneWidget);
+    expect(find.text('Tahap 1 dari 2: Komposisi Campuran Pakan'), findsOneWidget);
     expect(find.text('Kandungan Campuran Pakan'), findsNothing);
   });
 
   testWidgets('price mutation invalidates successful snapshot', (tester) async {
     await pumpScreen(tester);
     await addFeedAndSetWeight(tester, '10');
-    await tapText(tester, 'Hitung');
+    await tapText(tester, 'Hitung Kandungan Nutrisi');
 
-    expect(find.text('Perhitungan berhasil'), findsOneWidget);
+    expect(find.text('Tahap 2 dari 2: Hasil Analisis & Evaluasi Nutrien'), findsOneWidget);
     await tapText(tester, 'Kembali');
     await tester.pumpAndSettle();
     await enterDraftValue(tester, 1, '600');
 
-    expect(find.text('Belum dihitung'), findsOneWidget);
+    expect(find.text('Tahap 1 dari 2: Komposisi Campuran Pakan'), findsOneWidget);
     expect(find.text('Kandungan Campuran Pakan'), findsNothing);
   });
 
@@ -404,9 +403,9 @@ void main() {
   testWidgets('draft evaluation action rejects after mutation', (tester) async {
     await pumpScreen(tester, modePilihUntukEvaluasi: true);
     await addFeedAndSetWeight(tester, '10');
-    await tapText(tester, 'Hitung');
+    await tapText(tester, 'Hitung Kandungan Nutrisi');
 
-    expect(find.text('Perhitungan berhasil'), findsOneWidget);
+    expect(find.text('Tahap 2 dari 2: Hasil Analisis & Evaluasi Nutrien'), findsOneWidget);
     await tapText(tester, 'Kembali');
     await tester.pumpAndSettle();
     await enterDraftValue(tester, 0, '5');
@@ -421,15 +420,15 @@ void main() {
   testWidgets('draft mutation invalidates successful snapshot', (tester) async {
     await pumpScreen(tester);
     await addFeedAndSetWeight(tester, '10');
-    await tapText(tester, 'Hitung');
+    await tapText(tester, 'Hitung Kandungan Nutrisi');
 
-    expect(find.text('Perhitungan berhasil'), findsOneWidget);
+    expect(find.text('Tahap 2 dari 2: Hasil Analisis & Evaluasi Nutrien'), findsOneWidget);
     await tapText(tester, 'Kembali');
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextFormField).first, '5');
     await tester.pump();
 
-    expect(find.text('Belum dihitung'), findsOneWidget);
+    expect(find.text('Tahap 1 dari 2: Komposisi Campuran Pakan'), findsOneWidget);
     expect(find.text('Kandungan Campuran Pakan'), findsNothing);
   });
 
@@ -472,7 +471,7 @@ void main() {
     final repository = createRepository(source: source);
     await pumpScreen(tester, repository: repository);
     await addFeedAndSetWeight(tester, '10');
-    await tapText(tester, 'Hitung');
+    await tapText(tester, 'Hitung Kandungan Nutrisi');
 
     source.data = [_bahan.copyWith(nama: 'Rumput Gajah Segar'), _bahanKedua];
     await tester.tap(find.byTooltip('Database Pakan'));
@@ -481,7 +480,7 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
 
     expect(find.text('Rumput Gajah Segar'), findsOneWidget);
-    expect(find.text('Belum dihitung'), findsOneWidget);
+    expect(find.text('Tahap 1 dari 2: Komposisi Campuran Pakan'), findsOneWidget);
     expect(find.text('Kandungan Campuran Pakan'), findsNothing);
   });
 
@@ -492,7 +491,7 @@ void main() {
     final repository = createRepository(source: source);
     await pumpScreen(tester, repository: repository);
     await addFeedAndSetWeight(tester, '10');
-    await tapText(tester, 'Hitung');
+    await tapText(tester, 'Hitung Kandungan Nutrisi');
 
     source.data = [_bahanKedua];
     await tester.tap(find.byTooltip('Database Pakan'));
@@ -501,7 +500,7 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
 
     expect(find.text('Rumput Gajah'), findsNothing);
-    expect(find.text('Belum dihitung'), findsOneWidget);
+    expect(find.text('Tahap 1 dari 2: Komposisi Campuran Pakan'), findsOneWidget);
     expect(find.text('Kandungan Campuran Pakan'), findsNothing);
   });
 
@@ -510,9 +509,9 @@ void main() {
     await pumpScreen(tester, repository: createRepository(data: [invalidFeed]));
     await addFeedAndSetWeight(tester, '10');
 
-    await tapText(tester, 'Hitung');
+    await tapText(tester, 'Hitung Kandungan Nutrisi');
 
-    expect(find.text('Gagal menghitung'), findsOneWidget);
+    expect(find.text('Perhitungan Gagal'), findsOneWidget);
     expect(
       find.text('Data bahan pakan yang dipilih tidak valid.'),
       findsWidgets,
@@ -550,7 +549,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
     await addFeedAndSetWeight(tester, '10');
-    await tapText(tester, 'Hitung');
+    await tapText(tester, 'Hitung Kandungan Nutrisi');
     await tapText(tester, 'Gunakan untuk Evaluasi');
 
     final value = await result.future;

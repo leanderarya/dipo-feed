@@ -42,7 +42,6 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
   FisiologiSapi _fisiologi = FisiologiSapi.laktasi;
   HasilPerhitunganNutrisi? _hasilTerhitung;
   StatusPerhitungan _statusPerhitungan = StatusPerhitungan.belumDihitung;
-  String? _pesanPerhitungan;
   int _tahapAktif = 0;
   final Set<CampuranPakanItem> _inputJumlahTidakValid = {};
   final Set<CampuranPakanItem> _inputHargaTidakValid = {};
@@ -237,7 +236,6 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
   void _invalidasiPerhitungan() {
     _hasilTerhitung = null;
     _statusPerhitungan = StatusPerhitungan.belumDihitung;
-    _pesanPerhitungan = null;
     if (_tahapAktif > 0) {
       _tahapAktif = 0;
     }
@@ -278,7 +276,6 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
       setState(() {
         _hasilTerhitung = hasil;
         _statusPerhitungan = StatusPerhitungan.berhasil;
-        _pesanPerhitungan = null;
         _tahapAktif = 1;
       });
       if (mounted) {
@@ -295,7 +292,6 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
       setState(() {
         _hasilTerhitung = null;
         _statusPerhitungan = StatusPerhitungan.gagal;
-        _pesanPerhitungan = pesan;
       });
       if (mounted) {
         AppToast.showError(context, pesan, title: 'Perhitungan Gagal');
@@ -708,8 +704,6 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
               ),
             ),
           ],
-          const SizedBox(height: 16),
-          _buildPerhitunganStatus(),
         ],
       );
     }
@@ -717,15 +711,13 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (evaluasiStandar != null && hasil != null) ...[
+        if (evaluasiStandar != null && hasil != null)
           EvaluasiStandarCard(
             evaluasi: evaluasiStandar,
             totalBeratKg: hasil.totalBerat,
             totalBiaya: hasil.totalBiaya,
-          ),
-          const SizedBox(height: 16),
-          _buildPerhitunganStatus(),
-        ] else
+          )
+        else
           const AppCard(
             child: Text(
               'Lengkapi komposisi campuran pakan terlebih dahulu untuk melihat hasil.',
@@ -785,35 +777,6 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
           ),
         ],
       ],
-    );
-  }
-
-  Widget _buildPerhitunganStatus() {
-    final statusText = switch (_statusPerhitungan) {
-      StatusPerhitungan.belumDihitung => 'Belum dihitung',
-      StatusPerhitungan.berhasil => 'Perhitungan berhasil',
-      StatusPerhitungan.gagal => 'Gagal menghitung',
-    };
-    final statusMessage = switch (_statusPerhitungan) {
-      StatusPerhitungan.belumDihitung =>
-        'Tekan Hitung untuk menghitung kandungan campuran.',
-      StatusPerhitungan.berhasil =>
-        'Hasil merupakan snapshot dari input terakhir.',
-      StatusPerhitungan.gagal =>
-        _pesanPerhitungan ?? 'Perhitungan nutrisi gagal dilakukan.',
-    };
-
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(statusText, style: const TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 6),
-          Text(statusMessage),
-          const SizedBox(height: 12),
-          FilledButton(onPressed: _hitungManual, child: const Text('Hitung')),
-        ],
-      ),
     );
   }
 
