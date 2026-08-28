@@ -418,11 +418,19 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     if (_tahapAktif == 0) {
       if (_validasiTahapSatu()) {
         setState(() => _tahapAktif = 1);
-        AppToast.showSuccess(
-          context,
-          'Data sapi tersimpan. Silakan pilih bahan pakan.',
-          title: 'Data Sapi Siap',
-        );
+        if (_warningLemakSusu != null) {
+          AppToast.showWarning(
+            context,
+            _warningLemakSusu!,
+            title: 'Peringatan Lemak Susu',
+          );
+        } else {
+          AppToast.showSuccess(
+            context,
+            'Data sapi tersimpan. Silakan pilih bahan pakan.',
+            title: 'Data Sapi Siap',
+          );
+        }
       } else {
         AppToast.showWarning(
           context,
@@ -1138,6 +1146,15 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                 suffix: '%',
                 validator: _validasiLemakSusu,
                 hintText: 'Contoh: 3,5',
+                onFieldSubmitted: (_) {
+                  if (_warningLemakSusu != null) {
+                    AppToast.showWarning(
+                      context,
+                      _warningLemakSusu!,
+                      title: 'Peringatan Lemak Susu',
+                    );
+                  }
+                },
               ),
               const SizedBox(height: 8),
               Row(
@@ -1176,42 +1193,64 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
             ],
             if (_kebutuhanNutrien != null) ...[
               const Divider(height: 32),
-              const Text(
-                'Target Kebutuhan Nutrien',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textGrey,
-                ),
+              Row(
+                children: [
+                  const Text(
+                    'Kebutuhan Nutrien',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.primaryBlue,
+                    ),
+                  ),
+                  const Spacer(),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryBlue.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      'Standar: ${_labelFisiologi(_fisiologi)}',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primaryBlue,
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 12),
-              GridView.count(
-                crossAxisCount: 3,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
-                childAspectRatio: 1.3,
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
                 children: [
-                  _buildNutrientMiniCard(
-                    'BK (kg)',
+                  _buildNutrientChip(
+                    'BK',
                     _format(_kebutuhanNutrien!.kebutuhanBkKg),
+                    'kg',
                   ),
-                  _buildNutrientMiniCard(
-                    'PK (kg)',
+                  _buildNutrientChip(
+                    'PK',
                     _format(_kebutuhanNutrien!.kebutuhanProteinKg),
+                    'kg',
                   ),
-                  _buildNutrientMiniCard(
-                    'TDN (kg)',
+                  _buildNutrientChip(
+                    'TDN',
                     _format(_kebutuhanNutrien!.kebutuhanTdnKg),
+                    'kg',
                   ),
-                  _buildNutrientMiniCard(
-                    'Ca (g)',
+                  _buildNutrientChip(
+                    'Ca',
                     _format(_kebutuhanNutrien!.kebutuhanCaGram),
+                    'g',
                   ),
-                  _buildNutrientMiniCard(
-                    'P (g)',
+                  _buildNutrientChip(
+                    'P',
                     _format(_kebutuhanNutrien!.kebutuhanPGram),
+                    'g',
                   ),
                 ],
               ),
@@ -1794,6 +1833,48 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                   ),
                 ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNutrientChip(String label, String value, String satuan) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundCream,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              color: AppColors.primaryBlue,
+            ),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w900,
+              color: AppColors.textDark,
+            ),
+          ),
+          const SizedBox(width: 3),
+          Text(
+            satuan,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textLight,
             ),
           ),
         ],
