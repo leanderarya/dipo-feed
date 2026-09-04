@@ -47,7 +47,6 @@ class _BlockingSource extends BahanPakanLocalSource {
 const _bahan = BahanPakan(
   id: 1,
   nama: 'Rumput Gajah',
-  kategori: 'hijauan',
   bk: 29.24,
   abu: 17.90,
   lemak: 1.27,
@@ -63,7 +62,6 @@ const _bahan = BahanPakan(
 const _bahanKedua = BahanPakan(
   id: 2,
   nama: 'Rumput Odot',
-  kategori: 'hijauan',
   bk: 22.10,
   abu: 22.18,
   lemak: 3.11,

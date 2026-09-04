@@ -90,7 +90,6 @@ void main() {
       const bahan = BahanPakan(
         id: 1,
         nama: 'Rumput Gajah',
-        kategori: 'hijauan',
         bk: 22.10,
         abu: 17.90,
         lemak: 1.27,
@@ -120,7 +119,6 @@ void main() {
       const bahan1 = BahanPakan(
         id: 1,
         nama: 'Rumput Gajah',
-        kategori: 'hijauan',
         bk: 20.0,
         abu: 10.0,
         lemak: 2.0,
@@ -136,7 +134,6 @@ void main() {
       const bahan2 = BahanPakan(
         id: 2,
         nama: 'Konsentrat',
-        kategori: 'konsentrat',
         bk: 80.0,
         abu: 5.0,
         lemak: 4.0,

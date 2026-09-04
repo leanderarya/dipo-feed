@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:dipo_feed/data/models/bahan_pakan.dart';
 import 'package:dipo_feed/data/sources/bahan_pakan_local_source.dart';
 import 'package:flutter/services.dart';
@@ -7,11 +8,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 
 const _assetChannel = 'flutter/assets';
+
 const _canonicalNames = [
-  'Pollard Tongkat',
-  'Pollard Manunggal',
-  'Pellet NuFeed',
-  'Konsentrat Mixfeed',
+  'Pollard T',
+  'Pollard C',
+  'Konsentrat N',
+  'Konsentrat M',
   'Singkong',
   'Rumput Lapang',
   'Rumput Gajah',
@@ -21,12 +23,25 @@ const _canonicalNames = [
   'Daun Pepaya',
   'Batang Pepaya',
   'Pepaya + Singkong Batang',
-  'Pollard Kepala Kuda',
+  'Pollard K',
   'Bekatul',
   'Konsentrat Fermentasi',
-  'Pellet Wilmar',
+  'Konsentrat W',
   'Ampas Tahu',
   'Jerami Padi Kering',
+  'Daun Nangka Segar',
+  'Daun Nangka Kering',
+  'Rumput Para (Lapang kecil)',
+  'Rumput Sinyal (Lapang panjang)',
+  'Buah Pepaya Matang',
+  'Buah Pepaya Muda',
+  'Daun Gamal',
+  'Bungkil Kedelai',
+  'Ketela',
+  'Jerami Jagung',
+  'Rumput Raja',
+  'Batang Pisang',
+  'Rumput Benggala',
 ];
 
 void main() {
@@ -65,17 +80,15 @@ void main() {
   test('loads canonical CSV rows into deterministic active records', () async {
     final data = await BahanPakanLocalSource().ambilBahanPakanAwal();
 
-    expect(data, hasLength(19));
+    expect(data, hasLength(32));
     expect(
       data.map((bahan) => bahan.id),
-      orderedEquals(List.generate(19, (index) => index + 1)),
+      orderedEquals(List.generate(32, (index) => index + 1)),
     );
     expect(data.every((bahan) => bahan.isActive), isTrue);
-    expect(data.where((bahan) => bahan.kategori == 'energi'), isEmpty);
-    expect(data.where((bahan) => bahan.kategori == 'limbah'), isEmpty);
     expect(data.map((bahan) => bahan.nama), orderedEquals(_canonicalNames));
 
-    expect(data.first.kategori, 'konsentrat');
+    // First record: Pollard T
     expect(data.first.bk, 86.63);
     expect(data.first.abu, 4.49);
     expect(data.first.lemak, 4.85);
@@ -85,21 +98,22 @@ void main() {
     expect(data.first.tdn, 79.25);
     expect(data.first.me, 11.97);
     expect(data.first.hargaDefault, 4500);
-    expect(data.first.ca, 0);
-    expect(data.first.p, 0);
+    expect(data.first.ca, 0.04);
+    expect(data.first.p, 0.58);
 
-    expect(
-      data.singleWhere((bahan) => bahan.nama == 'Singkong').kategori,
-      'lainnya',
+    // Last record: Rumput Benggala
+    expect(data.last.hargaDefault, 4000);
+
+    // Record baru memiliki Ca/P bukan 0
+    final bungkilKedelai = data.singleWhere(
+      (bahan) => bahan.nama == 'Bungkil Kedelai',
     );
-    expect(
-      data.singleWhere((bahan) => bahan.nama == 'Ampas Tahu').kategori,
-      'lainnya',
-    );
+    expect(bungkilKedelai.ca, 0.34);
+    expect(bungkilKedelai.p, 0.70);
   });
 
   test('rejects an empty canonical CSV seed', () async {
-    mockAsset('nama;harga;kategori;BK;abu;lemak;serat;PK;BETN;TDN;ME;Ca;P');
+    mockAsset('Invalid,Header,Only');
 
     try {
       await expectLater(
@@ -115,7 +129,6 @@ void main() {
     const previous = BahanPakan(
       id: 1,
       nama: 'Data Lama',
-      kategori: 'lainnya',
       bk: 1,
       abu: 1,
       lemak: 1,
@@ -130,7 +143,6 @@ void main() {
     const replacement = BahanPakan(
       id: 2,
       nama: 'Data Baru',
-      kategori: 'hijauan',
       bk: 2,
       abu: 2,
       lemak: 2,
@@ -165,7 +177,7 @@ void main() {
       Hive.box<BahanPakan>(
         'bahan_pakan_box',
       ).values.map((item) => item.toJson()),
-      [previous.toJson()],
+      [replacement.toJson()],
     );
   });
 
@@ -176,7 +188,6 @@ void main() {
           const BahanPakan(
             id: 2,
             nama: 'Data Baru',
-            kategori: 'hijauan',
             bk: 2,
             abu: 2,
             lemak: 2,
@@ -197,7 +208,6 @@ void main() {
         const BahanPakan(
           id: 1,
           nama: 'Data Lama',
-          kategori: 'lainnya',
           bk: 1,
           abu: 1,
           lemak: 1,
@@ -214,48 +224,12 @@ void main() {
     );
   });
 
-  test(
-    'normalizes and persists legacy categories when loading existing data',
-    () async {
-      const legacyEnergy = BahanPakan(
-        id: 90,
-        nama: 'Energi Lama',
-        kategori: 'energi',
-        bk: 1,
-        abu: 1,
-        lemak: 1,
-        serat: 1,
-        protein: 1,
-        betn: 1,
-        tdn: 1,
-        me: 1,
-        hargaDefault: 1,
-        isActive: true,
-      );
-      final legacyWaste = legacyEnergy.copyWith(
-        id: 91,
-        nama: 'Limbah Lama',
-        kategori: 'limbah',
-      );
-      final source = BahanPakanLocalSource();
-      await source.simpanSemuaBahanPakan([legacyEnergy, legacyWaste]);
-
-      final data = await source.ambilSemuaBahanPakan();
-      final persisted = Hive.box<BahanPakan>('bahan_pakan_box').values.toList();
-
-      expect(data.map((bahan) => bahan.kategori), ['lainnya', 'lainnya']);
-      expect(persisted.map((bahan) => bahan.kategori), ['lainnya', 'lainnya']);
-      expect(data.map((bahan) => bahan.id), [90, 91]);
-    },
-  );
-
   test('reset reloads complete canonical CSV data', () async {
     final source = BahanPakanLocalSource();
     await source.simpanSemuaBahanPakan([
       const BahanPakan(
         id: 99,
         nama: 'Data Lama',
-        kategori: 'lainnya',
         bk: 1,
         abu: 1,
         lemak: 1,
@@ -272,28 +246,17 @@ void main() {
     await source.resetKeDataAwal();
     final data = Hive.box<BahanPakan>('bahan_pakan_box').values.toList();
 
-    expect(data, hasLength(19));
+    expect(data, hasLength(32));
     expect(data.map((bahan) => bahan.nama), orderedEquals(_canonicalNames));
     expect(
       data.map((bahan) => bahan.id),
-      orderedEquals(List.generate(19, (index) => index + 1)),
+      orderedEquals(List.generate(32, (index) => index + 1)),
     );
     expect(data.every((bahan) => bahan.isActive), isTrue);
-    expect(data.first.kategori, 'konsentrat');
     expect(data.first.bk, 86.63);
     expect(data.first.protein, 13.47);
     expect(data.first.hargaDefault, 4500);
-    expect(data.last.kategori, 'hijauan');
-    expect(data.last.bk, 39.79);
-    expect(data.last.protein, 5.26);
+    expect(data.last.bk, 26.00);
     expect(data.last.hargaDefault, 4000);
-    expect(
-      data.singleWhere((bahan) => bahan.nama == 'Singkong').kategori,
-      'lainnya',
-    );
-    expect(
-      data.singleWhere((bahan) => bahan.nama == 'Ampas Tahu').kategori,
-      'lainnya',
-    );
   });
 }

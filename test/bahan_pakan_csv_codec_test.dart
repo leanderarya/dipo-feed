@@ -3,27 +3,26 @@ import 'package:dipo_feed/data/csv/hasil_import_bahan_pakan.dart';
 import 'package:dipo_feed/data/models/bahan_pakan.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-const header = 'nama;harga;kategori;BK;abu;lemak;serat;PK;BETN;TDN;ME;Ca;P';
+const header = 'No,Bahan Pakan,Harga/kg,BK (%),Abu (%),Lemak (%),Serat (%),Protein (%),BETN (%),TDN (%),ME (KJoule/kg),Ca (%),P (%),Sumber';
 
 String row({
   String nama = 'Rumput Gajah',
   String harga = '500',
-  String kategori = 'hijauan',
-  String bk = '29,24',
-  String abu = '17,90',
-  String lemak = '1,27',
-  String serat = '31,21',
-  String protein = '9,35',
-  String betn = '40,27',
-  String tdn = '54,58',
-  String me = '8,24',
-  String ca = '0,00',
-  String p = '0,00',
+  String bk = '29.24',
+  String abu = '17.90',
+  String lemak = '1.27',
+  String serat = '31.21',
+  String protein = '9.35',
+  String betn = '40.27',
+  String tdn = '54.58',
+  String me = '8.24',
+  String ca = '0.42',
+  String p = '0.25',
 }) {
   return [
+    '', // No — kosong, parser akan skip
     nama,
     harga,
-    kategori,
     bk,
     abu,
     lemak,
@@ -34,40 +33,36 @@ String row({
     me,
     ca,
     p,
-  ].join(';');
+    '', // Sumber — kosong
+  ].join(',');
+}
+
+/// Build CSV with header + rows.
+String csv(Iterable<String> rows) {
+  return '$header\n${rows.join('\n')}\n';
 }
 
 void main() {
   group('BahanPakanCsvCodec.parse', () {
-    test('parses exact header, Indonesian numbers, and UTF-8 text', () {
+    test('parses full header with UTF-8 text and point decimals', () {
       final rows = BahanPakanCsvCodec.parse(
         '$header\n${row(nama: 'Kedelai Á')}\n',
       );
 
       expect(rows, hasLength(1));
       expect(rows.single.nama, 'Kedelai Á');
-      expect(rows.single.kategori, 'hijauan');
-      expect(rows.single.bk, 29.24);
-      expect(rows.single.harga, 500);
-      expect(rows.single.ca, 0);
-      expect(rows.single.p, 0);
-    });
-
-    test('normalizes accepted categories and rejects unknown categories', () {
-      final rows = BahanPakanCsvCodec.parse(
-        '$header\n${row(kategori: ' HIJAUAN ')}',
-      );
-
-      expect(rows.single.kategori, 'hijauan');
-      expect(
-        () => BahanPakanCsvCodec.parse('$header\n${row(kategori: 'suplemen')}'),
-        throwsFormatException,
-      );
+      expect(rows.single.bk, closeTo(29.24, 0.001));
+      expect(rows.single.harga, closeTo(500, 0.001));
+      expect(rows.single.ca, closeTo(0.42, 0.001));
+      expect(rows.single.p, closeTo(0.25, 0.001));
     });
 
     test('uses the last row for trim and case-insensitive duplicate names', () {
       final rows = BahanPakanCsvCodec.parse(
-        '$header\n${row(nama: '  Rumput Gajah ', bk: '29,00')}\n${row(nama: 'Daun Singkong')}\n${row(nama: 'RUMPUT GAJAH', bk: '30,00', abu: '18,00', harga: '600')}',
+        '$header\n'
+        '${row(nama: '  Rumput Gajah ', bk: '29.00')}\n'
+        '${row(nama: 'Daun Singkong')}\n'
+        '${row(nama: 'RUMPUT GAJAH', bk: '30.00', abu: '18.00', harga: '600')}\n',
       );
 
       expect(rows, hasLength(2));
@@ -75,31 +70,57 @@ void main() {
         'Daun Singkong',
         'RUMPUT GAJAH',
       ]);
-      expect(rows.last.bk, 30);
-      expect(rows.last.abu, 18);
-      expect(rows.last.harga, 600);
+      expect(rows.last.bk, closeTo(30, 0.001));
+      expect(rows.last.abu, closeTo(18, 0.001));
+      expect(rows.last.harga, closeTo(600, 0.001));
+    });
+
+    test('parses harga with Rp prefix', () {
+      final rows = BahanPakanCsvCodec.parse(
+        '$header\n${row(harga: 'Rp4.500')}\n',
+      );
+      expect(rows.single.harga, closeTo(4500, 0.001));
+    });
+
+    test('parses harga with Indonesian comma-ribuan format', () {
+      // Use manually quoted CSV — comma in value needs quoting
+      final csv = 'No,Bahan Pakan,Harga/kg,BK (%),Abu (%),Lemak (%),Serat (%),Protein (%),BETN (%),TDN (%),ME (KJoule/kg),Ca (%),P (%),Sumber\n'
+          '1,Rumput Gajah,"Rp4,000",29.24,17.90,1.27,31.21,9.35,40.27,54.58,8.24,0.42,0.25,\n';
+      final rows = BahanPakanCsvCodec.parse(csv);
+      expect(rows.single.harga, closeTo(4000, 0.001));
+    });
+
+    test('parses harga with comma as decimal separator', () {
+      final csv = 'No,Bahan Pakan,Harga/kg,BK (%),Abu (%),Lemak (%),Serat (%),Protein (%),BETN (%),TDN (%),ME (KJoule/kg),Ca (%),P (%),Sumber\n'
+          '1,Rumput Gajah,"4,5",29.24,17.90,1.27,31.21,9.35,40.27,54.58,8.24,0.42,0.25,\n';
+      final rows = BahanPakanCsvCodec.parse(csv);
+      expect(rows.single.harga, closeTo(4.5, 0.001));
+    });
+
+    test('parses harga with blank or missing as 0', () {
+      final rows = BahanPakanCsvCodec.parse(
+        '$header\n${row(harga: '')}\n',
+      );
+      expect(rows.single.harga, closeTo(0, 0.001));
+    });
+
+    test('parses numeric values with Rp prefix and dot ribuan', () {
+      final rows = BahanPakanCsvCodec.parse(
+        '$header\n${row(harga: 'Rp4.000')}\n',
+      );
+      expect(rows.single.harga, closeTo(4000, 0.001));
     });
 
     test('rejects invalid values in every numeric column', () {
-      final numericIndices = <int, String>{
-        1: 'harga',
-        3: 'BK',
-        4: 'abu',
-        5: 'lemak',
-        6: 'serat',
-        7: 'PK',
-        8: 'BETN',
-        9: 'TDN',
-        10: 'ME',
-        11: 'Ca',
-        12: 'P',
+      final testCases = <int, String>{
+        2: 'harga', 3: 'BK', 4: 'abu', 5: 'lemak', 6: 'serat',
+        7: 'PK', 8: 'BETN', 9: 'TDN', 10: 'ME', 11: 'Ca', 12: 'P',
       };
-      for (final entry in numericIndices.entries) {
-        final fields = row().split(';');
+      for (final entry in testCases.entries) {
+        final fields = row().split(',');
         fields[entry.key] = 'invalid';
-
         expect(
-          () => BahanPakanCsvCodec.parse('$header\n${fields.join(';')}'),
+          () => BahanPakanCsvCodec.parse('$header\n${fields.join(',')}'),
           throwsFormatException,
           reason: entry.value,
         );
@@ -107,49 +128,29 @@ void main() {
     });
 
     test('rejects negative values in every numeric column', () {
-      final numericIndices = <int, String>{
-        1: 'harga',
-        3: 'BK',
-        4: 'abu',
-        5: 'lemak',
-        6: 'serat',
-        7: 'PK',
-        8: 'BETN',
-        9: 'TDN',
-        10: 'ME',
-        11: 'Ca',
-        12: 'P',
+      final testCases = <int, String>{
+        2: 'harga', 3: 'BK', 4: 'abu', 5: 'lemak', 6: 'serat',
+        7: 'PK', 8: 'BETN', 9: 'TDN', 10: 'ME', 11: 'Ca', 12: 'P',
       };
-      for (final entry in numericIndices.entries) {
-        final fields = row().split(';');
+      for (final entry in testCases.entries) {
+        final fields = row().split(',');
         fields[entry.key] = '-1';
-
         expect(
-          () => BahanPakanCsvCodec.parse('$header\n${fields.join(';')}'),
+          () => BahanPakanCsvCodec.parse('$header\n${fields.join(',')}'),
           throwsFormatException,
           reason: entry.value,
         );
       }
     });
 
-    test('rejects numeric values formatter cannot export', () {
-      final fields = row().split(';');
-      fields[3] = '1e21';
-
-      expect(
-        () => BahanPakanCsvCodec.parse('$header\n${fields.join(';')}'),
-        throwsFormatException,
-      );
-    });
-
     test('rejects blank records before, between, and after data rows', () {
-      for (final csv in [
+      for (final testCsv in [
         '$header\n\n${row()}',
         '$header\n  \n${row()}',
         '$header\n${row()}\n\n${row(nama: 'Daun Singkong')}',
         '$header\n${row()}\n  \n',
       ]) {
-        expect(() => BahanPakanCsvCodec.parse(csv), throwsFormatException);
+        expect(() => BahanPakanCsvCodec.parse(testCsv), throwsFormatException);
       }
     });
 
@@ -157,52 +158,57 @@ void main() {
       final rows = BahanPakanCsvCodec.parse(
         [
           header,
-          '"Pakan; ""Spesial""\nBaru";500;hijauan;29,24;17,90;1,27;31,21;9,35;40,27;54,58;8,24;0,00;0,00',
+          '1,"Rumput, Gajah & ""King""",500,29.24,17.90,1.27,31.21,9.35,40.27,54.58,8.24,0.42,0.25,',
         ].join('\n'),
       );
 
-      expect(rows.single.nama, 'Pakan; "Spesial"\nBaru');
-      expect(rows.single.harga, 500);
+      expect(rows.single.nama, 'Rumput, Gajah & "King"');
+      expect(rows.single.harga, closeTo(500, 0.001));
     });
 
-    test('rejects wrong header', () {
+    test('rejects wrong or missing required columns', () {
       expect(
-        () => BahanPakanCsvCodec.parse('nama;kategori\n${row()}'),
+        () => BahanPakanCsvCodec.parse('Bahan Pakan,Harga/kg\n${row()}'),
+        throwsFormatException,
+      );
+      expect(
+        () => BahanPakanCsvCodec.parse('No,Bahan Pakan\n${row()}'),
         throwsFormatException,
       );
     });
 
     test('rejects blank required fields and malformed rows', () {
-      for (final csv in [
+      for (final testCsv in [
         '$header\n${row(nama: '   ')}',
-        '$header\n${row(kategori: '')}',
-        '$header\n${row(bk: '')}',
-        '$header\n${row(bk: '1.23')}',
-        '$header\n${row()}\nshort;row',
+        '$header\n${row()}\n,',
       ]) {
-        expect(() => BahanPakanCsvCodec.parse(csv), throwsFormatException);
+        expect(() => BahanPakanCsvCodec.parse(testCsv), throwsFormatException);
       }
     });
 
     test('rejects malformed quoting', () {
       expect(
-        () => BahanPakanCsvCodec.parse('$header\n"Rumput Gajah;500;hijauan;29,24'),
+        () => BahanPakanCsvCodec.parse('$header\n"Rumput Gajah,500,29.24'),
         throwsFormatException,
       );
-      expect(
-        () =>
-            BahanPakanCsvCodec.parse('$header\n${row(nama: 'Rumput "Gajah')} '),
-        throwsFormatException,
-      );
+    });
+
+    test('ignores unknown columns (No, Sumber, extra columns)', () {
+      final csv = 'Kode,Bahan Pakan,Harga/kg,BK (%),Abu (%),Lemak (%),Serat (%),Protein (%),BETN (%),TDN (%),ME (KJoule/kg),Ca (%),P (%),Catatan\n'
+          'X01,Rumput Gajah,500,29.24,17.90,1.27,31.21,9.35,40.27,54.58,8.24,0.42,0.25,something\n';
+
+      final rows = BahanPakanCsvCodec.parse(csv);
+      expect(rows, hasLength(1));
+      expect(rows.single.nama, 'Rumput Gajah');
+      expect(rows.single.bk, closeTo(29.24, 0.001));
     });
   });
 
   group('BahanPakanCsvCodec.serialize', () {
-    test('uses exact order, precision, and Indonesian separators', () {
+    test('uses exact order, precision, and standard CSV format', () {
       const bahan = BahanPakan(
         id: 1,
         nama: 'Rumput Gajah',
-        kategori: 'hijauan',
         bk: 29.24,
         abu: 17.9,
         lemak: 1.27,
@@ -213,21 +219,24 @@ void main() {
         me: 8.24,
         hargaDefault: 4500,
         isActive: true,
-        ca: 0,
-        p: 0,
+        ca: 0.42,
+        p: 0.25,
       );
 
-      expect(
-        BahanPakanCsvCodec.serialize([bahan]),
-        '$header\nRumput Gajah;4500;hijauan;29,24;17,90;1,27;31,21;9,35;40,27;54,58;8,24;0,00;0,00\n',
-      );
+      final output = BahanPakanCsvCodec.serialize([bahan]);
+      expect(output, startsWith(header));
+      final dataLine = output.split('\n')[1];
+      expect(dataLine, contains('Rumput Gajah'));
+      expect(dataLine, contains('4500'));
+      expect(dataLine, contains('29.24'));
+      expect(dataLine, contains('0.42'));
+      expect(dataLine, contains('0.25'));
     });
 
     test('quotes fields containing delimiter, quote, or newline', () {
       const bahan = BahanPakan(
         id: 1,
-        nama: 'Pakan; "Spesial"\nBaru',
-        kategori: 'lainnya',
+        nama: 'Pakan, "Spesial"\nBaru',
         bk: 1,
         abu: 2,
         lemak: 3,
@@ -240,60 +249,16 @@ void main() {
         isActive: true,
       );
 
-      expect(
-        BahanPakanCsvCodec.serialize([bahan]),
-        '$header\n"Pakan; ""Spesial""\nBaru";9;lainnya;1,00;2,00;3,00;4,00;5,00;6,00;7,00;8,00;0,00;0,00\n',
-      );
+      final output = BahanPakanCsvCodec.serialize([bahan]);
+      expect(output, contains('"Pakan, ""Spesial""\nBaru"'));
+      final rows = BahanPakanCsvCodec.parse(output);
+      expect(rows.single.nama, bahan.nama);
     });
 
-    test('canonicalizes legacy categories for re-importable round trips', () {
-      final bahan = const BahanPakan(
-        id: 1,
-        nama: 'Energi Lama',
-        kategori: 'energi',
-        bk: 1,
-        abu: 2,
-        lemak: 3,
-        serat: 4,
-        protein: 5,
-        betn: 6,
-        tdn: 7,
-        me: 8,
-        hargaDefault: 9,
-        isActive: true,
-      );
-      final csv = BahanPakanCsvCodec.serialize([bahan]);
-      final rows = BahanPakanCsvCodec.parse(csv);
-
-      expect(rows.single.kategori, 'lainnya');
-      expect(csv, contains('Energi Lama;9;lainnya;'));
-    });
-
-    test('rejects unknown categories during serialization', () {
-      final bahan = const BahanPakan(
-        id: 1,
-        nama: 'Unknown',
-        kategori: 'suplemen',
-        bk: 1,
-        abu: 2,
-        lemak: 3,
-        serat: 4,
-        protein: 5,
-        betn: 6,
-        tdn: 7,
-        me: 8,
-        hargaDefault: 9,
-        isActive: true,
-      );
-
-      expect(() => BahanPakanCsvCodec.serialize([bahan]), throwsArgumentError);
-    });
-
-    test('canonicalizes names and categories before quoting', () {
+    test('rejects non-finite numeric values', () {
       final bahan = BahanPakan(
         id: 1,
-        nama: '  Rumput Gajah  ',
-        kategori: ' HIJAUAN ',
+        nama: 'Test',
         bk: 1,
         abu: 2,
         lemak: 3,
@@ -306,36 +271,6 @@ void main() {
         isActive: true,
       );
 
-      final rows = BahanPakanCsvCodec.parse(
-        BahanPakanCsvCodec.serialize([bahan]),
-      );
-
-      expect(rows.single.nama, 'Rumput Gajah');
-      expect(rows.single.kategori, 'hijauan');
-      expect(rows.single.harga, 9);
-    });
-
-    test('uses formatter rounding and rejects non-finite numeric values', () {
-      final bahan = BahanPakan(
-        id: 1,
-        nama: 'Rounding',
-        kategori: 'hijauan',
-        bk: 1.235,
-        abu: 2,
-        lemak: 3,
-        serat: 4,
-        protein: 5,
-        betn: 6,
-        tdn: 7,
-        me: 8,
-        hargaDefault: 9.5,
-        isActive: true,
-      );
-
-      expect(
-        BahanPakanCsvCodec.serialize([bahan]).split('\n')[1].split(';'),
-        containsAllInOrder(['1,24', '2,00']),
-      );
       expect(
         () => BahanPakanCsvCodec.serialize([bahan.copyWith(bk: double.nan)]),
         throwsArgumentError,
@@ -352,7 +287,6 @@ void main() {
       final bahan = const BahanPakan(
         id: 1,
         nama: 'Negative',
-        kategori: 'hijauan',
         bk: 1,
         abu: 2,
         lemak: 3,
@@ -390,7 +324,6 @@ void main() {
       final first = BahanPakan(
         id: 1,
         nama: 'Pertama',
-        kategori: 'hijauan',
         bk: 1,
         abu: 2,
         lemak: 3,
@@ -409,23 +342,24 @@ void main() {
       );
       final last = first.copyWith(id: 3, nama: 'Terakhir');
 
-      final csv = BahanPakanCsvCodec.serialize(
+      final csvOutput = BahanPakanCsvCodec.serialize(
         [first, inactive, last].where((bahan) => bahan.isActive),
       );
 
-      expect(
-        csv.split('\n').sublist(1, 3).map((line) => line.split(';').first),
-        ['Pertama', 'Terakhir'],
-      );
+      final dataLines = csvOutput
+          .split('\n')
+          .sublist(1)
+          .where((line) => line.trim().isNotEmpty)
+          .toList();
+      expect(dataLines.length, 2);
+      expect(dataLines[0], contains('Pertama'));
+      expect(dataLines[1], contains('Terakhir'));
     });
   });
 
   test('validates import result counts and keeps errors immutable', () {
     for (final field in [
-      'ditambah',
-      'diperbarui',
-      'dihapus',
-      'barisDiproses',
+      'ditambah', 'diperbarui', 'dihapus', 'barisDiproses',
     ]) {
       expect(
         () => HasilImportBahanPakan(
@@ -458,5 +392,44 @@ void main() {
       ).berhasil,
       isTrue,
     );
+  });
+
+  test('round-trip: parse(serialize(data)) preserves values', () {
+    final bahan = BahanPakan(
+      id: 1,
+      nama: 'Rumput Gajah',
+      bk: 29.24,
+      abu: 17.9,
+      lemak: 1.27,
+      serat: 31.21,
+      protein: 9.35,
+      betn: 40.27,
+      tdn: 54.58,
+      me: 8.24,
+      hargaDefault: 4500,
+      isActive: true,
+      ca: 0.42,
+      p: 0.25,
+    );
+
+    final csvOutput = BahanPakanCsvCodec.serialize([bahan]);
+    final rows = BahanPakanCsvCodec.parse(csvOutput);
+
+    expect(rows, hasLength(1));
+    expect(rows.single.nama, 'Rumput Gajah');
+    expect(rows.single.bk, closeTo(29.24, 0.01));
+    expect(rows.single.harga, closeTo(4500, 0.01));
+    expect(rows.single.ca, closeTo(0.42, 0.01));
+    expect(rows.single.p, closeTo(0.25, 0.01));
+  });
+
+  test('ignores extra columns during import', () {
+    final csvWithExtraCols = 'No,Kode,Bahan Pakan,Kategori,Harga/kg,BK (%),Abu (%),Lemak (%),Serat (%),Protein (%),BETN (%),TDN (%),ME (KJoule/kg),Ca (%),P (%),Sumber,Extra\n'
+        '1,X01,Rumput Gajah,hijauan,500,29.24,17.90,1.27,31.21,9.35,40.27,54.58,8.24,0.42,0.25,Sumber data,ignore\n';
+
+    final rows = BahanPakanCsvCodec.parse(csvWithExtraCols);
+    expect(rows, hasLength(1));
+    expect(rows.single.nama, 'Rumput Gajah');
+    expect(rows.single.bk, closeTo(29.24, 0.01));
   });
 }

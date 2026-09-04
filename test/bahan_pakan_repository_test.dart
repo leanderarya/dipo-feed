@@ -72,7 +72,6 @@ BahanPakan bahan({
   return BahanPakan(
     id: id,
     nama: nama,
-    kategori: kategori,
     bk: bk,
     abu: 2,
     lemak: 3,
@@ -89,24 +88,24 @@ BahanPakan bahan({
 String row({
   required String nama,
   String harga = '100',
-  String kategori = 'hijauan',
-  String bk = '1,00',
+  String bk = '1.00',
 }) {
   return [
+    '', // No
     nama,
     harga,
-    kategori,
     bk,
-    '2,00',
-    '3,00',
-    '4,00',
-    '5,00',
-    '6,00',
-    '7,00',
-    '8,00',
-    '0,00',
-    '0,00',
-  ].join(';');
+    '2.00',
+    '3.00',
+    '4.00',
+    '5.00',
+    '6.00',
+    '7.00',
+    '8.00',
+    '0.00',
+    '0.00',
+    '', // Sumber
+  ].join(',');
 }
 
 String csv(Iterable<String> rows) {
@@ -158,7 +157,9 @@ void main() {
 
     for (final prefix in ['=', '+', '-', '@']) {
       await expectLater(
-        repository.addBahan(bahan(id: 10 + prefix.codeUnitAt(0), nama: '$prefix Bahaya')),
+        repository.addBahan(
+          bahan(id: 10 + prefix.codeUnitAt(0), nama: '$prefix Bahaya'),
+        ),
         throwsArgumentError,
       );
       await expectLater(
@@ -274,8 +275,8 @@ void main() {
       await repository.initialize();
       final result = await repository.replaceFromCsv(
         csv([
-          row(nama: '  RUMPUT GAJAH  ', bk: '2,00'),
-          row(nama: 'Ampas Tahu', kategori: 'lainnya', harga: '250'),
+          row(nama: '  RUMPUT GAJAH  ', bk: '2.00'),
+          row(nama: 'Ampas Tahu', harga: '250'),
         ]),
       );
 
@@ -337,8 +338,8 @@ void main() {
     await repository.initialize();
     final result = await repository.replaceFromCsv(
       csv([
-        row(nama: 'Rumput Gajah', bk: '2,00'),
-        row(nama: ' rumput gajah ', bk: '3,00'),
+        row(nama: 'Rumput Gajah', bk: '2.00'),
+        row(nama: ' rumput gajah ', bk: '3.00'),
       ]),
     );
 

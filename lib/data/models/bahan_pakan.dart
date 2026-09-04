@@ -10,36 +10,33 @@ class BahanPakan {
   @HiveField(1)
   final String nama;
   @HiveField(2)
-  final String kategori;
-  @HiveField(3)
   final double bk;
-  @HiveField(4)
+  @HiveField(3)
   final double abu;
-  @HiveField(5)
+  @HiveField(4)
   final double lemak;
-  @HiveField(6)
+  @HiveField(5)
   final double serat;
-  @HiveField(7)
+  @HiveField(6)
   final double protein;
-  @HiveField(8)
+  @HiveField(7)
   final double betn;
-  @HiveField(9)
+  @HiveField(8)
   final double tdn;
-  @HiveField(10)
+  @HiveField(9)
   final double me;
-  @HiveField(11)
+  @HiveField(10)
   final double hargaDefault;
-  @HiveField(12)
+  @HiveField(11)
   final bool isActive;
-  @HiveField(13)
+  @HiveField(12)
   final double ca;
-  @HiveField(14)
+  @HiveField(13)
   final double p;
 
   const BahanPakan({
     required this.id,
     required this.nama,
-    required this.kategori,
     required this.bk,
     required this.abu,
     required this.lemak,
@@ -58,7 +55,6 @@ class BahanPakan {
     return BahanPakan(
       id: json['id'] as int,
       nama: json['nama'] as String,
-      kategori: json['kategori'] as String,
       bk: (json['bk'] as num).toDouble(),
       abu: (json['abu'] as num).toDouble(),
       lemak: (json['lemak'] as num).toDouble(),
@@ -78,7 +74,6 @@ class BahanPakan {
     return {
       'id': id,
       'nama': nama,
-      'kategori': kategori,
       'bk': bk,
       'abu': abu,
       'lemak': lemak,
@@ -119,7 +114,6 @@ class BahanPakan {
   BahanPakan copyWith({
     int? id,
     String? nama,
-    String? kategori,
     double? bk,
     double? abu,
     double? lemak,
@@ -136,7 +130,6 @@ class BahanPakan {
     return BahanPakan(
       id: id ?? this.id,
       nama: nama ?? this.nama,
-      kategori: kategori ?? this.kategori,
       bk: bk ?? this.bk,
       abu: abu ?? this.abu,
       lemak: lemak ?? this.lemak,

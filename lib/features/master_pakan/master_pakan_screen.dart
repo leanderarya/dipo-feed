@@ -66,6 +66,7 @@ class MasterPakanScreen extends StatefulWidget {
 
 class _MasterPakanScreenState extends State<MasterPakanScreen> {
   static const _safeShareFallback = Rect.fromLTWH(0, 0, 1, 1);
+  static const _pageSize = 20;
 
   final _exportButtonKey = GlobalKey();
 
@@ -76,6 +77,7 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
   bool _isLoading = true;
   bool _isProcessing = false;
   String? _errorMessage;
+  int _visibleCount = 20;
 
   @override
   void initState() {
@@ -97,6 +99,7 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
       if (!mounted) return;
       setState(() {
         _isLoading = false;
+        _visibleCount = _pageSize;
       });
     } catch (e) {
       if (!mounted) return;
@@ -164,11 +167,14 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
 
       final hasil = await _repository.replaceFromCsv(csv);
       if (!mounted) return;
-      setState(() {});
+      setState(() => _visibleCount = _pageSize);
       _tampilkanPesanImpor(hasil);
     } catch (error) {
       if (!mounted) return;
-      AppToast.showError(context, 'Gagal mengimpor CSV: $error');
+      final msg = error is FormatException
+          ? error.message
+          : error.toString();
+      AppToast.showError(context, 'Gagal mengimpor CSV: $msg');
     } finally {
       if (mounted) setState(() => _isProcessing = false);
     }
@@ -231,7 +237,7 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
         AppToast.showSuccess(context, 'Perubahan bahan pakan berhasil disimpan.');
       }
 
-      if (mounted) setState(() {});
+      if (mounted) setState(() => _visibleCount = _pageSize);
     } catch (error) {
       if (!mounted) return;
       AppToast.showError(context, 'Gagal menyimpan bahan pakan: $error');
@@ -325,7 +331,7 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
       await _repository.resetKeDataAwal();
       if (!mounted) return;
 
-      setState(() {});
+      setState(() => _visibleCount = _pageSize);
       AppToast.showInfo(context, 'Master pakan dikembalikan ke data awal.');
     } catch (error) {
       if (!mounted) return;
@@ -487,8 +493,13 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
                   const SizedBox(height: 16),
                   if (semuaData.isEmpty)
                     _buildEmptyState()
-                  else
-                    ...semuaData.map(_buildBahanCard),
+                  else ...[
+                    ...semuaData.take(_visibleCount).map(_buildBahanCard),
+                    if (_visibleCount < semuaData.length) ...[
+                      const SizedBox(height: 8),
+                      _buildMuatLagi(semuaData.length),
+                    ],
+                  ],
                 ]),
               ),
             ),
@@ -579,6 +590,22 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
     );
   }
 
+  Widget _buildMuatLagi(int total) {
+    return Center(
+      child: TextButton(
+        onPressed: () => setState(() => _visibleCount += _pageSize),
+        child: Text(
+          'Muat lagi (${_visibleCount - _pageSize}-$_visibleCount dari $total)',
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: AppColors.primaryBlue,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildBahanCard(BahanPakan bahan) {
     return AppCard(
       margin: const EdgeInsets.only(bottom: 12),
@@ -597,14 +624,6 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      bahan.kategori.toUpperCase(),
-                      style: const TextStyle(
-                        fontSize: 10,
-                        color: AppColors.textGrey,
-                        letterSpacing: 1,
                       ),
                     ),
                   ],
@@ -638,6 +657,24 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
               _buildMetric(
                 'Harga',
                 'Rp${IndonesianNumberFormatter.format(bahan.hargaDefault, decimals: 0)}',
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildMetric(
+                'Lemak',
+                '${IndonesianNumberFormatter.format(bahan.lemak, decimals: 1)}%',
+              ),
+              _buildMetric(
+                'Ca',
+                '${IndonesianNumberFormatter.format(bahan.ca, decimals: 2)}%',
+              ),
+              _buildMetric(
+                'P',
+                '${IndonesianNumberFormatter.format(bahan.p, decimals: 2)}%',
               ),
             ],
           ),
@@ -708,9 +745,11 @@ class _FormBahanPakanSheetState extends State<_FormBahanPakanSheet> {
   late final TextEditingController _proteinController;
   late final TextEditingController _tdnController;
   late final TextEditingController _hargaController;
+  late final TextEditingController _lemakController;
+  late final TextEditingController _caController;
+  late final TextEditingController _pController;
 
   late bool _isActive;
-  String? _selectedKategori;
 
   @override
   void initState() {
@@ -727,7 +766,15 @@ class _FormBahanPakanSheetState extends State<_FormBahanPakanSheet> {
           ? ''
           : IndonesianNumberFormatter.format(data.hargaDefault, decimals: 0),
     );
-    _selectedKategori = data?.kategori;
+    _lemakController = TextEditingController(
+      text: data == null ? '' : _formatNumber(data.lemak),
+    );
+    _caController = TextEditingController(
+      text: data == null ? '' : _formatNumber(data.ca),
+    );
+    _pController = TextEditingController(
+      text: data == null ? '' : _formatNumber(data.p),
+    );
     _isActive = data?.isActive ?? true;
   }
 
@@ -738,6 +785,9 @@ class _FormBahanPakanSheetState extends State<_FormBahanPakanSheet> {
     _proteinController.dispose();
     _tdnController.dispose();
     _hargaController.dispose();
+    _lemakController.dispose();
+    _caController.dispose();
+    _pController.dispose();
     super.dispose();
   }
 
@@ -780,7 +830,11 @@ class _FormBahanPakanSheetState extends State<_FormBahanPakanSheet> {
     final protein = _tryParseNumber(_proteinController.text);
     final tdn = _tryParseNumber(_tdnController.text);
     final harga = _tryParseNumber(_hargaController.text);
-    if (bk == null || protein == null || tdn == null || harga == null) {
+    final lemak = _tryParseNumber(_lemakController.text);
+    final ca = _tryParseNumber(_caController.text);
+    final p = _tryParseNumber(_pController.text);
+    if (bk == null || protein == null || tdn == null || harga == null ||
+        lemak == null || ca == null || p == null) {
       return;
     }
 
@@ -789,10 +843,9 @@ class _FormBahanPakanSheetState extends State<_FormBahanPakanSheet> {
       BahanPakan(
         id: widget.initialData?.id ?? widget.nextId,
         nama: _namaController.text.trim(),
-        kategori: _selectedKategori!,
         bk: bk,
         abu: widget.initialData?.abu ?? 0,
-        lemak: widget.initialData?.lemak ?? 0,
+        lemak: lemak,
         serat: widget.initialData?.serat ?? 0,
         protein: protein,
         betn: widget.initialData?.betn ?? 0,
@@ -800,8 +853,8 @@ class _FormBahanPakanSheetState extends State<_FormBahanPakanSheet> {
         me: widget.initialData?.me ?? 0,
         hargaDefault: harga,
         isActive: _isActive,
-        ca: widget.initialData?.ca ?? 0,
-        p: widget.initialData?.p ?? 0,
+        ca: ca,
+        p: p,
       ),
     );
   }
@@ -850,29 +903,6 @@ class _FormBahanPakanSheetState extends State<_FormBahanPakanSheet> {
         keyboardType: TextInputType.text,
         validator: _validasiNama,
       ),
-              const Text(
-                'Kategori',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-              ),
-              const SizedBox(height: 8),
-              DropdownButtonFormField<String>(
-                initialValue: _selectedKategori,
-                hint: const Text('-- Pilih Kategori --'),
-                decoration: const InputDecoration(
-                  filled: true,
-                  fillColor: Colors.white,
-                ),
-                items: const [
-                  DropdownMenuItem(value: 'hijauan', child: Text('Hijauan')),
-                  DropdownMenuItem(
-                    value: 'konsentrat',
-                    child: Text('Konsentrat'),
-                  ),
-                  DropdownMenuItem(value: 'lainnya', child: Text('Lainnya')),
-                ],
-                onChanged: (v) => setState(() => _selectedKategori = v),
-                validator: (v) => v == null ? 'Wajib' : null,
-              ),
               const SizedBox(height: 16),
               Row(
                 children: [
@@ -911,6 +941,37 @@ class _FormBahanPakanSheetState extends State<_FormBahanPakanSheet> {
                     child: AppTextField(
                       controller: _hargaController,
                       label: 'Harga /kg',
+                      keyboardType: TextInputType.number,
+                      validator: _validasiAngka,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: AppTextField(
+                      controller: _lemakController,
+                      label: 'Lemak (%)',
+                      keyboardType: TextInputType.number,
+                      validator: _validasiAngka,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: AppTextField(
+                      controller: _caController,
+                      label: 'Ca (%)',
+                      keyboardType: TextInputType.number,
+                      validator: _validasiAngka,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: AppTextField(
+                      controller: _pController,
+                      label: 'P (%)',
                       keyboardType: TextInputType.number,
                       validator: _validasiAngka,
                     ),

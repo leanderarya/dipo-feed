@@ -29,16 +29,6 @@ class EvaluasiStandarCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    EvaluasiStandarNutrienItem? lemakItem;
-    for (final item in evaluasi.items) {
-      if (item.label == 'Lemak') {
-        lemakItem = item;
-        break;
-      }
-    }
-    final showLemakWarning =
-        lemakItem != null && lemakItem.status == StatusStandarNutrien.berlebih;
-
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(20),
@@ -108,64 +98,9 @@ class EvaluasiStandarCard extends StatelessWidget {
                   ],
                 ),
               const SizedBox(height: 16),
-              _buildNutrientPanel(
-                items: evaluasi.items,
-                showLemakWarning: showLemakWarning,
-              ),
+              _buildNutrientPanel(items: evaluasi.items),
               const SizedBox(height: 12),
               _buildInfoNoteBK(),
-              if (evaluasi.kesimpulan.isNotEmpty) ...[
-                const SizedBox(height: 20),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(18),
-                  decoration: BoxDecoration(
-                    color: AppColors.expertPurple,
-                    borderRadius: BorderRadius.circular(18),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.expertPurple.withValues(alpha: 0.3),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Row(
-                        children: [
-                          Icon(
-                            Icons.info_outline,
-                            size: 20,
-                            color: Colors.white,
-                          ),
-                          SizedBox(width: 8),
-                          Text(
-                            'Kesimpulan Analisis',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w900,
-                              color: Colors.white,
-                              fontSize: 15,
-                              letterSpacing: -0.2,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        evaluasi.kesimpulan,
-                        style: TextStyle(
-                          fontSize: 13.5,
-                          height: 1.5,
-                          color: Colors.white.withValues(alpha: 0.95),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
             ],
           );
         },
@@ -302,7 +237,6 @@ class EvaluasiStandarCard extends StatelessWidget {
 
   Widget _buildNutrientPanel({
     required List<EvaluasiStandarNutrienItem> items,
-    required bool showLemakWarning,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -316,10 +250,7 @@ class EvaluasiStandarCard extends StatelessWidget {
       child: Column(
         children: [
           for (var i = 0; i < items.length; i++) ...[
-            _buildItem(
-              items[i],
-              showInlineWarning: showLemakWarning && items[i].label == 'Lemak',
-            ),
+            _buildItem(items[i]),
             if (i != items.length - 1)
               Divider(
                 height: 1,
@@ -334,10 +265,12 @@ class EvaluasiStandarCard extends StatelessWidget {
     );
   }
 
-  Widget _buildItem(
-    EvaluasiStandarNutrienItem item, {
-    bool showInlineWarning = false,
-  }) {
+  Widget _buildItem(EvaluasiStandarNutrienItem item) {
+    final isBk = item.label == 'BK';
+    final isLemak = item.label == 'Lemak';
+    final showStandar = !isBk;
+    final includeWarning = isLemak && item.hasil >= 7;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       child: Row(
@@ -347,45 +280,41 @@ class EvaluasiStandarCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Text(
-                      item.label,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textDark,
-                        fontSize: 13,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    _buildStatusBadge(item.status),
-                  ],
-                ),
-                const SizedBox(height: 3),
                 Text(
-                  'Standar: ${item.standar}',
+                  item.label,
                   style: const TextStyle(
-                    color: AppColors.textLight,
-                    fontSize: 11,
-                    height: 1.3,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textDark,
+                    fontSize: 13,
                   ),
                 ),
-                if (showInlineWarning) ...[
+                if (showStandar) ...[
+                  const SizedBox(height: 3),
+                  Text(
+                    'Standar: ${item.standar}',
+                    style: const TextStyle(
+                      color: AppColors.textLight,
+                      fontSize: 11,
+                      height: 1.3,
+                    ),
+                  ),
+                ],
+                if (includeWarning) ...[
                   const SizedBox(height: 4),
                   const Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Icon(
                         Icons.warning_amber_rounded,
-                        color: Color(0xFFC97A18),
+                        color: Colors.red,
                         size: 14,
                       ),
                       SizedBox(width: 4),
                       Expanded(
                         child: Text(
-                          'Melebihi batas aman 7%',
+                          'Terlalu Tinggi',
                           style: TextStyle(
-                            color: Color(0xFF9A5D11),
+                            color: Colors.red,
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
                             height: 1.3,
@@ -416,42 +345,4 @@ class EvaluasiStandarCard extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusBadge(StatusStandarNutrien status) {
-    final (color, label) = switch (status) {
-      StatusStandarNutrien.sesuai => (AppColors.statusPas, 'Pas'),
-      StatusStandarNutrien.berlebih => (AppColors.statusBerlebih, 'Berlebih'),
-      StatusStandarNutrien.kurang => (AppColors.statusKurang, 'Kurang'),
-    };
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.3), width: 1),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 6,
-            height: 6,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-            ),
-          ),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(
-              color: color,
-              fontSize: 10.5,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
   }
-}

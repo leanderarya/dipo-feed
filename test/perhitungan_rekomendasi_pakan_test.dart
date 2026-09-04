@@ -2,37 +2,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dipo_feed/data/models/bahan_pakan.dart';
 import 'package:dipo_feed/data/models/kebutuhan_nutrien_sapi.dart';
-import 'package:dipo_feed/features/rekomendasi_pakan/logic/nutrien_helper.dart';
 import 'package:dipo_feed/features/rekomendasi_pakan/logic/perhitungan_rekomendasi_pakan.dart';
 
 void main() {
-  group('Klasifikasi bahan rekomendasi pakan', () {
-    test('menerima kategori hijauan dengan spasi dan mixed case', () {
-      expect(isBahanHijauan(_bahan(1, 'Rumput Gajah', ' HIJAUAN ')), isTrue);
-      expect(isBahanHijauan(_bahan(2, 'Rumput Gajah', 'HijAuAn')), isTrue);
-    });
-
-    test('hanya menganggap kategori yang sama persis sebagai hijauan', () {
-      expect(
-        isBahanHijauan(_bahan(3, 'Rumput Lainnya', 'hijauan tambahan')),
-        isFalse,
-      );
-      expect(isBahanHijauan(_bahan(4, 'Rumput Lainnya', 'lainnya')), isFalse);
-    });
-
-    test('menggunakan inverse hijauan untuk kategori konsentrat', () {
-      expect(
-        isBahanKonsentrat(_bahan(5, 'Rumput Gajah', ' HIJAUAN ')),
-        isFalse,
-      );
-      expect(isBahanKonsentrat(_bahan(6, 'Pollard', 'konsentrat')), isTrue);
-      expect(
-        isBahanKonsentrat(_bahan(7, 'Rumput Lainnya', 'hijauan tambahan')),
-        isTrue,
-      );
-    });
-  });
-
   group('Perhitungan rekomendasi pakan', () {
     test('menghasilkan rekomendasi as-fed dari target BK 60:40', () {
       const kebutuhan = KebutuhanNutrienSapi(
@@ -46,7 +18,6 @@ void main() {
       const hijauan = BahanPakan(
         id: 1,
         nama: 'Rumput Gajah',
-        kategori: 'hijauan',
         bk: 29.24,
         abu: 0,
         lemak: 2.0,
@@ -64,7 +35,6 @@ void main() {
       const konsentrat = BahanPakan(
         id: 2,
         nama: 'Pollard Tongkat',
-        kategori: 'konsentrat',
         bk: 86.63,
         abu: 0,
         lemak: 4.85,
@@ -110,7 +80,6 @@ void main() {
       const hijauan = BahanPakan(
         id: 3,
         nama: 'Hijauan Berlemak',
-        kategori: 'rumput',
         bk: 30,
         abu: 0,
         lemak: 8,
@@ -126,7 +95,6 @@ void main() {
       const konsentrat = BahanPakan(
         id: 4,
         nama: 'Konsentrat Berlemak',
-        kategori: 'konsentrat',
         bk: 85,
         abu: 0,
         lemak: 9,
@@ -163,7 +131,6 @@ void main() {
         const hijauan = BahanPakan(
           id: 5,
           nama: 'Rumput Gajah',
-          kategori: 'hijauan',
           bk: 29.24,
           abu: 0,
           lemak: 2.0,
@@ -179,7 +146,6 @@ void main() {
         const konsentratA = BahanPakan(
           id: 6,
           nama: 'Pollard',
-          kategori: 'konsentrat',
           bk: 86.0,
           abu: 0,
           lemak: 4.0,
@@ -195,7 +161,6 @@ void main() {
         const konsentratB = BahanPakan(
           id: 7,
           nama: 'Dedak',
-          kategori: 'konsentrat',
           bk: 88.0,
           abu: 0,
           lemak: 5.0,
@@ -240,7 +205,6 @@ void main() {
           (i) => BahanPakan(
             id: 10 + i,
             nama: 'Hijauan $i',
-            kategori: 'hijauan',
             bk: 25.0 + i,
             abu: 8.0,
             lemak: 2.0,
@@ -259,7 +223,6 @@ void main() {
           (i) => BahanPakan(
             id: 20 + i,
             nama: 'Konsentrat $i',
-            kategori: 'konsentrat',
             bk: 85.0,
             abu: 6.0,
             lemak: 3.5,
@@ -281,7 +244,6 @@ void main() {
         );
         stopwatch.stop();
 
-        // Eksekusi komputasi harus instan (< 100ms)
         expect(stopwatch.elapsedMilliseconds, lessThan(150));
         expect(hasil.rekomendasiHijauan, isNotEmpty);
         expect(hasil.rekomendasiKonsentrat, isNotEmpty);
@@ -290,22 +252,4 @@ void main() {
       },
     );
   });
-}
-
-BahanPakan _bahan(int id, String nama, String kategori) {
-  return BahanPakan(
-    id: id,
-    nama: nama,
-    kategori: kategori,
-    bk: 30,
-    abu: 0,
-    lemak: 0,
-    serat: 0,
-    protein: 0,
-    betn: 0,
-    tdn: 0,
-    me: 0,
-    hargaDefault: 0,
-    isActive: true,
-  );
 }
