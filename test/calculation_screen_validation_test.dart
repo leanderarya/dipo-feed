@@ -27,13 +27,11 @@ class _MemorySource extends BahanPakanLocalSource {
 BahanPakan _bahan({
   required int id,
   required String nama,
-  required String kategori,
   double hargaDefault = 100,
 }) {
   return BahanPakan(
     id: id,
     nama: nama,
-    kategori: kategori,
     bk: 30,
     abu: 2,
     lemak: 3,
@@ -55,7 +53,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   test('rejects every malformed persisted BahanPakan numeric field', () {
-    final valid = _bahan(id: 1, nama: 'Valid', kategori: 'hijauan');
+    final valid = _bahan(id: 1, nama: 'Valid');
     final malformed = <String, BahanPakan>{
       'BK': valid.copyWith(bk: double.nan),
       'abu': valid.copyWith(abu: double.infinity),
@@ -113,7 +111,7 @@ void main() {
       MaterialApp(
         theme: AppTheme.light,
         home: CekKecukupanPakanScreen(
-          repository: _repository([_bahan(id: 1, nama: 'Ekstrem', kategori: 'hijauan').copyWith(bk: 1e21)]),
+          repository: _repository([_bahan(id: 1, nama: 'Ekstrem').copyWith(bk: 1e21)]),
         ),
       ),
     );
@@ -190,7 +188,6 @@ void main() {
             _bahan(
               id: 1,
               nama: 'Pakan Harga Rusak',
-              kategori: 'hijauan',
               hargaDefault: -1,
             ),
           ]),
@@ -234,10 +231,9 @@ void main() {
             _bahan(
               id: 1,
               nama: 'Hijauan Harga Rusak',
-              kategori: 'hijauan',
               hargaDefault: double.nan,
             ),
-            _bahan(id: 2, nama: 'Konsentrat Valid', kategori: 'konsentrat'),
+            _bahan(id: 2, nama: 'Konsentrat Valid'),
           ]),
         ),
       ),
@@ -297,9 +293,8 @@ void main() {
             _bahan(
               id: 1,
               nama: 'Hijauan Ekstrem',
-              kategori: 'hijauan',
             ).copyWith(bk: 1e21),
-            _bahan(id: 2, nama: 'Konsentrat Valid', kategori: 'konsentrat'),
+            _bahan(id: 2, nama: 'Konsentrat Valid'),
           ]),
         ),
       ),

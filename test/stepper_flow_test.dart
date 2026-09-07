@@ -26,7 +26,6 @@ class _MemorySource extends BahanPakanLocalSource {
 const _bahan = BahanPakan(
   id: 1,
   nama: 'Rumput Gajah',
-  kategori: 'hijauan',
   bk: 29.24,
   abu: 17.90,
   lemak: 1.27,
@@ -42,7 +41,6 @@ const _bahan = BahanPakan(
 const _bahanKedua = BahanPakan(
   id: 2,
   nama: 'Dedak Padi',
-  kategori: 'konsentrat',
   bk: 88.0,
   abu: 8.0,
   lemak: 4.0,
@@ -58,7 +56,6 @@ const _bahanKedua = BahanPakan(
 const _bahanHijauanKedua = BahanPakan(
   id: 3,
   nama: 'Rumput Odot',
-  kategori: 'hijauan',
   bk: 22.10,
   abu: 22.18,
   lemak: 3.11,
@@ -438,7 +435,7 @@ void main() {
 
     expect(find.text('Data Sapi'), findsNWidgets(2));
     expect(find.textContaining('Tahap 1 dari 3'), findsOneWidget);
-    expect(find.text('Hasil Analisis Ransum Pakan'), findsNothing);
+    expect(find.text('Hasil Rekomendasi Optimal'), findsNothing);
     expect(find.text('Lanjut ke Pilihan Pakan'), findsOneWidget);
     expect(find.text('Kembali'), findsNothing);
   });
@@ -594,7 +591,7 @@ void main() {
     await tapRecommendationFeed(tester, 'Tambah Hijauan', 'Rumput Odot');
     await tapButton(tester, 'Tambah Hijauan');
 
-    expect(find.text('Semua bahan hijauan sudah dipilih.'), findsOneWidget);
+    expect(find.text('Semua bahan sudah dipilih.'), findsOneWidget);
   });
 
   testWidgets('recommendation rejects finite overflowed nutrient targets', (
@@ -625,7 +622,7 @@ void main() {
     await tapButton(tester, 'Lanjut');
 
     expect(find.text('Tambahkan minimal satu konsentrat.'), findsWidgets);
-    expect(find.text('Hasil Analisis Ransum Pakan'), findsNothing);
+    expect(find.text('Hasil Rekomendasi Optimal'), findsNothing);
   });
 
   testWidgets('recommendation back navigation preserves profile and feeds', (
@@ -663,7 +660,7 @@ void main() {
     await tapRecommendationFeed(tester, 'Tambah Konsentrat', 'Dedak Padi');
     await tapButton(tester, 'Lanjut');
 
-    expect(find.text('Hasil Analisis Ransum Pakan'), findsOneWidget);
+    expect(find.text('Hasil Rekomendasi Optimal'), findsOneWidget);
     expect(find.text('Hitung Rekomendasi'), findsNothing);
   });
 
@@ -682,7 +679,7 @@ void main() {
     await tester.pump();
     await tapButton(tester, 'Lanjut');
 
-    expect(find.text('Hasil Analisis Ransum Pakan'), findsNothing);
+    expect(find.text('Hasil Rekomendasi Optimal'), findsNothing);
     expect(find.text('Hijauan yang Dimiliki'), findsOneWidget);
   });
 
@@ -700,9 +697,9 @@ void main() {
     await tester.tap(find.text('Rumput Gajah').last);
     await tester.pumpAndSettle();
 
-    expect(find.text('Hasil Analisis Ransum Pakan'), findsNothing);
+    expect(find.text('Hasil Rekomendasi Optimal'), findsNothing);
     await tapButton(tester, 'Lanjut');
-    expect(find.text('Hasil Analisis Ransum Pakan'), findsOneWidget);
+    expect(find.text('Hasil Rekomendasi Optimal'), findsOneWidget);
   });
 
   testWidgets('cek kandungan pakan starts at Komposisi Pakan stage', (

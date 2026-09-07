@@ -34,12 +34,7 @@ class BahanPakanLocalSource {
   Box<BahanPakan> get _box => Hive.box<BahanPakan>(_boxName);
 
   Future<List<BahanPakan>> ambilDataTersimpan() async {
-    final storedData = _box.values.toList();
-    final normalizedData = _normalisasiKategoriLegacy(storedData);
-    if (!_samaData(storedData, normalizedData)) {
-      await simpanSemuaBahanPakan(normalizedData);
-    }
-    return normalizedData;
+    return _box.values.toList();
   }
 
   Future<List<BahanPakan>> ambilSemuaBahanPakan() async {
@@ -53,83 +48,52 @@ class BahanPakanLocalSource {
   }
 
   Future<List<BahanPakan>> ambilBahanPakanAwal() async {
-    final csvString = await rootBundle.loadString(
-      'assets/data/bahan_pakan.csv',
-    );
+    final csvString =
+        await rootBundle.loadString('assets/data/bahan_pakan.csv');
     final rows = BahanPakanCsvCodec.parse(csvString);
-    if (rows.isEmpty) {
-      throw const FormatException('CSV seed must contain at least one row');
+    final data = <BahanPakan>[];
+    for (var i = 0; i < rows.length; i++) {
+      data.add(BahanPakan(
+        id: i + 1,
+        nama: rows[i].nama,
+        bk: rows[i].bk,
+        abu: rows[i].abu,
+        lemak: rows[i].lemak,
+        serat: rows[i].serat,
+        protein: rows[i].protein,
+        betn: rows[i].betn,
+        tdn: rows[i].tdn,
+        me: rows[i].me,
+        hargaDefault: rows[i].harga,
+        isActive: true,
+        ca: rows[i].ca,
+        p: rows[i].p,
+      ));
     }
-    return [
-      for (var index = 0; index < rows.length; index++)
-        BahanPakan(
-          id: index + 1,
-          nama: rows[index].nama,
-          kategori: rows[index].kategori,
-          bk: rows[index].bk,
-          abu: rows[index].abu,
-          lemak: rows[index].lemak,
-          serat: rows[index].serat,
-          protein: rows[index].protein,
-          betn: rows[index].betn,
-          tdn: rows[index].tdn,
-          me: rows[index].me,
-          hargaDefault: rows[index].harga,
-          isActive: true,
-          ca: rows[index].ca,
-          p: rows[index].p,
-        ),
-    ];
-  }
-
-  static List<BahanPakan> _normalisasiKategoriLegacy(
-    Iterable<BahanPakan> data,
-  ) {
-    return [
-      for (final bahan in data)
-        bahan.kategori.trim().toLowerCase() == 'energi' ||
-                bahan.kategori.trim().toLowerCase() == 'limbah'
-            ? bahan.copyWith(kategori: 'lainnya')
-            : bahan,
-    ];
-  }
-
-  static bool _samaData(List<BahanPakan> first, List<BahanPakan> second) {
-    if (first.length != second.length) return false;
-    for (var index = 0; index < first.length; index++) {
-      if (first[index].toJson().toString() !=
-          second[index].toJson().toString()) {
-        return false;
-      }
-    }
-    return true;
+    return List.unmodifiable(data);
   }
 
   Future<void> simpanSemuaBahanPakan(List<BahanPakan> daftarBahan) async {
-    final snapshot = _box.values.toList(growable: false);
+    final immutableData = List<BahanPakan>.unmodifiable(daftarBahan);
+    if (_writeOperation != null) {
+      await _writeOperation!(immutableData);
+      return;
+    }
+
+    final box = _box;
+    final backup = box.values.toList();
     try {
-      if (_writeOperation == null) {
-        await _box.clear();
-        await _box.addAll(daftarBahan);
-      } else {
-        await _writeOperation(List.unmodifiable(daftarBahan));
+      await box.clear();
+      for (final data in immutableData) {
+        await box.add(data);
       }
-    } catch (error, stackTrace) {
-      try {
-        await _box.clear();
-        await _box.addAll(snapshot);
-      } catch (restoreError, restoreStackTrace) {
-        Error.throwWithStackTrace(
-          BahanPakanPersistenceError(
-            originalError: error,
-            originalStackTrace: stackTrace,
-            rollbackError: restoreError,
-            rollbackStackTrace: restoreStackTrace,
-          ),
-          stackTrace,
-        );
+    } catch (_) {
+      // rollback
+      await box.clear();
+      for (final data in backup) {
+        await box.add(data);
       }
-      Error.throwWithStackTrace(error, stackTrace);
+      rethrow;
     }
   }
 

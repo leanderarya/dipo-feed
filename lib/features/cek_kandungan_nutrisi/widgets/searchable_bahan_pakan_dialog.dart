@@ -66,7 +66,7 @@ class _SearchableBahanPakanDialogState
             .where(
               (b) =>
                   b.nama.toLowerCase().contains(query.trim().toLowerCase()) ||
-                  b.kategori.toLowerCase().contains(query.trim().toLowerCase()),
+                  b.nama.toLowerCase().contains(query.trim().toLowerCase()),
             )
             .toList();
       }
@@ -175,7 +175,7 @@ class _SearchableBahanPakanDialogState
                           ),
                         ),
                         subtitle: Text(
-                          'Kategori: ${bahan.kategori} • BK: ${IndonesianNumberFormatter.isSupportedMagnitude(bahan.bk) ? '${IndonesianNumberFormatter.format(bahan.bk, decimals: 1)}%' : '-'}',
+                          'BK: ${IndonesianNumberFormatter.isSupportedMagnitude(bahan.bk) ? '${IndonesianNumberFormatter.format(bahan.bk, decimals: 1)}%' : '-'}',
                           style: const TextStyle(fontSize: 12),
                         ),
                         trailing: isSelectedCurrent

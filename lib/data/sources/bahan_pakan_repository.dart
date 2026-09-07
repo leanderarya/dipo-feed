@@ -154,7 +154,6 @@ class BahanPakanRepository {
     return BahanPakan(
       id: id,
       nama: row.nama,
-      kategori: row.kategori,
       bk: row.bk,
       abu: row.abu,
       lemak: row.lemak,

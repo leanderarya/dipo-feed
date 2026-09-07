@@ -4,41 +4,48 @@ Dokumen ini merangkum kontrak data, impor/ekspor, angka, perhitungan, status, da
 
 ## Data master pakan
 
-- `assets/data/bahan_pakan.csv` adalah seed kanonik dan sumber runtime untuk seed awal serta reset data.
+- `assets/data/bahan_pakan.csv` adalah seed kanonik (32 record) dan sumber runtime untuk seed awal serta reset data.
 - `assets/data/bahan_pakan.json` hanya backup; tidak dibaca pada jalur runtime.
-- CSV memakai pemisah field `;`, pemisah record baris baru, dan header persis:
+- CSV memakai format **comma-delimited**, desimal **titik (`.`)** , dan **CSV quoting** standar untuk field yang mengandung koma, quote, atau newline.
+- Header persis (16 kolom):
 
   ```text
-  nama;harga;kategori;BK;abu;lemak;serat;PK;BETN;TDN;ME;Ca;P
+  No,Bahan Pakan,Kategori,Harga/kg,BK (%),Abu (%),Lemak (%),Serat (%),Protein (%),BETN (%),TDN (%),ME (KJoule/kg),Ca (%),P (%),Sumber
   ```
 
-- Field nutrisi `BK`, `abu`, `lemak`, `serat`, `PK`, `BETN`, `TDN`, `ME`, `Ca`, dan `P` diekspor dengan 2 angka desimal. `harga` diekspor dengan 0 angka desimal.
-- Format angka Indonesia memakai titik sebagai pemisah ribuan dan koma sebagai pemisah desimal: `4.500` dan `1.234,50`.
+- Kolom `No` dan `Sumber` hanya untuk ekspor; saat impor kolom tak dikenal (termasuk `No`, `Sumber`, atau kolom tambahan lain) **dilewati** selama semua kolom wajib (`Bahan Pakan`, `Kategori`, `Harga/kg`, `BK (%)`–`P (%)`) ada.
+- Harga dalam CSV tanpa prefix `Rp`; saat impor prefix `Rp` otomatis diabaikan.
+- Field nutrisi diekspor dengan 2 angka desimal. `harga` diekspor dengan 0 angka desimal.
+- **Hanya 2 kategori** yang valid: `hijauan` dan `konsentrat`. Kategori legacy `lainnya`, `energi`, dan `limbah` saat ekspor otomatis dikonversi menjadi `konsentrat`, dan saat impor ditolak (harus diedit menjadi `hijauan`/`konsentrat`).
 - Seed memberi ID deterministik berdasarkan `row index + 1` dan mengaktifkan semua baris. Mengubah urutan baris seed mengubah ID; migrasi seed harus memperlakukan perubahan urutan sebagai risiko identitas data.
-- Kategori kanonik hanya `hijauan`, `konsentrat`, dan `lainnya`. Parser memangkas spasi dan mencocokkan kategori tanpa membedakan kapitalisasi. Kategori legacy `energi` dan `limbah` pada data tersimpan atau ekspor dinormalisasi menjadi `lainnya`.
-- Dalam klasifikasi formulasi, hanya `hijauan` yang dihitung sebagai hijauan; semua kategori lain dihitung sebagai konsentrat.
+- Dalam klasifikasi formulasi, hanya `hijauan` yang dihitung sebagai hijauan; semua kategori lain (`konsentrat`) dihitung sebagai konsentrat.
+
+## Format tampilan angka (display)
+
+- Angka yang ditampilkan di UI menggunakan format **Indonesia**: koma (`,`) sebagai desimal, titik (`.`) sebagai pemisah ribuan.
+- Contoh: `29,24` (BK), `Rp4.500` (harga), `1.234,50` (PK).
+- Format ini hanya untuk layar; format CSV berbeda (lihat di atas).
 
 ## Impor dan ekspor CSV
 
 - Nama dan kategori input dipangkas; pencocokan nama untuk impor tidak membedakan kapitalisasi.
-- Nama duplikat setelah trim dan normalisasi memakai baris terakhir. Baris yang diproses adalah baris unik setelah normalisasi.
+- Nama duplikat setelah trim dan normalisasi memakai baris terakhir. Baris yang diproses adalah baris unik setelah normalisasi (duplikat di CSV hanya dihitung 1 baris).
 - Nama yang cocok dengan data tersimpan mempertahankan ID lama. Nama baru mendapat ID baru setelah ID maksimum yang ada.
 - Semua baris hasil impor menjadi aktif.
 - Data lama yang tidak ada di CSV dihapus permanen. Ringkasan impor melaporkan jumlah ditambah, diperbarui, dihapus, dan baris diproses.
-- File di-decode dan divalidasi penuh sebelum dialog konfirmasi ditampilkan. CSV tidak valid tidak boleh meminta konfirmasi atau mengubah data.
-- Penggantian memakai commit atomik. Jika penulisan gagal, repository dan persistence di-rollback ke snapshot sebelumnya; kegagalan rollback juga dipertahankan sebagai error persistence.
-- Ekspor memakai header, urutan kolom, pemisah, normalisasi kategori, dan precision yang sama dengan format kanonik.
-- Nilai numerik CSV harus berada pada domain yang dapat diekspor formatter: finite dan `abs < 1e21`. Nilai negatif ditolak untuk seluruh field nutrisi dan harga. Dengan kontrak ini, CSV tidak dapat mengimpor nilai yang formatter tidak dapat ekspor.
+- Validasi penuh dilakukan sebelum dialog konfirmasi. CSV tidak valid tidak boleh mengubah data.
+- Penggantian memakai commit atomik. Jika penulisan gagal, repository dan persistence di-rollback ke snapshot sebelumnya.
+- Ekspor memakai header, urutan kolom, pemisah, normalisasi kategori, dan presisi yang sama dengan format kanonik.
+- Nilai numerik CSV harus finite dan tidak negatif.
 
 ## Angka dan validasi
 
-- Parser menerima angka Indonesia dengan spasi luar yang dipangkas, desimal koma, pemisah ribuan titik, bilangan bulat, dan notasi ilmiah finite selama `abs < 1e21`.
+- Parser display (Indonesia) menerima format desimal koma, pemisah ribuan titik, dan bilangan bulat.
 - `parse` melempar `FormatException` untuk input kosong, malformed, non-finite, atau finite dengan magnitudo `abs >= 1e21`. `tryParse` mengembalikan `null` pada kondisi yang sama.
-- Formatter menghasilkan pemisah Indonesia sesuai jumlah desimal yang diminta dan menolak nilai non-finite atau `abs >= 1e21`.
-- Nilai nutrisi dan harga pada CSV harus finite dan tidak negatif. Nama kosong, kategori kosong/tidak dikenal, baris kosong, header berbeda, dan jumlah kolom salah ditolak.
+- Formatter display menghasilkan pemisah Indonesia sesuai jumlah desimal yang diminta dan menolak nilai non-finite atau `abs >= 1e21`.
 - Nama bahan yang diawali `=`, `+`, `-`, atau `@` ditolak saat parse maupun ekspor.
 - Sebelum Cek Kecukupan Pakan atau Rekomendasi Pakan menghitung, seluruh record `BahanPakan` tersimpan diperiksa untuk `BK`, `abu`, `lemak`, `serat`, `PK`, `BETN`, `TDN`, `ME`, `harga`, `Ca`, dan `P`: semuanya harus finite dan tidak negatif. Bahan yang benar-benar dipakai juga wajib memiliki `BK > 0`.
-- Target kebutuhan dan semua keluaran kalkulasi harus finite dan tidak negatif. Jika validasi gagal, status menjadi `Gagal menghitung`, hasil dihapus, dan pesan validasi ditampilkan.
+- Target kebutuhan dan semua keluaran kalkulasi harus finite dan tidak negatif.
 
 ## Rumus kebutuhan nutrien
 

@@ -926,7 +926,7 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
                                 overflow: TextOverflow.ellipsis,
                               ),
                               Text(
-                                '${item.bahan.kategori} • BK: ${IndonesianNumberFormatter.isSupportedMagnitude(item.bahan.bk) ? '${IndonesianNumberFormatter.format(item.bahan.bk, decimals: 1)}%' : '-'}',
+                                'BK: ${IndonesianNumberFormatter.isSupportedMagnitude(item.bahan.bk) ? '${IndonesianNumberFormatter.format(item.bahan.bk, decimals: 1)}%' : '-'}',
                                 style: const TextStyle(
                                   fontSize: 11,
                                   color: AppColors.textGrey,

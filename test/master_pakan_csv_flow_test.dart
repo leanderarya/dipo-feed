@@ -40,7 +40,6 @@ class _MemorySource extends BahanPakanLocalSource {
 const _activeFeed = BahanPakan(
   id: 1,
   nama: 'Rumput Gajah',
-  kategori: 'hijauan',
   bk: 29.24,
   abu: 17.9,
   lemak: 1.27,
@@ -56,7 +55,6 @@ const _activeFeed = BahanPakan(
 const _inactiveFeed = BahanPakan(
   id: 2,
   nama: 'Feed Inactive',
-  kategori: 'lainnya',
   bk: 1,
   abu: 2,
   lemak: 3,
@@ -201,28 +199,6 @@ void main() {
     expect(find.text('Reset ke Data Awal'), findsOneWidget);
   });
 
-  testWidgets('feed category options exclude legacy categories', (
-    tester,
-  ) async {
-    await _pumpMaster(
-      tester,
-      repository: BahanPakanRepository.forTesting(_MemorySource([_activeFeed])),
-      pickCsv: () async => null,
-      shareCsv: (_, _) async => ShareResult('', ShareResultStatus.dismissed),
-    );
-
-    await tester.tap(find.text('Tambah Bahan'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byType(DropdownButtonFormField<String>));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Hijauan'), findsOneWidget);
-    expect(find.text('Konsentrat'), findsOneWidget);
-    expect(find.text('Lainnya'), findsOneWidget);
-    expect(find.text('Limbah'), findsNothing);
-    expect(find.text('Energi'), findsNothing);
-  });
-
   testWidgets('form rejects formula-leading feed names', (tester) async {
     await _pumpMaster(
       tester,
@@ -258,9 +234,6 @@ void main() {
 
     await tester.tap(find.text('Tambah Bahan'));
     await tester.pumpAndSettle();
-    await tester.tap(find.byType(DropdownButtonFormField<String>));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Hijauan').last);
 
     final fields = find.byType(TextFormField);
     await tester.enterText(fields.at(0), 'Bahan Invalid');
@@ -289,9 +262,6 @@ void main() {
 
     await tester.tap(find.text('Tambah Bahan'));
     await tester.pumpAndSettle();
-    await tester.tap(find.byType(DropdownButtonFormField<String>));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Hijauan').last);
 
     final fields = find.byType(TextFormField);
     await tester.enterText(fields.at(0), 'Grouped Values');
@@ -299,6 +269,9 @@ void main() {
     await tester.enterText(fields.at(2), '1.234,50');
     await tester.enterText(fields.at(3), '2');
     await tester.enterText(fields.at(4), '3.000');
+    await tester.enterText(fields.at(5), '1,5');
+    await tester.enterText(fields.at(6), '0,5');
+    await tester.enterText(fields.at(7), '0,3');
     await tester.tap(find.widgetWithText(FilledButton, 'Tambah Bahan'));
     await tester.pumpAndSettle();
 
@@ -309,6 +282,9 @@ void main() {
     expect(saved.protein, 1234.5);
     expect(saved.tdn, 2);
     expect(saved.hargaDefault, 3000);
+    expect(saved.lemak, 1.5);
+    expect(saved.ca, 0.5);
+    expect(saved.p, 0.3);
   });
 
   testWidgets(
@@ -396,15 +372,15 @@ void main() {
 
     await tester.tap(find.text('Tambah Bahan'));
     await tester.pumpAndSettle();
-    await tester.tap(find.byType(DropdownButtonFormField<String>));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Hijauan').last);
     final fields = find.byType(TextFormField);
     await tester.enterText(fields.at(0), 'Will Fail');
     await tester.enterText(fields.at(1), '1');
     await tester.enterText(fields.at(2), '1');
     await tester.enterText(fields.at(3), '1');
     await tester.enterText(fields.at(4), '1');
+    await tester.enterText(fields.at(5), '1');
+    await tester.enterText(fields.at(6), '1');
+    await tester.enterText(fields.at(7), '1');
     source.failWrites = true;
     await tester.tap(find.widgetWithText(FilledButton, 'Tambah Bahan'));
     await tester.pumpAndSettle();
@@ -489,7 +465,7 @@ void main() {
   ) async {
     final source = _MemorySource([_activeFeed]);
     final repository = BahanPakanRepository.forTesting(source);
-    final invalidCsv = '${BahanPakanCsvCodec.header}\ninvalid;invalid;bad';
+    final invalidCsv = '${BahanPakanCsvCodec.header}\ninvalid,invalid,bad';
 
     await _pumpMaster(
       tester,
