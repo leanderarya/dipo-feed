@@ -42,10 +42,10 @@ class NutrienHelper {
     required double hasil,
     required double target,
   }) {
-    if (target <= 0) return hasil <= 0 ? 'Sesuai' : 'Sesuai';
+    if (target <= 0) return hasil <= 0 ? 'Pas' : 'Pas';
     final rasio = hasil / target;
     if (rasio < 0.9) return 'Kurang';
     if (rasio > 1.1) return 'Lebih';
-    return 'Sesuai';
+    return 'Pas';
   }
 }

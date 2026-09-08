@@ -50,14 +50,58 @@ void main() {
       expect(hasil.tdn.pemberian, closeTo(6.5, 0.001));
       expect(hasil.tdn.status, StatusKecukupanNutrien.pas);
 
-      // Ca & P 0
+      // Ca & P bernilai 0 jika nutrisiPemberian 0
+      expect(hasil.ca.pemberian, 0.0);
       expect(hasil.ca.status, StatusKecukupanNutrien.kurang);
+      expect(hasil.p.pemberian, 0.0);
       expect(hasil.p.status, StatusKecukupanNutrien.kurang);
 
       expect(
         hasil.kesimpulanUmum,
         'Pakan yang diberikan belum mencukupi seluruh kebutuhan nutrien sapi.',
       );
+    });
+
+    test('menghitung Ca dan P dinamis dalam gram dengan benar', () {
+      const kebutuhan = KebutuhanNutrienSapi(
+        kebutuhanBkKg: 10.0,
+        kebutuhanProteinKg: 1.0,
+        kebutuhanTdnKg: 6.0,
+        kebutuhanCaGram: 50.0,
+        kebutuhanPGram: 30.0,
+      );
+
+      // totalBerat = 20.0 kg
+      // Ca 0.25% -> 20.0 * (0.25 / 100) * 1000 = 50.0 gram (Pas)
+      // P 0.20% -> 20.0 * (0.20 / 100) * 1000 = 40.0 gram (Berlebih > 30.0 * 1.05)
+      const nutrisiPemberian = HasilPerhitunganNutrisi(
+        totalBerat: 20.0,
+        totalBiaya: 40000,
+        hargaRataRata: 2000,
+        bk: 50.0,
+        abu: 5.0,
+        lemak: 3.0,
+        serat: 20.0,
+        protein: 5.0,
+        tdn: 30.0,
+        ca: 0.25,
+        p: 0.20,
+        me: 2.2,
+      );
+
+      final hasil = HasilEvaluasiKecukupanNutrien.hitung(
+        fisiologi: FisiologiSapi.dara,
+        kebutuhan: kebutuhan,
+        nutrisiPemberian: nutrisiPemberian,
+      );
+
+      expect(hasil.ca.pemberian, closeTo(50.0, 0.001));
+      expect(hasil.ca.kebutuhan, 50.0);
+      expect(hasil.ca.status, StatusKecukupanNutrien.pas);
+
+      expect(hasil.p.pemberian, closeTo(40.0, 0.001));
+      expect(hasil.p.kebutuhan, 30.0);
+      expect(hasil.p.status, StatusKecukupanNutrien.berlebih);
     });
 
     test('status berlebih ketika pemberian > 105% kebutuhan', () {
@@ -227,7 +271,7 @@ void main() {
 
       expect(find.text('Hasil Evaluasi Nutrisi'), findsOneWidget);
       expect(find.text('Lihat Detail'), findsOneWidget);
-      expect(find.byType(StackedNutrientProgressBar), findsWidgets);
+      expect(find.byType(SingleCylinderNutrientBar), findsWidgets);
 
       // Tap Lihat Detail
       await tester.tap(find.text('Lihat Detail'));

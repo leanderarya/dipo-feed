@@ -107,22 +107,22 @@ class _SplashScreenState extends State<SplashScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Image.asset(
-                        'assets/images/logo_undip.png',
-                        height: 34,
+                        'assets/images/logo_aciar.png',
+                        height: 30,
                         fit: BoxFit.contain,
                         errorBuilder: (context, error, stackTrace) =>
                             const SizedBox.shrink(),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 14),
                       Container(
                         height: 20,
                         width: 1.2,
                         color: Colors.grey.withValues(alpha: 0.35),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 14),
                       Image.asset(
-                        'assets/images/logo_aciar.png',
-                        height: 30,
+                        'assets/images/logo_undip.png',
+                        height: 34,
                         fit: BoxFit.contain,
                         errorBuilder: (context, error, stackTrace) =>
                             const SizedBox.shrink(),

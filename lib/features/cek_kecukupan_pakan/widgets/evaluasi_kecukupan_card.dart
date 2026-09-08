@@ -153,12 +153,6 @@ class _EvaluasiKecukupanCardState extends State<EvaluasiKecukupanCard> {
   // COMPACT MODE CONTENT
   // ==========================================
   Widget _buildCompactContent() {
-    final primaryItems = [
-      widget.hasil.bk,
-      widget.hasil.protein,
-      widget.hasil.tdn,
-    ];
-
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -170,9 +164,9 @@ class _EvaluasiKecukupanCardState extends State<EvaluasiKecukupanCard> {
       ),
       child: Column(
         children: [
-          for (var i = 0; i < primaryItems.length; i++) ...[
-            _buildCompactNutrientRow(primaryItems[i]),
-            if (i != primaryItems.length - 1)
+          for (var i = 0; i < widget.hasil.items.length; i++) ...[
+            _buildCompactNutrientRow(widget.hasil.items[i]),
+            if (i != widget.hasil.items.length - 1)
               Divider(
                 height: 1,
                 thickness: 1,
@@ -181,14 +175,6 @@ class _EvaluasiKecukupanCardState extends State<EvaluasiKecukupanCard> {
                 endIndent: 14,
               ),
           ],
-          Divider(
-            height: 1,
-            thickness: 1,
-            color: Colors.grey.shade100,
-            indent: 14,
-            endIndent: 14,
-          ),
-          _buildCompactMineralDisabledRow(),
         ],
       ),
     );
@@ -249,60 +235,10 @@ class _EvaluasiKecukupanCardState extends State<EvaluasiKecukupanCard> {
             ],
           ),
           const SizedBox(height: 8),
-          StackedNutrientProgressBar(
+          SingleCylinderNutrientBar(
             kebutuhan: item.kebutuhan,
             pemberian: item.pemberian,
-            segmen: item.segmen,
-            fallbackColor: color,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCompactMineralDisabledRow() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text(
-                  'Ca & P (Mineral)',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textLight,
-                  ),
-                ),
-                SizedBox(height: 2),
-                Text(
-                  'Data mineral master pakan belum tersedia',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: AppColors.textLight,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey.shade300),
-            ),
-            child: const Text(
-              'Belum ada data',
-              style: TextStyle(
-                fontSize: 10.5,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textLight,
-              ),
-            ),
+            status: item.status,
           ),
         ],
       ),
@@ -342,10 +278,6 @@ class _EvaluasiKecukupanCardState extends State<EvaluasiKecukupanCard> {
             ],
           ),
         ),
-        const SizedBox(height: 12),
-
-        // Note Section for Ca & P
-        _buildInfoNoteCaP(),
         const SizedBox(height: 16),
 
         // Kesimpulan Umum Card
@@ -420,12 +352,11 @@ class _EvaluasiKecukupanCardState extends State<EvaluasiKecukupanCard> {
           ),
           const SizedBox(height: 8),
 
-          // Stacked Progress Bar
-          StackedNutrientProgressBar(
+          // Single Cylinder Progress Bar Solid Color
+          SingleCylinderNutrientBar(
             kebutuhan: item.kebutuhan,
             pemberian: item.pemberian,
-            segmen: item.segmen,
-            fallbackColor: color,
+            status: item.status,
           ),
           const SizedBox(height: 4),
 
@@ -504,34 +435,6 @@ class _EvaluasiKecukupanCardState extends State<EvaluasiKecukupanCard> {
     );
   }
 
-  Widget _buildInfoNoteCaP() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(
-            Icons.info_outline,
-            size: 14,
-            color: AppColors.expertPurple.withValues(alpha: 0.65),
-          ),
-          const SizedBox(width: 6),
-          Expanded(
-            child: Text(
-              'Catatan: Nilai pemberian Ca dan P saat ini masih 0 karena data kandungan mineral pada master bahan pakan belum tersedia.',
-              style: TextStyle(
-                fontSize: 11,
-                color: AppColors.expertPurple.withValues(alpha: 0.75),
-                fontWeight: FontWeight.w600,
-                height: 1.35,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildKesimpulanCard() {
     return Container(
       width: double.infinity,
@@ -581,87 +484,67 @@ class _EvaluasiKecukupanCardState extends State<EvaluasiKecukupanCard> {
   }
 }
 
-class StackedNutrientProgressBar extends StatelessWidget {
+class SingleCylinderNutrientBar extends StatelessWidget {
   final double kebutuhan;
   final double pemberian;
-  final List<SegmenKontribusiNutrien> segmen;
-  final Color fallbackColor;
+  final StatusKecukupanNutrien status;
 
-  const StackedNutrientProgressBar({
+  const SingleCylinderNutrientBar({
     super.key,
     required this.kebutuhan,
     required this.pemberian,
-    required this.segmen,
-    required this.fallbackColor,
+    required this.status,
   });
 
   @override
   Widget build(BuildContext context) {
-    final baseMax = kebutuhan > 0 ? kebutuhan * 1.2 : 1.0;
-    final maxScale = (pemberian > baseMax) ? pemberian * 1.05 : baseMax;
-    final targetFraction =
-        kebutuhan > 0 ? (kebutuhan / maxScale).clamp(0.0, 1.0) : 0.0;
+    final Color barColor = switch (status) {
+      StatusKecukupanNutrien.pas => AppColors.statusPas,
+      StatusKecukupanNutrien.berlebih => AppColors.statusBerlebih,
+      StatusKecukupanNutrien.kurang => AppColors.statusKurang,
+    };
+
+    // Bila pas atau berlebih, tabung penuh (100% / 1.0). Bila kurang, proporsional dari kebutuhan.
+    final double fillFraction = switch (status) {
+      StatusKecukupanNutrien.pas => 1.0,
+      StatusKecukupanNutrien.berlebih => 1.0,
+      StatusKecukupanNutrien.kurang =>
+        kebutuhan > 0 ? (pemberian / kebutuhan).clamp(0.0, 1.0) : 0.0,
+    };
 
     return LayoutBuilder(
       builder: (context, constraints) {
         final totalWidth = constraints.maxWidth;
+        final filledWidth = (fillFraction * totalWidth).clamp(0.0, totalWidth);
 
         return Stack(
           alignment: Alignment.centerLeft,
           children: [
-            // Background bar
+            // Background Tabung Kosong
             Container(
-              height: 11,
+              height: 12,
               width: double.infinity,
               decoration: BoxDecoration(
                 color: Colors.grey.shade100,
                 borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: Colors.grey.shade200, width: 0.5),
+                border: Border.all(color: Colors.grey.shade300, width: 0.8),
               ),
             ),
-            // Segmented items or fallback
-            if (segmen.isNotEmpty && pemberian > 0)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(6),
-                child: SizedBox(
-                  height: 11,
-                  width: (pemberian / maxScale).clamp(0.0, 1.0) * totalWidth,
-                  child: Row(
-                    children: segmen.map((s) {
-                      if (s.nilaiKg <= 0) return const SizedBox.shrink();
-                      final segmentFraction =
-                          (s.nilaiKg / pemberian).clamp(0.0, 1.0);
-                      return Expanded(
-                        flex: (segmentFraction * 1000).round().clamp(1, 1000),
-                        child: Container(
-                          color: s.warna,
-                          height: 11,
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              )
-            else if (pemberian > 0)
+            // Isi Tabung Solid 1 Warna Sesuai Status
+            if (filledWidth > 0)
               Container(
-                height: 11,
-                width: (pemberian / maxScale).clamp(0.0, 1.0) * totalWidth,
+                height: 12,
+                width: filledWidth,
                 decoration: BoxDecoration(
-                  color: fallbackColor,
+                  color: barColor,
                   borderRadius: BorderRadius.circular(6),
-                ),
-              ),
-            // Target 100% threshold line
-            if (kebutuhan > 0)
-              Positioned(
-                left: (targetFraction * totalWidth).clamp(0.0, totalWidth - 2),
-                child: Container(
-                  height: 15,
-                  width: 2.5,
-                  decoration: BoxDecoration(
-                    color: AppColors.textDark.withValues(alpha: 0.8),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: barColor.withValues(alpha: 0.25),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
                 ),
               ),
           ],
@@ -670,3 +553,4 @@ class StackedNutrientProgressBar extends StatelessWidget {
     );
   }
 }
+

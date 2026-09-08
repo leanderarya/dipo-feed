@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../../core/constants/app_colors.dart';
-import '../../core/widgets/app_header.dart';
 import '../../core/widgets/app_bottom_nav.dart';
 import '../../core/widgets/quick_action_card.dart';
 import '../cek_kandungan_nutrisi/cek_kandungan_nutrisi_screen.dart';
 import '../cek_kecukupan_pakan/cek_kecukupan_pakan_screen.dart';
 import '../master_pakan/master_pakan_screen.dart';
 import '../rekomendasi_pakan/rekomendasi_pakan_screen.dart';
-import '../pengaturan/pengaturan_screen.dart';
+import '../tentang/tentang_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -31,7 +30,9 @@ class _HomeScreenState extends State<HomeScreen> {
             style: TextStyle(fontWeight: FontWeight.w600),
           ),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           backgroundColor: AppColors.primaryBlue,
           duration: const Duration(seconds: 2),
         ),
@@ -105,11 +106,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.backgroundCream,
-      appBar: const AppHeader(isHome: true),
       body: Stack(
         children: [
           _selectedIndex == 2
-              ? const PengaturanScreen(isTab: true)
+              ? const TentangScreen(isTab: true)
               : _buildHomeContent(),
           Align(
             alignment: Alignment.bottomCenter,
@@ -124,53 +124,78 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildHomeContent() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(
-        20,
-        16,
-        20,
-        110,
-      ), // Optimized padding for iOS and screen viewports
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildHeroBanner(),
-          const SizedBox(height: 20), // Reduced from 32
-          const Text(
-            'Fitur Utama',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: AppColors.primaryBlue,
-              letterSpacing: -0.5,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWideScreen = constraints.maxWidth > 640;
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: 110),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 640),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeroHeaderSection(),
+                  const SizedBox(height: 24),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Fitur Utama',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primaryBlue,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        _buildFeatureGrid(isWideScreen: isWideScreen),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-          const SizedBox(height: 12), // Reduced from 16
-          _buildFeatureGrid(),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildHeroBanner() {
+  Widget _buildHeroHeaderSection() {
+    final topPadding = MediaQuery.of(context).padding.top;
+
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppColors.surfaceLow,
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(32),
+          bottomRight: Radius.circular(32),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x1A000000),
+            blurRadius: 16,
+            offset: Offset(0, 8),
+          ),
+        ],
       ),
       clipBehavior: Clip.antiAlias,
       child: Stack(
         children: [
-          // Hero Background Image
+          // Background Hero Image
           Positioned.fill(
             child: Image.asset(
               'assets/images/hero_banner_sapi.jpg',
               fit: BoxFit.cover,
             ),
           ),
-          // Rich Overlay to ensure high readability of both dark blue title and white description text
+          // Gradient Overlay to ensure contrast
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
@@ -178,33 +203,40 @@ class _HomeScreenState extends State<HomeScreen> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    const Color(
-                      0xFF0F172A,
-                    ).withValues(alpha: 0.2), // Light at the top
-                    const Color(
-                      0xFF0F172A,
-                    ).withValues(alpha: 0.8), // Dark at the bottom
+                    Colors.black.withValues(alpha: 0.35),
+                    Colors.black.withValues(alpha: 0.15),
+                    Colors.black.withValues(alpha: 0.75),
                   ],
+                  stops: const [0.0, 0.45, 1.0],
                 ),
               ),
             ),
           ),
-          // Content
+          // Content on top of hero
           Padding(
-            padding: const EdgeInsets.all(20), // Reduced from 24
+            padding: EdgeInsets.fromLTRB(16, topPadding + 8, 16, 28),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Floating Capsules Header
+                _buildFloatingHeaderRow(),
+                const SizedBox(height: 36),
+                // Badge Kapsul RESEARCH-BASED
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
+                    horizontal: 12,
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(
-                      0xFF004AAD,
-                    ), // Solid Royal Blue for high visibility
+                    color: const Color(0xFF0052CC), // Royal Blue
                     borderRadius: BorderRadius.circular(100),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF0052CC).withValues(alpha: 0.4),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
@@ -214,45 +246,29 @@ class _HomeScreenState extends State<HomeScreen> {
                       Text(
                         'RESEARCH-BASED',
                         style: TextStyle(
-                          fontSize: 9,
+                          fontSize: 10,
                           fontWeight: FontWeight.w800,
                           color: Colors.white,
-                          letterSpacing: 1,
+                          letterSpacing: 1.1,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 12), // Reduced from 16
+                const SizedBox(height: 12),
+                // Judul Hero
                 const Text(
                   'Optimalkan Nutrisi\nTernak Anda',
                   style: TextStyle(
-                    fontSize: 28,
+                    fontSize: 26,
                     fontWeight: FontWeight.w900,
-                    color: Colors.white, // High-contrast premium white
-                    height: 1.1,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black38,
-                        blurRadius: 8,
-                        offset: Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 8), // Reduced from 12
-                const Text(
-                  'Standar riset terkini dari Fakultas Peternakan dan Pertanian (FPP) Universitas Diponegoro',
-                  style: TextStyle(
-                    fontSize: 13,
                     color: Colors.white,
-                    fontWeight:
-                        FontWeight.w600, // Thicker weight for premium contrast
-                    height: 1.4,
+                    height: 1.15,
+                    letterSpacing: -0.5,
                     shadows: [
                       Shadow(
-                        color: Colors.black45, // Darker shadow for solid pop
-                        blurRadius: 6,
+                        color: Colors.black54,
+                        blurRadius: 8,
                         offset: Offset(0, 2),
                       ),
                     ],
@@ -266,15 +282,111 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildFeatureGrid() {
+  Widget _buildFloatingHeaderRow() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // Kapsul Kiri: DipoFeed (Compact White Capsule - Optical Center)
+        Container(
+          height: 40,
+          alignment: Alignment.center,
+          padding: const EdgeInsets.only(left: 10, right: 11),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.9),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.16),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.asset(
+                  'assets/images/logo_dipofeed.jpeg',
+                  height: 24,
+                  width: 24,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              const SizedBox(width: 7),
+              Transform.translate(
+                offset: const Offset(0, -0.5),
+                child: Image.asset(
+                  'assets/images/DIPOFeed.png',
+                  height: 15,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // Kapsul Kanan: Kemitraan (Compact White Capsule)
+        Container(
+          height: 40,
+          padding: const EdgeInsets.symmetric(horizontal: 11),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.9),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.16),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Image.asset(
+                'assets/images/logo_aciar.png',
+                height: 23,
+                fit: BoxFit.contain,
+              ),
+              Container(
+                height: 12,
+                width: 1,
+                margin: const EdgeInsets.symmetric(horizontal: 8),
+                color: Colors.black.withValues(alpha: 0.12),
+              ),
+              Image.asset(
+                'assets/images/logo_undip.png',
+                height: 23,
+                fit: BoxFit.contain,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFeatureGrid({bool isWideScreen = false}) {
     return GridView.count(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       crossAxisCount: 2,
       crossAxisSpacing: 12,
       mainAxisSpacing: 12,
-      childAspectRatio:
-          1.12, // Slightly wider and shorter for a modern, compact look
+      childAspectRatio: isWideScreen ? 1.25 : 1.12,
       children: [
         QuickActionCard(
           title: 'Cek Kecukupan Pakan',
@@ -309,4 +421,3 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
-

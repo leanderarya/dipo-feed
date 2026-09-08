@@ -40,6 +40,7 @@ dependencies:
   google_fonts: ^8.1.0
   file_picker: ^11.0.3
   share_plus: ^11.1.0
+  package_info_plus: ^9.0.1
 
 dev_dependencies:
   flutter_test:
@@ -64,9 +65,9 @@ flutter_launcher_icons:
   web:
     generate: true
   remove_alpha_ios: true
-  image_path: "assets/images/logo.png"
-  adaptive_icon_background: "#064E3B"
-  adaptive_icon_foreground: "assets/images/logo.png"
+  image_path: "assets/images/logo_dipofeed.jpeg"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/images/logo_dipofeed.jpeg"
 
 flutter_native_splash:
   color: "#FFFFFF"

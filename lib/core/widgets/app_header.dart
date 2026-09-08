@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../constants/app_colors.dart';
 
@@ -45,56 +44,102 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
   }
 
   Widget _buildHomeHeader(BuildContext context) {
+    final topPadding = MediaQuery.of(context).padding.top;
     return Container(
       padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top + 8,
+        top: topPadding + 6,
         bottom: 12,
         left: 20,
         right: 20,
       ),
       decoration: const BoxDecoration(color: AppColors.backgroundCream),
-      child: Center(
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.asset(
-                'assets/images/logo_dipofeed.jpeg',
-                height: 38,
-                fit: BoxFit.contain,
-              ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Kapsul Kiri: DipoFeed (Logo Lingkaran + Teks Tulisan DIPOFeed)
+          Container(
+            height: 40,
+            alignment: Alignment.center,
+            padding: const EdgeInsets.only(left: 10, right: 11),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.black.withValues(alpha: 0.07)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-            const SizedBox(width: 10),
-            Row(
+            child: Row(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              textBaseline: TextBaseline.alphabetic,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
-                  'DIPO',
-                  style: GoogleFonts.montserrat(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w800,
-                    color: const Color(0xFF004AAD), // Royal Blue
-                    letterSpacing: 0.5,
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Image.asset(
+                    'assets/images/logo_dipofeed.jpeg',
+                    height: 24,
+                    width: 24,
+                    fit: BoxFit.cover,
                   ),
                 ),
-                const SizedBox(width: 4),
-                Text(
-                  'Feed',
-                  style: GoogleFonts.montserrat(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w800,
-                    color: const Color(0xFF00BF63), // Vibrant Green
-                    letterSpacing: 0.5,
+                const SizedBox(width: 7),
+                Transform.translate(
+                  offset: const Offset(0, -0.5),
+                  child: Image.asset(
+                    'assets/images/DIPOFeed.png',
+                    height: 15,
+                    fit: BoxFit.contain,
                   ),
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+
+          // Kapsul Kanan: Kemitraan (UNDIP & ACIAR Australia)
+          Container(
+            height: 40,
+            padding: const EdgeInsets.symmetric(horizontal: 11),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.black.withValues(alpha: 0.07)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/images/logo_aciar.png',
+                  height: 23,
+                  fit: BoxFit.contain,
+                ),
+                Container(
+                  height: 12,
+                  width: 1,
+                  margin: const EdgeInsets.symmetric(horizontal: 8),
+                  color: Colors.black.withValues(alpha: 0.12),
+                ),
+                Image.asset(
+                  'assets/images/logo_undip.png',
+                  height: 23,
+                  fit: BoxFit.contain,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -186,7 +231,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Size get preferredSize {
-    if (isHome) return const Size.fromHeight(72);
+    if (isHome) return const Size.fromHeight(78);
 
     double height = 56;
 

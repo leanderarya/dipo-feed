@@ -1019,7 +1019,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
                       ? Icons.pets
                       : _tahapAktif == 1
                           ? Icons.inventory_2_outlined
-                          : Icons.auto_awesome_rounded,
+                          : Icons.analytics_outlined,
                   size: 16,
                   color: AppColors.primaryBlue,
                 ),
@@ -1112,7 +1112,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
         return _hasilRekomendasi == null
             ? _buildSectionCard(
                 title: 'Hasil Rekomendasi',
-                icon: Icons.auto_awesome_rounded,
+                icon: Icons.analytics_outlined,
                 child: Text(
                   _pesanPerhitungan ??
                       'Lengkapi tahap sebelumnya untuk melihat hasil rekomendasi.',
@@ -1168,7 +1168,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
       children: [
         _buildSectionCard(
           title: 'Hasil Rekomendasi Optimal',
-          icon: Icons.auto_awesome_rounded,
+          icon: Icons.analytics_outlined,
           subtitle:
               'Proporsi pemberian pakan harian per ekor sapi berdasarkan target fisiologi.',
           child: Column(
@@ -2206,7 +2206,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     String selisihText;
     if (status == 'Kurang') {
       selisihText = 'Kurang ${_format((target - hasilValue).abs())} $unit';
-    } else if (status == 'Berlebih') {
+    } else if (status == 'Lebih' || status == 'Berlebih') {
       selisihText = 'Lebih ${_format((hasilValue - target).abs())} $unit';
     } else {
       selisihText = 'Sesuai kebutuhan';
