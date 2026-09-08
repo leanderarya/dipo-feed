@@ -276,22 +276,22 @@ class _HomeScreenState extends State<HomeScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // Kapsul Kiri: DipoFeed (White Frosted/Solid Capsule with refined border & shadow)
+        // Kapsul Kiri: DipoFeed (Compact White Capsule)
         Container(
-          height: 46,
-          padding: const EdgeInsets.symmetric(horizontal: 14),
+          height: 40,
+          padding: const EdgeInsets.symmetric(horizontal: 11),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: Colors.white.withValues(alpha: 0.9),
               width: 1,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.18),
-                blurRadius: 10,
-                offset: const Offset(0, 3),
+                color: Colors.black.withValues(alpha: 0.16),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
               ),
             ],
           ),
@@ -300,40 +300,40 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(16),
                 child: Image.asset(
                   'assets/images/logo_dipofeed.jpeg',
-                  height: 28,
-                  width: 28,
+                  height: 24,
+                  width: 24,
                   fit: BoxFit.cover,
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 7),
               Image.asset(
                 'assets/images/DIPOFeed.png',
-                height: 18,
+                height: 15,
                 fit: BoxFit.contain,
               ),
             ],
           ),
         ),
 
-        // Kapsul Kanan: Kemitraan (Harmonized White Capsule)
+        // Kapsul Kanan: Kemitraan (Compact White Capsule)
         Container(
-          height: 46,
-          padding: const EdgeInsets.symmetric(horizontal: 14),
+          height: 40,
+          padding: const EdgeInsets.symmetric(horizontal: 11),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: Colors.white.withValues(alpha: 0.9),
               width: 1,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.18),
-                blurRadius: 10,
-                offset: const Offset(0, 3),
+                color: Colors.black.withValues(alpha: 0.16),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
               ),
             ],
           ),
@@ -343,18 +343,18 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Image.asset(
                 'assets/images/logo_aciar.png',
-                height: 28,
+                height: 23,
                 fit: BoxFit.contain,
               ),
               Container(
-                height: 14,
+                height: 12,
                 width: 1,
-                margin: const EdgeInsets.symmetric(horizontal: 10),
+                margin: const EdgeInsets.symmetric(horizontal: 8),
                 color: Colors.black.withValues(alpha: 0.12),
               ),
               Image.asset(
                 'assets/images/logo_undip.png',
-                height: 28,
+                height: 23,
                 fit: BoxFit.contain,
               ),
             ],

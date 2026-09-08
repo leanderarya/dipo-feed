@@ -59,16 +59,17 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
         children: [
           // Kapsul Kiri: DipoFeed (Logo Lingkaran + Teks Tulisan DIPOFeed)
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            height: 40,
+            padding: const EdgeInsets.symmetric(horizontal: 11),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(20),
               border: Border.all(color: Colors.black.withValues(alpha: 0.07)),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 10,
-                  offset: const Offset(0, 3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
                 ),
               ],
             ),
@@ -77,18 +78,18 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(16),
                   child: Image.asset(
                     'assets/images/logo_dipofeed.jpeg',
-                    height: 30,
-                    width: 30,
+                    height: 24,
+                    width: 24,
                     fit: BoxFit.cover,
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 7),
                 Image.asset(
                   'assets/images/DIPOFeed.png',
-                  height: 18,
+                  height: 15,
                   fit: BoxFit.contain,
                 ),
               ],
@@ -97,17 +98,17 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
 
           // Kapsul Kanan: Kemitraan (UNDIP & ACIAR Australia)
           Container(
-            height: 46,
-            padding: const EdgeInsets.symmetric(horizontal: 14),
+            height: 40,
+            padding: const EdgeInsets.symmetric(horizontal: 11),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(20),
               border: Border.all(color: Colors.black.withValues(alpha: 0.07)),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 10,
-                  offset: const Offset(0, 3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
                 ),
               ],
             ),
@@ -117,18 +118,18 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
               children: [
                 Image.asset(
                   'assets/images/logo_aciar.png',
-                  height: 28,
+                  height: 23,
                   fit: BoxFit.contain,
                 ),
                 Container(
-                  height: 14,
+                  height: 12,
                   width: 1,
-                  margin: const EdgeInsets.symmetric(horizontal: 10),
+                  margin: const EdgeInsets.symmetric(horizontal: 8),
                   color: Colors.black.withValues(alpha: 0.12),
                 ),
                 Image.asset(
                   'assets/images/logo_undip.png',
-                  height: 28,
+                  height: 23,
                   fit: BoxFit.contain,
                 ),
               ],
