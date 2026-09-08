@@ -61,42 +61,47 @@ class AppBottomNav extends StatelessWidget {
 
   Widget _buildNavItem(int index, String svgAsset, String label) {
     final bool isActive = currentIndex == index;
-    return GestureDetector(
-      onTap: () => onTap(index),
-      behavior: HitTestBehavior.opaque,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: isActive
-                  ? AppColors.primaryGreen.withValues(alpha: 0.1)
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: SvgPicture.asset(
-              svgAsset,
-              width: 26,
-              height: 26,
-              colorFilter: ColorFilter.mode(
-                isActive ? AppColors.primaryGreen : AppColors.textGrey,
-                BlendMode.srcIn,
+    return Semantics(
+      button: true,
+      selected: isActive,
+      label: 'Tab $label',
+      child: GestureDetector(
+        onTap: () => onTap(index),
+        behavior: HitTestBehavior.opaque,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: isActive
+                    ? AppColors.primaryGreen.withValues(alpha: 0.1)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: SvgPicture.asset(
+                svgAsset,
+                width: 26,
+                height: 26,
+                colorFilter: ColorFilter.mode(
+                  isActive ? AppColors.primaryGreen : AppColors.textGrey,
+                  BlendMode.srcIn,
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
-              color: isActive ? AppColors.primaryGreen : AppColors.textGrey,
-              letterSpacing: 0.5,
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
+                color: isActive ? AppColors.primaryGreen : AppColors.textGrey,
+                letterSpacing: 0.5,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
