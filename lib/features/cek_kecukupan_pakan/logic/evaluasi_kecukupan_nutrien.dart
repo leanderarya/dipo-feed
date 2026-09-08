@@ -167,9 +167,9 @@ class HasilEvaluasiKecukupanNutrien {
     final bkKg = totalBerat * (nutrisiPemberian.bk / 100);
     final pkKg = totalBerat * (nutrisiPemberian.protein / 100);
     final tdnKg = totalBerat * (nutrisiPemberian.tdn / 100);
-    // Data Ca dan P pada master bahan pakan belum terisi, pemberian dicatat 0.
-    const caGram = 0.0;
-    const pGram = 0.0;
+    // Ca dan P dihitung dalam gram: totalBerat (kg) * (% / 100) * 1000 = totalBerat * % * 10
+    final caGram = totalBerat * (nutrisiPemberian.ca / 100) * 1000;
+    final pGram = totalBerat * (nutrisiPemberian.p / 100) * 1000;
 
     final kontribusiList = <KontribusiNutrisiBahanPakan>[];
     final segmenBk = <SegmenKontribusiNutrien>[];

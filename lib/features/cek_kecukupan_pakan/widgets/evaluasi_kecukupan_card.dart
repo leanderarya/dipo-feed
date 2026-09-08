@@ -153,12 +153,6 @@ class _EvaluasiKecukupanCardState extends State<EvaluasiKecukupanCard> {
   // COMPACT MODE CONTENT
   // ==========================================
   Widget _buildCompactContent() {
-    final primaryItems = [
-      widget.hasil.bk,
-      widget.hasil.protein,
-      widget.hasil.tdn,
-    ];
-
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -170,9 +164,9 @@ class _EvaluasiKecukupanCardState extends State<EvaluasiKecukupanCard> {
       ),
       child: Column(
         children: [
-          for (var i = 0; i < primaryItems.length; i++) ...[
-            _buildCompactNutrientRow(primaryItems[i]),
-            if (i != primaryItems.length - 1)
+          for (var i = 0; i < widget.hasil.items.length; i++) ...[
+            _buildCompactNutrientRow(widget.hasil.items[i]),
+            if (i != widget.hasil.items.length - 1)
               Divider(
                 height: 1,
                 thickness: 1,
@@ -181,14 +175,6 @@ class _EvaluasiKecukupanCardState extends State<EvaluasiKecukupanCard> {
                 endIndent: 14,
               ),
           ],
-          Divider(
-            height: 1,
-            thickness: 1,
-            color: Colors.grey.shade100,
-            indent: 14,
-            endIndent: 14,
-          ),
-          _buildCompactMineralDisabledRow(),
         ],
       ),
     );
@@ -259,55 +245,6 @@ class _EvaluasiKecukupanCardState extends State<EvaluasiKecukupanCard> {
     );
   }
 
-  Widget _buildCompactMineralDisabledRow() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text(
-                  'Ca & P (Mineral)',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textLight,
-                  ),
-                ),
-                SizedBox(height: 2),
-                Text(
-                  'Data mineral master pakan belum tersedia',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: AppColors.textLight,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey.shade300),
-            ),
-            child: const Text(
-              'Belum ada data',
-              style: TextStyle(
-                fontSize: 10.5,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textLight,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   // ==========================================
   // EXPANDED MODE CONTENT
   // ==========================================
@@ -341,10 +278,6 @@ class _EvaluasiKecukupanCardState extends State<EvaluasiKecukupanCard> {
             ],
           ),
         ),
-        const SizedBox(height: 12),
-
-        // Note Section for Ca & P
-        _buildInfoNoteCaP(),
         const SizedBox(height: 16),
 
         // Kesimpulan Umum Card
@@ -498,34 +431,6 @@ class _EvaluasiKecukupanCardState extends State<EvaluasiKecukupanCard> {
         fontSize: 12,
         color: color,
         fontWeight: FontWeight.w700,
-      ),
-    );
-  }
-
-  Widget _buildInfoNoteCaP() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(
-            Icons.info_outline,
-            size: 14,
-            color: AppColors.expertPurple.withValues(alpha: 0.65),
-          ),
-          const SizedBox(width: 6),
-          Expanded(
-            child: Text(
-              'Catatan: Nilai pemberian Ca dan P saat ini masih 0 karena data kandungan mineral pada master bahan pakan belum tersedia.',
-              style: TextStyle(
-                fontSize: 11,
-                color: AppColors.expertPurple.withValues(alpha: 0.75),
-                fontWeight: FontWeight.w600,
-                height: 1.35,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
