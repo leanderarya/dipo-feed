@@ -2206,7 +2206,7 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
     String selisihText;
     if (status == 'Kurang') {
       selisihText = 'Kurang ${_format((target - hasilValue).abs())} $unit';
-    } else if (status == 'Berlebih') {
+    } else if (status == 'Lebih' || status == 'Berlebih') {
       selisihText = 'Lebih ${_format((hasilValue - target).abs())} $unit';
     } else {
       selisihText = 'Sesuai kebutuhan';
