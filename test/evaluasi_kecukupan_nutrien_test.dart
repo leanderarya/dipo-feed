@@ -227,7 +227,7 @@ void main() {
 
       expect(find.text('Hasil Evaluasi Nutrisi'), findsOneWidget);
       expect(find.text('Lihat Detail'), findsOneWidget);
-      expect(find.byType(StackedNutrientProgressBar), findsWidgets);
+      expect(find.byType(SingleCylinderNutrientBar), findsWidgets);
 
       // Tap Lihat Detail
       await tester.tap(find.text('Lihat Detail'));

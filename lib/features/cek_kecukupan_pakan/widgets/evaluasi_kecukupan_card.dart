@@ -249,11 +249,10 @@ class _EvaluasiKecukupanCardState extends State<EvaluasiKecukupanCard> {
             ],
           ),
           const SizedBox(height: 8),
-          StackedNutrientProgressBar(
+          SingleCylinderNutrientBar(
             kebutuhan: item.kebutuhan,
             pemberian: item.pemberian,
-            segmen: item.segmen,
-            fallbackColor: color,
+            status: item.status,
           ),
         ],
       ),
@@ -420,12 +419,11 @@ class _EvaluasiKecukupanCardState extends State<EvaluasiKecukupanCard> {
           ),
           const SizedBox(height: 8),
 
-          // Stacked Progress Bar
-          StackedNutrientProgressBar(
+          // Single Cylinder Progress Bar Solid Color
+          SingleCylinderNutrientBar(
             kebutuhan: item.kebutuhan,
             pemberian: item.pemberian,
-            segmen: item.segmen,
-            fallbackColor: color,
+            status: item.status,
           ),
           const SizedBox(height: 4),
 
@@ -581,87 +579,67 @@ class _EvaluasiKecukupanCardState extends State<EvaluasiKecukupanCard> {
   }
 }
 
-class StackedNutrientProgressBar extends StatelessWidget {
+class SingleCylinderNutrientBar extends StatelessWidget {
   final double kebutuhan;
   final double pemberian;
-  final List<SegmenKontribusiNutrien> segmen;
-  final Color fallbackColor;
+  final StatusKecukupanNutrien status;
 
-  const StackedNutrientProgressBar({
+  const SingleCylinderNutrientBar({
     super.key,
     required this.kebutuhan,
     required this.pemberian,
-    required this.segmen,
-    required this.fallbackColor,
+    required this.status,
   });
 
   @override
   Widget build(BuildContext context) {
-    final baseMax = kebutuhan > 0 ? kebutuhan * 1.2 : 1.0;
-    final maxScale = (pemberian > baseMax) ? pemberian * 1.05 : baseMax;
-    final targetFraction =
-        kebutuhan > 0 ? (kebutuhan / maxScale).clamp(0.0, 1.0) : 0.0;
+    final Color barColor = switch (status) {
+      StatusKecukupanNutrien.pas => AppColors.statusPas,
+      StatusKecukupanNutrien.berlebih => AppColors.statusBerlebih,
+      StatusKecukupanNutrien.kurang => AppColors.statusKurang,
+    };
+
+    // Bila pas atau berlebih, tabung penuh (100% / 1.0). Bila kurang, proporsional dari kebutuhan.
+    final double fillFraction = switch (status) {
+      StatusKecukupanNutrien.pas => 1.0,
+      StatusKecukupanNutrien.berlebih => 1.0,
+      StatusKecukupanNutrien.kurang =>
+        kebutuhan > 0 ? (pemberian / kebutuhan).clamp(0.0, 1.0) : 0.0,
+    };
 
     return LayoutBuilder(
       builder: (context, constraints) {
         final totalWidth = constraints.maxWidth;
+        final filledWidth = (fillFraction * totalWidth).clamp(0.0, totalWidth);
 
         return Stack(
           alignment: Alignment.centerLeft,
           children: [
-            // Background bar
+            // Background Tabung Kosong
             Container(
-              height: 11,
+              height: 12,
               width: double.infinity,
               decoration: BoxDecoration(
                 color: Colors.grey.shade100,
                 borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: Colors.grey.shade200, width: 0.5),
+                border: Border.all(color: Colors.grey.shade300, width: 0.8),
               ),
             ),
-            // Segmented items or fallback
-            if (segmen.isNotEmpty && pemberian > 0)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(6),
-                child: SizedBox(
-                  height: 11,
-                  width: (pemberian / maxScale).clamp(0.0, 1.0) * totalWidth,
-                  child: Row(
-                    children: segmen.map((s) {
-                      if (s.nilaiKg <= 0) return const SizedBox.shrink();
-                      final segmentFraction =
-                          (s.nilaiKg / pemberian).clamp(0.0, 1.0);
-                      return Expanded(
-                        flex: (segmentFraction * 1000).round().clamp(1, 1000),
-                        child: Container(
-                          color: s.warna,
-                          height: 11,
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              )
-            else if (pemberian > 0)
+            // Isi Tabung Solid 1 Warna Sesuai Status
+            if (filledWidth > 0)
               Container(
-                height: 11,
-                width: (pemberian / maxScale).clamp(0.0, 1.0) * totalWidth,
+                height: 12,
+                width: filledWidth,
                 decoration: BoxDecoration(
-                  color: fallbackColor,
+                  color: barColor,
                   borderRadius: BorderRadius.circular(6),
-                ),
-              ),
-            // Target 100% threshold line
-            if (kebutuhan > 0)
-              Positioned(
-                left: (targetFraction * totalWidth).clamp(0.0, totalWidth - 2),
-                child: Container(
-                  height: 15,
-                  width: 2.5,
-                  decoration: BoxDecoration(
-                    color: AppColors.textDark.withValues(alpha: 0.8),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: barColor.withValues(alpha: 0.25),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
                 ),
               ),
           ],
@@ -670,3 +648,4 @@ class StackedNutrientProgressBar extends StatelessWidget {
     );
   }
 }
+
