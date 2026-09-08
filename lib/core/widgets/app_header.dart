@@ -97,7 +97,8 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
 
           // Kapsul Kanan: Kemitraan (UNDIP & ACIAR Australia)
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            height: 46,
+            padding: const EdgeInsets.symmetric(horizontal: 14),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(24),
@@ -116,18 +117,18 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
               children: [
                 Image.asset(
                   'assets/images/logo_aciar.png',
-                  height: 24,
+                  height: 28,
                   fit: BoxFit.contain,
                 ),
                 Container(
-                  height: 16,
+                  height: 14,
                   width: 1,
-                  margin: const EdgeInsets.symmetric(horizontal: 9),
-                  color: Colors.grey.shade300,
+                  margin: const EdgeInsets.symmetric(horizontal: 10),
+                  color: Colors.black.withValues(alpha: 0.12),
                 ),
                 Image.asset(
                   'assets/images/logo_undip.png',
-                  height: 26,
+                  height: 28,
                   fit: BoxFit.contain,
                 ),
               ],

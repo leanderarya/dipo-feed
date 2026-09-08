@@ -278,7 +278,8 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         // Kapsul Kiri: DipoFeed (White Frosted/Solid Capsule with refined border & shadow)
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+          height: 46,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(24),
@@ -310,7 +311,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(width: 8),
               Image.asset(
                 'assets/images/DIPOFeed.png',
-                height: 17,
+                height: 18,
                 fit: BoxFit.contain,
               ),
             ],
@@ -319,7 +320,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
         // Kapsul Kanan: Kemitraan (Harmonized White Capsule)
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+          height: 46,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(24),
@@ -341,18 +343,18 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Image.asset(
                 'assets/images/logo_aciar.png',
-                height: 24,
+                height: 28,
                 fit: BoxFit.contain,
               ),
               Container(
-                height: 16,
+                height: 14,
                 width: 1,
-                margin: const EdgeInsets.symmetric(horizontal: 9),
-                color: Colors.grey.shade300,
+                margin: const EdgeInsets.symmetric(horizontal: 10),
+                color: Colors.black.withValues(alpha: 0.12),
               ),
               Image.asset(
                 'assets/images/logo_undip.png',
-                height: 26,
+                height: 28,
                 fit: BoxFit.contain,
               ),
             ],
