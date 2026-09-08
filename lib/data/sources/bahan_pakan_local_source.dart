@@ -75,8 +75,9 @@ class BahanPakanLocalSource {
 
   Future<void> simpanSemuaBahanPakan(List<BahanPakan> daftarBahan) async {
     final immutableData = List<BahanPakan>.unmodifiable(daftarBahan);
-    if (_writeOperation != null) {
-      await _writeOperation!(immutableData);
+    final writeOp = _writeOperation;
+    if (writeOp != null) {
+      await writeOp(immutableData);
       return;
     }
 
