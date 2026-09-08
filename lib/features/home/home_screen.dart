@@ -8,7 +8,7 @@ import '../cek_kandungan_nutrisi/cek_kandungan_nutrisi_screen.dart';
 import '../cek_kecukupan_pakan/cek_kecukupan_pakan_screen.dart';
 import '../master_pakan/master_pakan_screen.dart';
 import '../rekomendasi_pakan/rekomendasi_pakan_screen.dart';
-import '../pengaturan/pengaturan_screen.dart';
+import '../tentang/tentang_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -109,7 +109,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Stack(
         children: [
           _selectedIndex == 2
-              ? const PengaturanScreen(isTab: true)
+              ? const TentangScreen(isTab: true)
               : _buildHomeContent(),
           Align(
             alignment: Alignment.bottomCenter,

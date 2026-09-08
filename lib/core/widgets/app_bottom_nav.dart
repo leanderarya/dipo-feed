@@ -42,8 +42,8 @@ class AppBottomNav extends StatelessWidget {
                 _buildNavItem(1, 'assets/icons/ic_panduan.svg', 'Panduan'),
                 _buildNavItem(
                   2,
-                  'assets/icons/ic_pengaturan.svg',
-                  'Pengaturan',
+                  'assets/icons/ic_tentang.svg',
+                  'Tentang',
                 ),
               ],
             ),
