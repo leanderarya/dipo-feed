@@ -121,7 +121,7 @@ class TentangScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'DipoFeed, UNDIP & ACIAR Australia',
+                      'ACIAR Australia, UNDIP & DipoFeed',
                       style: GoogleFonts.inter(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
@@ -134,7 +134,7 @@ class TentangScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          // Logo Kemitraan (Urutan: DipoFeed, UNDIP, ACIAR)
+          // Logo Kemitraan (Urutan: ACIAR, UNDIP, DipoFeed)
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
@@ -152,7 +152,7 @@ class TentangScreen extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           Text(
-            'DipoFeed merupakan platform digital formulasi ransum pakan sapi perah yang dikembangkan oleh Tim Riset Fakultas Peternakan dan Pertanian (FPP) Universitas Diponegoro bekerja sama dengan Australian Centre for International Agricultural Research (ACIAR) Australia untuk mendukung peternak sapi perah Indonesia.',
+            'DipoFeed didukung oleh Australian Centre for International Agricultural Research (ACIAR) Australia bekerja sama dengan Tim Riset Fakultas Peternakan dan Pertanian (FPP) Universitas Diponegoro untuk menghadirkan platform digital formulasi ransum pakan sapi perah presisi bagi peternak Indonesia.',
             style: GoogleFonts.inter(
               fontSize: 12.5,
               color: AppColors.textSecondary,

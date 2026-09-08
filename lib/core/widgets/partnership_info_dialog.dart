@@ -92,23 +92,23 @@ class PartnershipInfoDialog extends StatelessWidget {
                       ),
                       const SizedBox(height: 10),
 
-                      // Partner 1: UNDIP
-                      _buildPartnerCard(
-                        icon: Icons.school_rounded,
-                        iconColor: AppColors.primaryBlue,
-                        title: 'Universitas Diponegoro (UNDIP)',
-                        subtitle:
-                            'Fakultas Peternakan dan Pertanian memimpin formulasi riset pakan berbasis potensi bahan pakan lokal serta pendampingan peternak sapi perah.',
-                      ),
-                      const SizedBox(height: 10),
-
-                      // Partner 2: ACIAR
+                      // Partner 1: ACIAR
                       _buildPartnerCard(
                         icon: Icons.public_rounded,
                         iconColor: const Color(0xFF006644),
                         title: 'ACIAR Australia',
                         subtitle:
                             'Lembaga riset pertanian Pemerintah Australia yang mendanai dan mendukung transfer teknologi untuk ketahanan pakan dan kesejahteraan peternak.',
+                      ),
+                      const SizedBox(height: 10),
+
+                      // Partner 2: UNDIP
+                      _buildPartnerCard(
+                        icon: Icons.school_rounded,
+                        iconColor: AppColors.primaryBlue,
+                        title: 'Universitas Diponegoro (UNDIP)',
+                        subtitle:
+                            'Fakultas Peternakan dan Pertanian memimpin formulasi riset pakan berbasis potensi bahan pakan lokal serta pendampingan peternak sapi perah.',
                       ),
                       const SizedBox(height: 10),
 
