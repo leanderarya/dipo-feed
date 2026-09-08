@@ -209,27 +209,27 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.eco_rounded, size: 14, color: Colors.white),
+                      Icon(Icons.science_rounded, size: 14, color: Colors.white),
                       SizedBox(width: 6),
                       Text(
-                        'RESEARCH-BASED',
+                        'RISET FPP UNDIP × ACIAR',
                         style: TextStyle(
-                          fontSize: 9,
+                          fontSize: 9.5,
                           fontWeight: FontWeight.w800,
                           color: Colors.white,
-                          letterSpacing: 1,
+                          letterSpacing: 0.8,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 12), // Reduced from 16
+                const SizedBox(height: 12),
                 const Text(
                   'Optimalkan Nutrisi\nTernak Anda',
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.w900,
-                    color: Colors.white, // High-contrast premium white
+                    color: Colors.white,
                     height: 1.1,
                     shadows: [
                       Shadow(
@@ -240,14 +240,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 8), // Reduced from 12
+                const SizedBox(height: 8),
                 const Text(
-                  'Standar riset terkini dari Fakultas Peternakan dan Pertanian (FPP) Universitas Diponegoro',
+                  'Standar riset terkini kolaborasi Fakultas Peternakan dan Pertanian (FPP) UNDIP & ACIAR Australia',
                   style: TextStyle(
                     fontSize: 13,
                     color: Colors.white,
-                    fontWeight:
-                        FontWeight.w600, // Thicker weight for premium contrast
+                    fontWeight: FontWeight.w600,
                     height: 1.4,
                     shadows: [
                       Shadow(
