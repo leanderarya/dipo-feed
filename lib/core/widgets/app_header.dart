@@ -60,7 +60,8 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
           // Kapsul Kiri: DipoFeed (Logo Lingkaran + Teks Tulisan DIPOFeed)
           Container(
             height: 40,
-            padding: const EdgeInsets.symmetric(horizontal: 11),
+            alignment: Alignment.center,
+            padding: const EdgeInsets.only(left: 10, right: 11),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
@@ -87,10 +88,13 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                   ),
                 ),
                 const SizedBox(width: 7),
-                Image.asset(
-                  'assets/images/DIPOFeed.png',
-                  height: 15,
-                  fit: BoxFit.contain,
+                Transform.translate(
+                  offset: const Offset(0, -0.5),
+                  child: Image.asset(
+                    'assets/images/DIPOFeed.png',
+                    height: 15,
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ],
             ),

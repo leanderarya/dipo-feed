@@ -276,10 +276,11 @@ class _HomeScreenState extends State<HomeScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // Kapsul Kiri: DipoFeed (Compact White Capsule)
+        // Kapsul Kiri: DipoFeed (Compact White Capsule - Optical Center)
         Container(
           height: 40,
-          padding: const EdgeInsets.symmetric(horizontal: 11),
+          alignment: Alignment.center,
+          padding: const EdgeInsets.only(left: 10, right: 11),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),
@@ -309,10 +310,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(width: 7),
-              Image.asset(
-                'assets/images/DIPOFeed.png',
-                height: 15,
-                fit: BoxFit.contain,
+              Transform.translate(
+                offset: const Offset(0, -0.5),
+                child: Image.asset(
+                  'assets/images/DIPOFeed.png',
+                  height: 15,
+                  fit: BoxFit.contain,
+                ),
               ),
             ],
           ),
