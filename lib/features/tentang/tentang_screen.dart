@@ -45,19 +45,13 @@ class TentangScreen extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          // Section 1: Kerja Sama Kemitraan (ACIAR Australia, UNDIP, DipoFeed)
-          _buildSectionHeader('Kerja Sama Kemitraan'),
+          // Section 1: Pilar Kolaborasi (DipoFeed, UNDIP, ACIAR Australia)
+          _buildSectionHeader('Pilar Kolaborasi'),
           const SizedBox(height: 10),
           _buildPartnershipCard(context),
           const SizedBox(height: 24),
 
-          // Section 2: Pilar Kolaborasi
-          _buildSectionHeader('Pilar Kolaborasi'),
-          const SizedBox(height: 10),
-          _buildPillarsSection(),
-          const SizedBox(height: 24),
-
-          // Section 3: Informasi Versi & Rilis
+          // Section 2: Informasi Versi & Rilis
           _buildSectionHeader('Informasi Aplikasi'),
           const SizedBox(height: 10),
           _buildAppReleaseCard(context),
@@ -118,7 +112,7 @@ class TentangScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Kolaborasi Riset Strategis',
+                      'Pilar Kolaborasi Strategis',
                       style: GoogleFonts.inter(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
@@ -127,7 +121,7 @@ class TentangScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'FPP UNDIP & ACIAR Australia',
+                      'DipoFeed, UNDIP & ACIAR Australia',
                       style: GoogleFonts.inter(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
@@ -140,7 +134,7 @@ class TentangScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          // Logo Kemitraan (DipoFeed, UNDIP, ACIAR)
+          // Logo Kemitraan (Urutan: DipoFeed, UNDIP, ACIAR)
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
@@ -201,97 +195,6 @@ class TentangScreen extends StatelessWidget {
                   ),
                 ],
               ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPillarsSection() {
-    return Column(
-      children: [
-        _buildPillarCard(
-          icon: Icons.school_rounded,
-          iconColor: AppColors.primaryBlue,
-          title: 'Universitas Diponegoro (UNDIP)',
-          subtitle:
-              'Fakultas Peternakan dan Pertanian memimpin formulasi riset pakan berbasis potensi bahan pakan lokal serta pendampingan peternak sapi perah.',
-        ),
-        const SizedBox(height: 10),
-        _buildPillarCard(
-          icon: Icons.public_rounded,
-          iconColor: const Color(0xFF006644),
-          title: 'ACIAR Australia',
-          subtitle:
-              'Lembaga riset pertanian Pemerintah Australia yang mendanai dan mendukung transfer teknologi untuk ketahanan pakan dan produktivitas peternak.',
-        ),
-        const SizedBox(height: 10),
-        _buildPillarCard(
-          icon: Icons.grass_rounded,
-          iconColor: AppColors.secondaryGreen,
-          title: 'Inovasi DipoFeed',
-          subtitle:
-              'Solusi formulasi ransum pakan sapi perah secara presisi, praktis, dan berbasis standar ilmiah untuk efisiensi biaya dan nutrisi optimal.',
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPillarCard({
-    required IconData icon,
-    required Color iconColor,
-    required String title,
-    required String subtitle,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, color: iconColor, size: 20),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: GoogleFonts.inter(
-                    fontSize: 11.5,
-                    height: 1.45,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ],
             ),
           ),
         ],
