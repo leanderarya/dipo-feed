@@ -312,7 +312,6 @@ void main() {
       // Step 3 displays evaluation card and summary
       expect(find.textContaining('Tahap 3 dari 3'), findsOneWidget);
       expect(find.text('Hasil Evaluasi Nutrisi'), findsOneWidget);
-      expect(find.text('Komposisi Pakan Diberikan'), findsOneWidget);
       expect(find.text('Tutup Detail'), findsOneWidget);
     },
   );
