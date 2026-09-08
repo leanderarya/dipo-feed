@@ -5,7 +5,6 @@ import 'package:package_info_plus/package_info_plus.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/widgets/partnership_branding_widget.dart';
 import '../../core/widgets/partnership_info_dialog.dart';
-import '../master_pakan/master_pakan_screen.dart';
 
 class TentangScreen extends StatelessWidget {
   final bool isTab;
@@ -58,38 +57,7 @@ class TentangScreen extends StatelessWidget {
           _buildPillarsSection(),
           const SizedBox(height: 24),
 
-          // Section 3: Basis Data Pakan
-          _buildSectionHeader('Basis Data & Pakan'),
-          const SizedBox(height: 10),
-          _buildActionCard(
-            context,
-            icon: Icons.inventory_2_outlined,
-            iconColor: AppColors.primaryBlue,
-            title: 'Katalog Master Pakan',
-            subtitle: 'Kelola data nutrisi pakan lokal & impor/ekspor CSV',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const MasterPakanScreen(),
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 10),
-          _buildActionCard(
-            context,
-            icon: Icons.restore_rounded,
-            iconColor: AppColors.accentOrange,
-            title: 'Reset Basis Data ke Standar',
-            subtitle: 'Kembalikan komposisi nutrien bahan pakan ke nilai riset awal',
-            onTap: () {
-              _showResetDialog(context);
-            },
-          ),
-          const SizedBox(height: 24),
-
-          // Section 4: Informasi Versi & Rilis
+          // Section 3: Informasi Versi & Rilis
           _buildSectionHeader('Informasi Aplikasi'),
           const SizedBox(height: 10),
           _buildAppReleaseCard(context),
@@ -331,83 +299,6 @@ class TentangScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildActionCard(
-    BuildContext context, {
-    required IconData icon,
-    required Color iconColor,
-    required String title,
-    required String subtitle,
-    VoidCallback? onTap,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
-                blurRadius: 10,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: iconColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                alignment: Alignment.center,
-                child: Icon(icon, color: iconColor, size: 20),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: GoogleFonts.inter(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w400,
-                        color: AppColors.textSecondary,
-                        height: 1.3,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(
-                Icons.chevron_right_rounded,
-                color: AppColors.textSecondary,
-                size: 20,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildAppReleaseCard(BuildContext context) {
     return FutureBuilder<PackageInfo>(
       future: PackageInfo.fromPlatform(),
@@ -529,38 +420,6 @@ class TentangScreen extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-
-  void _showResetDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Reset Basis Data?'),
-        content: const Text(
-          'Semua perubahan harga dan bahan pakan kustom akan dikembalikan ke data default standar FPP Undip.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Batal'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: AppColors.accentOrange),
-            onPressed: () {
-              Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Basis data berhasil disinkronkan ke default.'),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
-            child: const Text('Reset'),
-          ),
-        ],
-      ),
     );
   }
 }
