@@ -39,7 +39,7 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
 
   List<BahanPakan> _semuaBahan = [];
   final List<CampuranPakanItem> _campuran = [];
-  FisiologiSapi _fisiologi = FisiologiSapi.laktasi;
+  FisiologiSapi _fisiologi = FisiologiSapi.dara;
   HasilPerhitunganNutrisi? _hasilTerhitung;
   StatusPerhitungan _statusPerhitungan = StatusPerhitungan.belumDihitung;
   int _tahapAktif = 0;
