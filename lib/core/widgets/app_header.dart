@@ -116,18 +116,18 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
               children: [
                 Image.asset(
                   'assets/images/logo_aciar.png',
-                  height: 22,
+                  height: 24,
                   fit: BoxFit.contain,
                 ),
                 Container(
-                  height: 18,
+                  height: 16,
                   width: 1,
-                  margin: const EdgeInsets.symmetric(horizontal: 10),
+                  margin: const EdgeInsets.symmetric(horizontal: 9),
                   color: Colors.grey.shade300,
                 ),
                 Image.asset(
                   'assets/images/logo_undip.png',
-                  height: 28,
+                  height: 26,
                   fit: BoxFit.contain,
                 ),
               ],

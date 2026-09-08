@@ -276,20 +276,20 @@ class _HomeScreenState extends State<HomeScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // Kapsul Kiri: DipoFeed (Dark Glassmorphism Capsule)
+        // Kapsul Kiri: DipoFeed (White Frosted/Solid Capsule with refined border & shadow)
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
           decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.45),
+            color: Colors.white,
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.25),
+              color: Colors.white.withValues(alpha: 0.9),
               width: 1,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.25),
-                blurRadius: 8,
+                color: Colors.black.withValues(alpha: 0.18),
+                blurRadius: 10,
                 offset: const Offset(0, 3),
               ),
             ],
@@ -302,35 +302,35 @@ class _HomeScreenState extends State<HomeScreen> {
                 borderRadius: BorderRadius.circular(20),
                 child: Image.asset(
                   'assets/images/logo_dipofeed.jpeg',
-                  height: 30,
-                  width: 30,
+                  height: 28,
+                  width: 28,
                   fit: BoxFit.cover,
                 ),
               ),
               const SizedBox(width: 8),
               Image.asset(
                 'assets/images/DIPOFeed.png',
-                height: 18,
+                height: 17,
                 fit: BoxFit.contain,
               ),
             ],
           ),
         ),
 
-        // Kapsul Kanan: Kemitraan (Solid White Capsule)
+        // Kapsul Kanan: Kemitraan (Harmonized White Capsule)
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.8),
+              color: Colors.white.withValues(alpha: 0.9),
               width: 1,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
-                blurRadius: 8,
+                color: Colors.black.withValues(alpha: 0.18),
+                blurRadius: 10,
                 offset: const Offset(0, 3),
               ),
             ],
@@ -341,18 +341,18 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Image.asset(
                 'assets/images/logo_aciar.png',
-                height: 22,
+                height: 24,
                 fit: BoxFit.contain,
               ),
               Container(
-                height: 18,
+                height: 16,
                 width: 1,
-                margin: const EdgeInsets.symmetric(horizontal: 8),
+                margin: const EdgeInsets.symmetric(horizontal: 9),
                 color: Colors.grey.shade300,
               ),
               Image.asset(
                 'assets/images/logo_undip.png',
-                height: 28,
+                height: 26,
                 fit: BoxFit.contain,
               ),
             ],
