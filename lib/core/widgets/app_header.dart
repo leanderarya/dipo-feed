@@ -115,8 +115,8 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Image.asset(
-                  'assets/images/logo_undip.png',
-                  height: 28,
+                  'assets/images/logo_aciar.png',
+                  height: 22,
                   fit: BoxFit.contain,
                 ),
                 Container(
@@ -126,8 +126,8 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                   color: Colors.grey.shade300,
                 ),
                 Image.asset(
-                  'assets/images/logo_aciar.png',
-                  height: 22,
+                  'assets/images/logo_undip.png',
+                  height: 28,
                   fit: BoxFit.contain,
                 ),
               ],
