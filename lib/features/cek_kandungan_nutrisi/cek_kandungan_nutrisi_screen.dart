@@ -541,7 +541,7 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
     final stepTitles = ['Komposisi Pakan', 'Hasil Evaluasi'];
     final labels = [
       'Komposisi Campuran Pakan',
-      'Hasil Analisis & Evaluasi Nutrien',
+      'Evaluasi Nutrien',
     ];
 
     return AppCard(
@@ -670,7 +670,7 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
                 Icon(
                   _tahapAktif == 0
                       ? Icons.science_outlined
-                      : Icons.auto_awesome_rounded,
+                      : Icons.analytics_outlined,
                   size: 16,
                   color: AppColors.primaryBlue,
                 ),
