@@ -152,7 +152,7 @@ class TentangScreen extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           Text(
-            'DipoFeed didukung oleh Australian Centre for International Agricultural Research (ACIAR) Australia bekerja sama dengan Tim Riset Fakultas Peternakan dan Pertanian (FPP) Universitas Diponegoro untuk menghadirkan platform digital formulasi ransum pakan sapi perah presisi bagi peternak Indonesia.',
+            'DipoFeed merupakan platform digital formulasi ransum pakan sapi perah presisi yang dikembangkan oleh Tim Riset Fakultas Peternakan dan Pertanian (FPP) Universitas Diponegoro melalui kolaborasi strategis bersama Australian Centre for International Agricultural Research (ACIAR) Australia untuk mendukung peternak sapi perah Indonesia.',
             style: GoogleFonts.inter(
               fontSize: 12.5,
               color: AppColors.textSecondary,
