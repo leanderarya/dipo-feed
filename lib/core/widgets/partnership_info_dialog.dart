@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../constants/app_colors.dart';
-import 'partnership_branding_widget.dart';
 
 /// Modal dialog providing comprehensive information about the partnership
 /// between Diponegoro University (UNDIP) and ACIAR Australia.
@@ -51,32 +50,45 @@ class PartnershipInfoDialog extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Partner Logos Display
-                      const PartnershipBrandingWidget(
-                        height: 44,
-                        isCardStyle: true,
-                        showInfoBadge: false,
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Overview Narrative
+                      // Overview Narrative (Option 1: Intro block at top)
                       Container(
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
-                          color: AppColors.surfaceLow,
+                          color: const Color(0xFFF4F8FC),
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(
-                            color: Colors.black.withValues(alpha: 0.04),
+                            color: AppColors.primaryBlue.withValues(alpha: 0.12),
                           ),
                         ),
-                        child: Text(
-                          'Aplikasi DipoFeed dikembangkan melalui kerja sama riset dan pengabdian antara Fakultas Peternakan dan Pertanian (FPP) Universitas Diponegoro dan Australian Centre for International Agricultural Research (ACIAR).',
-                          style: GoogleFonts.inter(
-                            fontSize: 13,
-                            height: 1.5,
-                            color: AppColors.textPrimary,
-                            fontWeight: FontWeight.w500,
-                          ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              margin: const EdgeInsets.only(top: 1),
+                              padding: const EdgeInsets.all(5),
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.info_outline_rounded,
+                                size: 15,
+                                color: AppColors.primaryBlue,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                'Aplikasi DipoFeed dikembangkan melalui kerja sama riset dan pengabdian antara Fakultas Peternakan dan Pertanian (FPP) Universitas Diponegoro dan Australian Centre for International Agricultural Research (ACIAR).',
+                                style: GoogleFonts.inter(
+                                  fontSize: 12.5,
+                                  height: 1.5,
+                                  color: AppColors.textPrimary,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -94,31 +106,37 @@ class PartnershipInfoDialog extends StatelessWidget {
 
                       // Partner 1: ACIAR
                       _buildPartnerCard(
-                        icon: Icons.public_rounded,
-                        iconColor: const Color(0xFF006644),
+                        assetPath: 'assets/images/logo_aciar.png',
+                        fallbackLabel: 'ACIAR',
+                        brandColor: const Color(0xFF006644),
                         title: 'ACIAR Australia',
                         subtitle:
                             'Lembaga riset pertanian Pemerintah Australia yang mendanai dan mendukung transfer teknologi untuk ketahanan pakan dan kesejahteraan peternak.',
+                        logoPadding: 4,
                       ),
                       const SizedBox(height: 10),
 
                       // Partner 2: UNDIP
                       _buildPartnerCard(
-                        icon: Icons.school_rounded,
-                        iconColor: AppColors.primaryBlue,
+                        assetPath: 'assets/images/logo_undip.png',
+                        fallbackLabel: 'UNDIP',
+                        brandColor: AppColors.primaryBlue,
                         title: 'Universitas Diponegoro (UNDIP)',
                         subtitle:
                             'Fakultas Peternakan dan Pertanian memimpin formulasi riset pakan berbasis potensi bahan pakan lokal serta pendampingan peternak sapi perah.',
+                        logoPadding: 5,
                       ),
                       const SizedBox(height: 10),
 
                       // Partner 3: DipoFeed
                       _buildPartnerCard(
-                        icon: Icons.phone_android_rounded,
-                        iconColor: AppColors.secondaryGreen,
+                        assetPath: 'assets/images/logo_dipofeed.jpeg',
+                        fallbackLabel: 'DipoFeed',
+                        brandColor: AppColors.secondaryGreen,
                         title: 'Inovasi DipoFeed',
                         subtitle:
                             'Solusi digital formulasi ransum pakan sapi perah secara presisi, praktis, dan berbasis standar ilmiah untuk peternak Indonesia.',
+                        logoPadding: 3,
                       ),
                     ],
                   ),
@@ -226,30 +244,75 @@ class PartnershipInfoDialog extends StatelessWidget {
   }
 
   Widget _buildPartnerCard({
-    required IconData icon,
-    required Color iconColor,
+    required String assetPath,
+    required String fallbackLabel,
+    required Color brandColor,
     required String title,
     required String subtitle,
+    double logoPadding = 4,
   }) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: Colors.black.withValues(alpha: 0.06),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Official Partner Logo Container
           Container(
-            padding: const EdgeInsets.all(8),
+            width: 52,
+            height: 52,
+            padding: EdgeInsets.all(logoPadding),
             decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: brandColor.withValues(alpha: 0.18),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: brandColor.withValues(alpha: 0.04),
+                  blurRadius: 4,
+                  offset: const Offset(0, 1),
+                ),
+              ],
             ),
-            child: Icon(icon, color: iconColor, size: 20),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset(
+                assetPath,
+                fit: BoxFit.contain,
+                filterQuality: FilterQuality.high,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    alignment: Alignment.center,
+                    color: brandColor.withValues(alpha: 0.08),
+                    child: Text(
+                      fallbackLabel,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: brandColor,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -269,7 +332,7 @@ class PartnershipInfoDialog extends StatelessWidget {
                   subtitle,
                   style: GoogleFonts.inter(
                     fontSize: 11.5,
-                    height: 1.4,
+                    height: 1.45,
                     color: AppColors.textSecondary,
                   ),
                 ),
