@@ -452,8 +452,12 @@ class _CekKandunganNutrisiScreenState extends State<CekKandunganNutrisiScreen> {
           alignment: Alignment.topCenter,
           child: _tahapAktif == 0
               ? SizedBox(
-                  height: 210,
+                  height: AppSliverHeader.calculateExpandedHeight(
+                        'Cek kandungan nutrisi pada pakan.',
+                      ) +
+                      MediaQuery.paddingOf(context).top,
                   child: CustomScrollView(
+                    physics: const NeverScrollableScrollPhysics(),
                     slivers: [
                       AppSliverHeader(
                         title: 'Cek Kandungan Pakan',

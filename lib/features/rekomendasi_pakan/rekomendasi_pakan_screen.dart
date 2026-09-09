@@ -812,8 +812,12 @@ class _RekomendasiPakanScreenState extends State<RekomendasiPakanScreen> {
           alignment: Alignment.topCenter,
           child: _tahapAktif == 0
               ? SizedBox(
-                  height: 210,
+                  height: AppSliverHeader.calculateExpandedHeight(
+                        'Dapatkan rekomendasi pakan sesuai kebutuhan sapi.',
+                      ) +
+                      MediaQuery.paddingOf(context).top,
                   child: CustomScrollView(
+                    physics: const NeverScrollableScrollPhysics(),
                     slivers: [
                       AppSliverHeader(
                         title: 'Rekomendasi Pakan',
