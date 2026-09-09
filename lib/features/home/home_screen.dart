@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../core/constants/app_colors.dart';
 import '../../core/widgets/app_bottom_nav.dart';
@@ -104,21 +105,40 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.backgroundCream,
-      body: Stack(
-        children: [
-          _selectedIndex == 2
-              ? const TentangScreen(isTab: true)
-              : _buildHomeContent(),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: AppBottomNav(
-              currentIndex: _selectedIndex,
-              onTap: _onTapBottomNav,
+    final isHomeTab = _selectedIndex == 0;
+    final overlayStyle = isHomeTab
+        ? const SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness: Brightness.light,
+            statusBarBrightness: Brightness.dark,
+          )
+        : const SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness: Brightness.dark,
+            statusBarBrightness: Brightness.light,
+          );
+
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: overlayStyle,
+      child: Scaffold(
+        backgroundColor: AppColors.backgroundCream,
+        body: Stack(
+          children: [
+            _selectedIndex == 2
+                ? const SafeArea(
+                    bottom: false,
+                    child: TentangScreen(isTab: true),
+                  )
+                : _buildHomeContent(),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: AppBottomNav(
+                currentIndex: _selectedIndex,
+                onTap: _onTapBottomNav,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -203,9 +223,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.black.withValues(alpha: 0.35),
+                    Colors.black.withValues(alpha: 0.45),
                     Colors.black.withValues(alpha: 0.15),
-                    Colors.black.withValues(alpha: 0.75),
+                    Colors.black.withValues(alpha: 0.80),
                   ],
                   stops: const [0.0, 0.45, 1.0],
                 ),
