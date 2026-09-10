@@ -49,13 +49,10 @@ class _SplashScreenState extends State<SplashScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     // DipoFeed Logo
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: Image.asset(
-                        'assets/images/logo_dipofeed.jpeg',
-                        height: 140,
-                        fit: BoxFit.contain,
-                      ),
+                    Image.asset(
+                      'assets/images/logo_dipofeed_circle.png',
+                      height: 140,
+                      fit: BoxFit.contain,
                     ),
                     const SizedBox(height: 36),
 

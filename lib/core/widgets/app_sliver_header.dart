@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../constants/app_colors.dart';
 
 class AppSliverHeader extends StatelessWidget {
@@ -17,18 +18,16 @@ class AppSliverHeader extends StatelessWidget {
     this.showBackButton = true,
   });
 
+  static double calculateExpandedHeight(String? subtitle) {
+    if (subtitle == null) return 140.0;
+    if (subtitle.length < 40) return 165.0;
+    if (subtitle.length < 80) return 185.0;
+    return 210.0;
+  }
+
   @override
   Widget build(BuildContext context) {
-    double expandedHeight = 140.0;
-    if (subtitle != null) {
-      if (subtitle!.length < 40) {
-        expandedHeight = 165.0;
-      } else if (subtitle!.length < 80) {
-        expandedHeight = 185.0;
-      } else {
-        expandedHeight = 210.0;
-      }
-    }
+    final double expandedHeight = calculateExpandedHeight(subtitle);
 
     return SliverAppBar(
       expandedHeight: expandedHeight,
@@ -36,6 +35,11 @@ class AppSliverHeader extends StatelessWidget {
       pinned: true,
       elevation: 0,
       backgroundColor: AppColors.primaryBlue,
+      systemOverlayStyle: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.dark,
+      ),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
       ),
