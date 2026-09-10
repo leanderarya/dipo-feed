@@ -157,7 +157,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildHeroHeaderSection(),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 20),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Column(
@@ -172,7 +172,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             letterSpacing: -0.5,
                           ),
                         ),
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 12),
                         _buildFeatureGrid(isWideScreen: isWideScreen),
                       ],
                     ),
@@ -406,7 +406,7 @@ class _HomeScreenState extends State<HomeScreen> {
       crossAxisCount: 2,
       crossAxisSpacing: 12,
       mainAxisSpacing: 12,
-      childAspectRatio: isWideScreen ? 1.25 : 1.12,
+      childAspectRatio: isWideScreen ? 1.30 : 1.20,
       children: [
         QuickActionCard(
           title: 'Cek Kecukupan Pakan',
