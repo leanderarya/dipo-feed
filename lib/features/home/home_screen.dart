@@ -162,7 +162,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildHeroHeaderSection(heroTitleFontSize),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 26),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Column(
@@ -177,7 +177,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             letterSpacing: -0.5,
                           ),
                         ),
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 12),
                         _buildFeatureGrid(isWideScreen: isWideScreen),
                       ],
                     ),
@@ -295,6 +295,24 @@ class _HomeScreenState extends State<HomeScreen> {
                         color: Colors.black54,
                         blurRadius: 8,
                         offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Standar riset terkini kolaborasi Fakultas Peternakan dan Pertanian (FPP) UNDIP & ACIAR Australia',
+                  style: TextStyle(
+                    fontSize: (heroTitleFontSize * 0.44).clamp(11.5, 13.5),
+                    color: Colors.white.withValues(alpha: 0.95),
+                    fontWeight: FontWeight.w500,
+                    height: 1.35,
+                    letterSpacing: 0.1,
+                    shadows: const [
+                      Shadow(
+                        color: Colors.black54,
+                        blurRadius: 6,
+                        offset: Offset(0, 1),
                       ),
                     ],
                   ),
