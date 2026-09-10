@@ -146,7 +146,12 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildHomeContent() {
     return LayoutBuilder(
       builder: (context, constraints) {
+        final screenWidth = MediaQuery.sizeOf(context).width;
         final isWideScreen = constraints.maxWidth > 640;
+
+        // Dynamic fluid typography based on device viewport width
+        final double heroTitleFontSize = (screenWidth * 0.074).clamp(25.0, 32.0);
+        final double sectionTitleFontSize = (screenWidth * 0.056).clamp(20.0, 24.0);
 
         return SingleChildScrollView(
           padding: const EdgeInsets.only(bottom: 110),
@@ -156,23 +161,23 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildHeroHeaderSection(),
+                  _buildHeroHeaderSection(heroTitleFontSize),
                   const SizedBox(height: 20),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Fitur Utama',
                           style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
+                            fontSize: sectionTitleFontSize,
+                            fontWeight: FontWeight.w800,
                             color: AppColors.primaryBlue,
                             letterSpacing: -0.5,
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 14),
                         _buildFeatureGrid(isWideScreen: isWideScreen),
                       ],
                     ),
@@ -186,7 +191,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildHeroHeaderSection() {
+  Widget _buildHeroHeaderSection([double heroTitleFontSize = 26.0]) {
     final topPadding = MediaQuery.of(context).padding.top;
 
     return Container(
@@ -277,15 +282,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 12),
                 // Judul Hero
-                const Text(
+                Text(
                   'Optimalkan Nutrisi\nTernak Anda',
                   style: TextStyle(
-                    fontSize: 26,
+                    fontSize: heroTitleFontSize,
                     fontWeight: FontWeight.w900,
                     color: Colors.white,
                     height: 1.15,
                     letterSpacing: -0.5,
-                    shadows: [
+                    shadows: const [
                       Shadow(
                         color: Colors.black54,
                         blurRadius: 8,
