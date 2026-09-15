@@ -163,7 +163,7 @@ class PartnershipInfoDialog extends StatelessWidget {
 
                       // Partner 1: ACIAR
                       _buildPartnerCard(
-                        assetPath: PartnershipConstants.aciarCubeLogo,
+                        assetPath: PartnershipConstants.aciarStackedLogo,
                         fallbackLabel: PartnershipConstants.aciarTitle,
                         brandColor: const Color(0xFF006644),
                         title: PartnershipConstants.aciarTitle,

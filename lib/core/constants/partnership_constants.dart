@@ -13,6 +13,7 @@ class PartnershipConstants {
   static const String aciarDescription =
       'Australian Centre for International Agricultural Research (ACIAR) berkontribusi melalui keahlian dan kolaborasi penelitian pertanian internasional untuk berbagi pengetahuan, menghasilkan inovasi, dan mendukung solusi bagi berbagai tantangan di sektor pertanian.';
   static const String aciarCubeLogo = 'assets/images/logo_aciar_cube.png';
+  static const String aciarStackedLogo = 'assets/images/logo_aciar_stacked.png';
   static const String aciarCrestLogo = 'assets/images/logo_aciar.png';
 
   /// Teks pilar UNDIP
