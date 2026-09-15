@@ -84,9 +84,9 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
             ),
 
-            // Bottom Partnership Footer (UNDIP & ACIAR)
+            // Bottom Partnership Footer (ACIAR, Australian Aid, UNDIP)
             Padding(
-              padding: const EdgeInsets.only(bottom: 24),
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -99,30 +99,39 @@ class _SplashScreenState extends State<SplashScreen> {
                       letterSpacing: 1.2,
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Image.asset(
-                        'assets/images/logo_aciar.png',
-                        height: 30,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const SizedBox.shrink(),
+                      Flexible(
+                        child: Image.asset(
+                          'assets/images/logo_aciar_cube.png',
+                          height: 28,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) =>
+                              const SizedBox.shrink(),
+                        ),
                       ),
                       const SizedBox(width: 14),
-                      Container(
-                        height: 20,
-                        width: 1.2,
-                        color: Colors.grey.withValues(alpha: 0.35),
+                      Flexible(
+                        child: Image.asset(
+                          'assets/images/logo_australian_aid.png',
+                          height: 28,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) =>
+                              const SizedBox.shrink(),
+                        ),
                       ),
                       const SizedBox(width: 14),
-                      Image.asset(
-                        'assets/images/logo_undip.png',
-                        height: 34,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const SizedBox.shrink(),
+                      Flexible(
+                        child: Image.asset(
+                          'assets/images/logo_undip.png',
+                          height: 36,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) =>
+                              const SizedBox.shrink(),
+                        ),
                       ),
                     ],
                   ),
