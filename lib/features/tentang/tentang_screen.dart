@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../core/constants/app_colors.dart';
+import '../../core/constants/partnership_constants.dart';
 import '../../core/widgets/partnership_branding_widget.dart';
 import '../../core/widgets/partnership_info_dialog.dart';
 
@@ -152,7 +153,7 @@ class TentangScreen extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           Text(
-            'DipoFeed merupakan platform digital formulasi ransum pakan sapi perah presisi yang dikembangkan oleh Tim Riset Fakultas Peternakan dan Pertanian (FPP) Universitas Diponegoro melalui kolaborasi strategis bersama Australian Centre for International Agricultural Research (ACIAR) Australia untuk mendukung peternak sapi perah Indonesia.',
+            PartnershipConstants.introText,
             style: GoogleFonts.inter(
               fontSize: 12.5,
               color: AppColors.textSecondary,
