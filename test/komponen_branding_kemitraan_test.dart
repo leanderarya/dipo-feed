@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:dipo_feed/core/constants/partnership_constants.dart';
 import 'package:dipo_feed/core/widgets/partnership_branding_widget.dart';
 import 'package:dipo_feed/core/widgets/partnership_info_dialog.dart';
 
@@ -81,9 +82,10 @@ void main() {
       // Verify Dialog header and contents
       expect(find.text('Kerja Sama Kemitraan'), findsOneWidget);
       expect(find.text('UNDIP & ACIAR Australia'), findsOneWidget);
-      expect(find.text('Universitas Diponegoro (UNDIP)'), findsOneWidget);
-      expect(find.text('ACIAR Australia'), findsOneWidget);
-      expect(find.text('Inovasi DipoFeed'), findsOneWidget);
+      expect(find.text('UNDIP'), findsOneWidget);
+      expect(find.text('ACIAR'), findsOneWidget);
+      expect(find.text('DipoFeed'), findsOneWidget);
+      expect(find.text(PartnershipConstants.introText), findsOneWidget);
 
       // Tap Close button
       final closeButton = find.text('Tutup');
