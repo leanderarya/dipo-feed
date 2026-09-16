@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../constants/app_colors.dart';
+import '../constants/partnership_constants.dart';
 
 /// Modal dialog providing comprehensive information about the partnership
 /// between Diponegoro University (UNDIP) and ACIAR Australia.
@@ -50,7 +51,63 @@ class PartnershipInfoDialog extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Overview Narrative (Option 1: Intro block at top)
+                      // Top 3 Logos Header from Brief
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: Colors.black.withValues(alpha: 0.05),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Flexible(
+                              flex: 3,
+                              child: Image.asset(
+                                PartnershipConstants.aciarCrestLogo,
+                                height: 28,
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                            Container(
+                              height: 18,
+                              width: 1,
+                              margin: const EdgeInsets.symmetric(horizontal: 10),
+                              color: Colors.grey.withValues(alpha: 0.25),
+                            ),
+                            Flexible(
+                              flex: 2,
+                              child: Image.asset(
+                                PartnershipConstants.undipLogo,
+                                height: 32,
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                            Container(
+                              height: 18,
+                              width: 1,
+                              margin: const EdgeInsets.symmetric(horizontal: 10),
+                              color: Colors.grey.withValues(alpha: 0.25),
+                            ),
+                            Flexible(
+                              flex: 2,
+                              child: Image.asset(
+                                PartnershipConstants.dipoFeedLogo,
+                                height: 32,
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Overview Narrative (IndoDairy 2 Collaboration)
                       Container(
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
@@ -79,7 +136,7 @@ class PartnershipInfoDialog extends StatelessWidget {
                             const SizedBox(width: 10),
                             Expanded(
                               child: Text(
-                                'Aplikasi DipoFeed dikembangkan melalui kerja sama riset dan pengabdian antara Fakultas Peternakan dan Pertanian (FPP) Universitas Diponegoro dan Australian Centre for International Agricultural Research (ACIAR).',
+                                PartnershipConstants.introText,
                                 style: GoogleFonts.inter(
                                   fontSize: 12.5,
                                   height: 1.5,
@@ -106,36 +163,33 @@ class PartnershipInfoDialog extends StatelessWidget {
 
                       // Partner 1: ACIAR
                       _buildPartnerCard(
-                        assetPath: 'assets/images/logo_aciar.png',
-                        fallbackLabel: 'ACIAR',
-                        brandColor: const Color(0xFF006644),
-                        title: 'ACIAR Australia',
-                        subtitle:
-                            'Lembaga riset pertanian Pemerintah Australia yang mendanai dan mendukung transfer teknologi untuk ketahanan pakan dan kesejahteraan peternak.',
-                        logoPadding: 4,
+                        assetPath: PartnershipConstants.aciarStackedLogo,
+                        fallbackLabel: PartnershipConstants.aciarTitle,
+                        brandColor: const Color(0xFF658D1B),
+                        title: PartnershipConstants.aciarTitle,
+                        subtitle: PartnershipConstants.aciarDescription,
+                        logoPadding: 2,
                       ),
                       const SizedBox(height: 10),
 
                       // Partner 2: UNDIP
                       _buildPartnerCard(
-                        assetPath: 'assets/images/logo_undip.png',
-                        fallbackLabel: 'UNDIP',
+                        assetPath: PartnershipConstants.undipLogo,
+                        fallbackLabel: PartnershipConstants.undipTitle,
                         brandColor: AppColors.primaryBlue,
-                        title: 'Universitas Diponegoro (UNDIP)',
-                        subtitle:
-                            'Fakultas Peternakan dan Pertanian memimpin formulasi riset pakan berbasis potensi bahan pakan lokal serta pendampingan peternak sapi perah.',
+                        title: PartnershipConstants.undipTitle,
+                        subtitle: PartnershipConstants.undipDescription,
                         logoPadding: 5,
                       ),
                       const SizedBox(height: 10),
 
                       // Partner 3: DipoFeed
                       _buildPartnerCard(
-                        assetPath: 'assets/images/logo_dipofeed.jpeg',
-                        fallbackLabel: 'DipoFeed',
+                        assetPath: PartnershipConstants.dipoFeedLogo,
+                        fallbackLabel: PartnershipConstants.dipoFeedTitle,
                         brandColor: AppColors.secondaryGreen,
-                        title: 'Inovasi DipoFeed',
-                        subtitle:
-                            'Solusi digital formulasi ransum pakan sapi perah secara presisi, praktis, dan berbasis standar ilmiah untuk peternak Indonesia.',
+                        title: PartnershipConstants.dipoFeedTitle,
+                        subtitle: PartnershipConstants.dipoFeedDescription,
                         logoPadding: 3,
                       ),
                     ],

@@ -279,6 +279,17 @@ void main() {
 
       expect(find.text('Tutup Detail'), findsOneWidget);
       expect(find.text('Kesimpulan Umum'), findsOneWidget);
+      expect(find.text(hasil.kesimpulanUmum), findsNothing);
+
+      // Tap Kesimpulan Umum to expand
+      await tester.tap(find.text('Kesimpulan Umum'));
+      await tester.pumpAndSettle();
+      expect(find.text(hasil.kesimpulanUmum), findsOneWidget);
+
+      // Tap again to collapse
+      await tester.tap(find.text('Kesimpulan Umum'));
+      await tester.pumpAndSettle();
+      expect(find.text(hasil.kesimpulanUmum), findsNothing);
 
       // Tap Tutup Detail
       await tester.tap(find.text('Tutup Detail'));

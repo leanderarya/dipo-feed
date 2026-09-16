@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../core/constants/app_colors.dart';
+import '../../core/constants/partnership_constants.dart';
 import '../../core/widgets/partnership_branding_widget.dart';
 import '../../core/widgets/partnership_info_dialog.dart';
 
@@ -152,7 +153,7 @@ class TentangScreen extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           Text(
-            'DipoFeed merupakan platform digital formulasi ransum pakan sapi perah presisi yang dikembangkan oleh Tim Riset Fakultas Peternakan dan Pertanian (FPP) Universitas Diponegoro melalui kolaborasi strategis bersama Australian Centre for International Agricultural Research (ACIAR) Australia untuk mendukung peternak sapi perah Indonesia.',
+            PartnershipConstants.introText,
             style: GoogleFonts.inter(
               fontSize: 12.5,
               color: AppColors.textSecondary,
@@ -160,41 +161,132 @@ class TentangScreen extends StatelessWidget {
               height: 1.5,
             ),
           ),
-          const SizedBox(height: 14),
-          InkWell(
-            onTap: () => PartnershipInfoDialog.show(context),
-            borderRadius: BorderRadius.circular(10),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: AppColors.primaryBlue.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(10),
+          const SizedBox(height: 16),
+          // 3 Kartu Detail Per Pihak Sesuai Brief
+          _buildPartnerCard(
+            assetPath: PartnershipConstants.aciarStackedLogo,
+            fallbackLabel: PartnershipConstants.aciarTitle,
+            brandColor: const Color(0xFF658D1B),
+            title: PartnershipConstants.aciarTitle,
+            subtitle: PartnershipConstants.aciarDescription,
+            logoPadding: 2,
+          ),
+          const SizedBox(height: 10),
+          _buildPartnerCard(
+            assetPath: PartnershipConstants.undipLogo,
+            fallbackLabel: PartnershipConstants.undipTitle,
+            brandColor: AppColors.primaryBlue,
+            title: PartnershipConstants.undipTitle,
+            subtitle: PartnershipConstants.undipDescription,
+            logoPadding: 5,
+          ),
+          const SizedBox(height: 10),
+          _buildPartnerCard(
+            assetPath: PartnershipConstants.dipoFeedLogo,
+            fallbackLabel: PartnershipConstants.dipoFeedTitle,
+            brandColor: AppColors.secondaryGreen,
+            title: PartnershipConstants.dipoFeedTitle,
+            subtitle: PartnershipConstants.dipoFeedDescription,
+            logoPadding: 3,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPartnerCard({
+    required String assetPath,
+    required String fallbackLabel,
+    required Color brandColor,
+    required String title,
+    required String subtitle,
+    double logoPadding = 4,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: Colors.black.withValues(alpha: 0.06),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 52,
+            height: 52,
+            padding: EdgeInsets.all(logoPadding),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: brandColor.withValues(alpha: 0.18),
+                width: 1,
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.info_outline_rounded,
-                    size: 14,
-                    color: AppColors.primaryBlue,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Lihat Detail Kolaborasi',
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.primaryBlue,
+              boxShadow: [
+                BoxShadow(
+                  color: brandColor.withValues(alpha: 0.04),
+                  blurRadius: 4,
+                  offset: const Offset(0, 1),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset(
+                assetPath,
+                fit: BoxFit.contain,
+                filterQuality: FilterQuality.high,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    alignment: Alignment.center,
+                    color: brandColor.withValues(alpha: 0.08),
+                    child: Text(
+                      fallbackLabel,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: brandColor,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 4),
-                  const Icon(
-                    Icons.chevron_right_rounded,
-                    size: 16,
-                    color: AppColors.primaryBlue,
-                  ),
-                ],
+                  );
+                },
               ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: GoogleFonts.inter(
+                    fontSize: 11.5,
+                    height: 1.45,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
             ),
           ),
         ],

@@ -65,7 +65,6 @@ class _SearchableBahanPakanDialogState
         _filteredBahan = widget.semuaBahan
             .where(
               (b) =>
-                  b.nama.toLowerCase().contains(query.trim().toLowerCase()) ||
                   b.nama.toLowerCase().contains(query.trim().toLowerCase()),
             )
             .toList();
@@ -120,7 +119,7 @@ class _SearchableBahanPakanDialogState
               controller: _searchController,
               onChanged: _filterBahan,
               decoration: InputDecoration(
-                hintText: 'Cari nama atau kategori pakan...',
+                hintText: 'Cari nama pakan',
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(

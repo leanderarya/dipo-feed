@@ -66,7 +66,7 @@ class MasterPakanScreen extends StatefulWidget {
 
 class _MasterPakanScreenState extends State<MasterPakanScreen> {
   static const _safeShareFallback = Rect.fromLTWH(0, 0, 1, 1);
-  static const _pageSize = 20;
+  static const _pageSize = 10;
 
   final _exportButtonKey = GlobalKey();
 
@@ -77,7 +77,34 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
   bool _isLoading = true;
   bool _isProcessing = false;
   String? _errorMessage;
-  int _visibleCount = 20;
+  int _currentPage = 1;
+
+  final _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  int _hitungTotalHalaman(int totalItems) {
+    if (totalItems <= 0) return 1;
+    return (totalItems / _pageSize).ceil();
+  }
+
+  void _keHalaman(int page, int totalHalaman) {
+    final target = page.clamp(1, totalHalaman);
+    if (target != _currentPage) {
+      setState(() => _currentPage = target);
+    }
+  }
+
+  void _halamanSebelumnya(int totalHalaman) {
+    if (_currentPage > 1) {
+      _keHalaman(_currentPage - 1, totalHalaman);
+    }
+  }
+
+  void _halamanBerikutnya(int totalHalaman) {
+    if (_currentPage < totalHalaman) {
+      _keHalaman(_currentPage + 1, totalHalaman);
+    }
+  }
 
   @override
   void initState() {
@@ -85,7 +112,24 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
     _repository = widget.repository ?? BahanPakanRepository();
     _pickCsv = widget.pickCsv ?? _pickCsvDefault;
     _shareCsv = widget.shareCsv ?? _shareCsvDefault;
+    _searchController.addListener(_onSearchChanged);
     _muatData();
+  }
+
+  void _onSearchChanged() {
+    final query = _searchController.text.trim();
+    if (query != _searchQuery) {
+      setState(() {
+        _searchQuery = query;
+        _currentPage = 1;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _muatData() async {
@@ -99,7 +143,7 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
       if (!mounted) return;
       setState(() {
         _isLoading = false;
-        _visibleCount = _pageSize;
+        _currentPage = 1;
       });
     } catch (e) {
       if (!mounted) return;
@@ -167,7 +211,7 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
 
       final hasil = await _repository.replaceFromCsv(csv);
       if (!mounted) return;
-      setState(() => _visibleCount = _pageSize);
+      setState(() => _currentPage = 1);
       _tampilkanPesanImpor(hasil);
     } catch (error) {
       if (!mounted) return;
@@ -237,7 +281,7 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
         AppToast.showSuccess(context, 'Perubahan bahan pakan berhasil disimpan.');
       }
 
-      if (mounted) setState(() => _visibleCount = _pageSize);
+      if (mounted) setState(() {});
     } catch (error) {
       if (!mounted) return;
       AppToast.showError(context, 'Gagal menyimpan bahan pakan: $error');
@@ -331,7 +375,7 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
       await _repository.resetKeDataAwal();
       if (!mounted) return;
 
-      setState(() => _visibleCount = _pageSize);
+      setState(() => _currentPage = 1);
       AppToast.showInfo(context, 'Master pakan dikembalikan ke data awal.');
     } catch (error) {
       if (!mounted) return;
@@ -345,6 +389,15 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
   Widget build(BuildContext context) {
     final semuaData = _repository.semuaData;
     final totalAktif = semuaData.where((item) => item.isActive).length;
+    final dataTerfilter = _searchQuery.isEmpty
+        ? semuaData
+        : semuaData.where((item) {
+            return item.nama.toLowerCase().contains(_searchQuery.toLowerCase());
+          }).toList();
+    final totalHalaman = _hitungTotalHalaman(dataTerfilter.length);
+    final currentPageClamped = _currentPage.clamp(1, totalHalaman);
+    final startIndex = (currentPageClamped - 1) * _pageSize;
+    final pakanHalaman = dataTerfilter.skip(startIndex).take(_pageSize).toList();
 
     return Scaffold(
       backgroundColor: AppColors.backgroundCream,
@@ -491,19 +544,72 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
                     totalAktif: totalAktif,
                   ),
                   const SizedBox(height: 16),
+                  _buildSearchBar(),
+                  const SizedBox(height: 16),
                   if (semuaData.isEmpty)
                     _buildEmptyState()
+                  else if (dataTerfilter.isEmpty)
+                    _buildSearchEmptyState()
                   else ...[
-                    ...semuaData.take(_visibleCount).map(_buildBahanCard),
-                    if (_visibleCount < semuaData.length) ...[
+                    ...pakanHalaman.map(_buildBahanCard),
+                    if (totalHalaman > 1) ...[
                       const SizedBox(height: 8),
-                      _buildMuatLagi(semuaData.length),
+                      _buildPaginationBar(totalHalaman, dataTerfilter.length),
                     ],
                   ],
                 ]),
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: TextField(
+        controller: _searchController,
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        decoration: InputDecoration(
+          hintText: 'Cari nama pakan',
+          hintStyle: TextStyle(
+            fontSize: 14,
+            color: Colors.grey.shade400,
+            fontWeight: FontWeight.normal,
+          ),
+          prefixIcon: const Icon(
+            Icons.search_rounded,
+            color: AppColors.primaryBlue,
+            size: 22,
+          ),
+          suffixIcon: _searchController.text.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.clear_rounded, size: 20),
+                  color: Colors.grey.shade500,
+                  tooltip: 'Hapus pencarian',
+                  onPressed: () {
+                    _searchController.clear();
+                  },
+                )
+              : null,
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
+        ),
       ),
     );
   }
@@ -590,18 +696,131 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
     );
   }
 
-  Widget _buildMuatLagi(int total) {
-    return Center(
-      child: TextButton(
-        onPressed: () => setState(() => _visibleCount += _pageSize),
-        child: Text(
-          'Muat lagi (${_visibleCount - _pageSize}-$_visibleCount dari $total)',
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: AppColors.primaryBlue,
+  Widget _buildSearchEmptyState() {
+    return AppCard(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 36),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.primaryBlue.withValues(alpha: 0.08),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.search_off_rounded,
+              size: 40,
+              color: AppColors.primaryBlue,
+            ),
           ),
-        ),
+          const SizedBox(height: 16),
+          const Text(
+            'Bahan Pakan Tidak Ditemukan',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textDark,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Tidak ada bahan pakan dengan kata kunci "$_searchQuery".',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 13,
+              color: Colors.grey.shade600,
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextButton.icon(
+            onPressed: () {
+              _searchController.clear();
+            },
+            icon: const Icon(Icons.refresh_rounded, size: 18),
+            label: const Text('Reset Pencarian'),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.primaryBlue,
+              textStyle: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPaginationBar(int totalHalaman, int totalData) {
+    return Container(
+      margin: const EdgeInsets.only(top: 8, bottom: 16),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          IconButton.filledTonal(
+            icon: const Icon(Icons.chevron_left_rounded, size: 22),
+            tooltip: 'Halaman Sebelumnya',
+            style: IconButton.styleFrom(
+              backgroundColor: _currentPage > 1
+                  ? AppColors.primaryBlue.withValues(alpha: 0.1)
+                  : Colors.grey.shade100,
+              foregroundColor: _currentPage > 1
+                  ? AppColors.primaryBlue
+                  : Colors.grey.shade400,
+            ),
+            onPressed: _currentPage > 1
+                ? () => _halamanSebelumnya(totalHalaman)
+                : null,
+          ),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Halaman $_currentPage dari $totalHalaman',
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textDark,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                'Total $totalData bahan pakan',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ],
+          ),
+          IconButton.filledTonal(
+            icon: const Icon(Icons.chevron_right_rounded, size: 22),
+            tooltip: 'Halaman Selanjutnya',
+            style: IconButton.styleFrom(
+              backgroundColor: _currentPage < totalHalaman
+                  ? AppColors.primaryBlue.withValues(alpha: 0.1)
+                  : Colors.grey.shade100,
+              foregroundColor: _currentPage < totalHalaman
+                  ? AppColors.primaryBlue
+                  : Colors.grey.shade400,
+            ),
+            onPressed: _currentPage < totalHalaman
+                ? () => _halamanBerikutnya(totalHalaman)
+                : null,
+          ),
+        ],
       ),
     );
   }

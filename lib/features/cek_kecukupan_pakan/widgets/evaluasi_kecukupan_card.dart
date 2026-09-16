@@ -8,11 +8,13 @@ import '../logic/evaluasi_kecukupan_nutrien.dart';
 class EvaluasiKecukupanCard extends StatefulWidget {
   final HasilEvaluasiKecukupanNutrien hasil;
   final bool initialExpanded;
+  final bool initialKesimpulanExpanded;
 
   const EvaluasiKecukupanCard({
     super.key,
     required this.hasil,
     this.initialExpanded = false,
+    this.initialKesimpulanExpanded = false,
   });
 
   @override
@@ -21,11 +23,19 @@ class EvaluasiKecukupanCard extends StatefulWidget {
 
 class _EvaluasiKecukupanCardState extends State<EvaluasiKecukupanCard> {
   late bool _isExpanded;
+  late bool _isKesimpulanExpanded;
 
   @override
   void initState() {
     super.initState();
     _isExpanded = widget.initialExpanded;
+    _isKesimpulanExpanded = widget.initialKesimpulanExpanded;
+  }
+
+  void _toggleKesimpulan() {
+    setState(() {
+      _isKesimpulanExpanded = !_isKesimpulanExpanded;
+    });
   }
 
   String _format(double val) =>
@@ -280,8 +290,8 @@ class _EvaluasiKecukupanCardState extends State<EvaluasiKecukupanCard> {
         ),
         const SizedBox(height: 16),
 
-        // Kesimpulan Umum Card
-        _buildKesimpulanCard(),
+        // Kesimpulan Umum Section (Opsional / Collapsible)
+        _buildKesimpulanSection(),
       ],
     );
   }
@@ -435,50 +445,94 @@ class _EvaluasiKecukupanCardState extends State<EvaluasiKecukupanCard> {
     );
   }
 
-  Widget _buildKesimpulanCard() {
-    return Container(
+  Widget _buildKesimpulanSection() {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeInOut,
       width: double.infinity,
-      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.expertPurple,
+        color: _isKesimpulanExpanded
+            ? AppColors.expertPurple
+            : AppColors.expertPurple.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.expertPurple.withValues(alpha: 0.3),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Row(
-            children: [
-              Icon(Icons.info_outline, size: 20, color: Colors.white),
-              SizedBox(width: 8),
-              Text(
-                'Kesimpulan Umum',
-                style: TextStyle(
-                  fontWeight: FontWeight.w900,
-                  color: Colors.white,
-                  fontSize: 15,
-                  letterSpacing: -0.2,
+        border: Border.all(
+          color: _isKesimpulanExpanded
+              ? AppColors.expertPurple
+              : AppColors.expertPurple.withValues(alpha: 0.25),
+          width: 1.2,
+        ),
+        boxShadow: _isKesimpulanExpanded
+            ? [
+                BoxShadow(
+                  color: AppColors.expertPurple.withValues(alpha: 0.3),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Text(
-            widget.hasil.kesimpulanUmum,
-            style: TextStyle(
-              fontSize: 13.5,
-              height: 1.5,
-              color: Colors.white.withValues(alpha: 0.95),
-              fontWeight: FontWeight.w600,
+              ]
+            : null,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(18),
+          onTap: _toggleKesimpulan,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.info_outline_rounded,
+                      size: 20,
+                      color: _isKesimpulanExpanded
+                          ? Colors.white
+                          : AppColors.expertPurple,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Kesimpulan Umum',
+                        style: TextStyle(
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w800,
+                          color: _isKesimpulanExpanded
+                              ? Colors.white
+                              : AppColors.expertPurple,
+                          letterSpacing: -0.2,
+                        ),
+                      ),
+                    ),
+                    AnimatedRotation(
+                      turns: _isKesimpulanExpanded ? 0.5 : 0.0,
+                      duration: const Duration(milliseconds: 200),
+                      child: Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        color: _isKesimpulanExpanded
+                            ? Colors.white
+                            : AppColors.expertPurple,
+                        size: 24,
+                      ),
+                    ),
+                  ],
+                ),
+                if (_isKesimpulanExpanded) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    widget.hasil.kesimpulanUmum,
+                    style: TextStyle(
+                      fontSize: 13.5,
+                      height: 1.5,
+                      color: Colors.white.withValues(alpha: 0.95),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }

@@ -727,7 +727,7 @@ void main() {
     await tapButton(tester, 'Hitung Kandungan Nutrisi');
     await tester.pumpAndSettle();
 
-    expect(find.text('Tahap 2 dari 2: Hasil Analisis & Evaluasi Nutrien'), findsOneWidget);
+    expect(find.text('Tahap 2 dari 2: Evaluasi Nutrien'), findsOneWidget);
     expect(find.text('Kandungan Campuran Pakan'), findsOneWidget);
     expect(find.text('Biaya Pakan'), findsOneWidget);
   });
@@ -747,7 +747,7 @@ void main() {
     await tapButton(tester, 'Hitung Kandungan Nutrisi');
     await tester.pumpAndSettle();
 
-    expect(find.text('Tahap 2 dari 2: Hasil Analisis & Evaluasi Nutrien'), findsOneWidget);
+    expect(find.text('Tahap 2 dari 2: Evaluasi Nutrien'), findsOneWidget);
 
     await tapHeaderBack(tester);
     expect(find.text('Tahap 1 dari 2: Komposisi Campuran Pakan'), findsOneWidget);

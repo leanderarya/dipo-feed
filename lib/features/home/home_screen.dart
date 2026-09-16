@@ -146,7 +146,12 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildHomeContent() {
     return LayoutBuilder(
       builder: (context, constraints) {
+        final screenWidth = MediaQuery.sizeOf(context).width;
         final isWideScreen = constraints.maxWidth > 640;
+
+        // Dynamic fluid typography based on device viewport width
+        final double heroTitleFontSize = (screenWidth * 0.074).clamp(25.0, 32.0);
+        final double sectionTitleFontSize = (screenWidth * 0.056).clamp(20.0, 24.0);
 
         return SingleChildScrollView(
           padding: const EdgeInsets.only(bottom: 110),
@@ -156,23 +161,23 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildHeroHeaderSection(),
-                  const SizedBox(height: 24),
+                  _buildHeroHeaderSection(heroTitleFontSize),
+                  const SizedBox(height: 26),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Fitur Utama',
                           style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
+                            fontSize: sectionTitleFontSize,
+                            fontWeight: FontWeight.w800,
                             color: AppColors.primaryBlue,
                             letterSpacing: -0.5,
                           ),
                         ),
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 12),
                         _buildFeatureGrid(isWideScreen: isWideScreen),
                       ],
                     ),
@@ -186,7 +191,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildHeroHeaderSection() {
+  Widget _buildHeroHeaderSection([double heroTitleFontSize = 26.0]) {
     final topPadding = MediaQuery.of(context).padding.top;
 
     return Container(
@@ -277,19 +282,37 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 12),
                 // Judul Hero
-                const Text(
+                Text(
                   'Optimalkan Nutrisi\nTernak Anda',
                   style: TextStyle(
-                    fontSize: 26,
+                    fontSize: heroTitleFontSize,
                     fontWeight: FontWeight.w900,
                     color: Colors.white,
                     height: 1.15,
                     letterSpacing: -0.5,
-                    shadows: [
+                    shadows: const [
                       Shadow(
                         color: Colors.black54,
                         blurRadius: 8,
                         offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Standar riset terkini kolaborasi Fakultas Peternakan dan Pertanian (FPP) UNDIP & ACIAR Australia',
+                  style: TextStyle(
+                    fontSize: (heroTitleFontSize * 0.44).clamp(11.5, 13.5),
+                    color: Colors.white.withValues(alpha: 0.95),
+                    fontWeight: FontWeight.w500,
+                    height: 1.35,
+                    letterSpacing: 0.1,
+                    shadows: const [
+                      Shadow(
+                        color: Colors.black54,
+                        blurRadius: 6,
+                        offset: Offset(0, 1),
                       ),
                     ],
                   ),
@@ -406,7 +429,7 @@ class _HomeScreenState extends State<HomeScreen> {
       crossAxisCount: 2,
       crossAxisSpacing: 12,
       mainAxisSpacing: 12,
-      childAspectRatio: isWideScreen ? 1.25 : 1.12,
+      childAspectRatio: isWideScreen ? 1.28 : 1.15,
       children: [
         QuickActionCard(
           title: 'Cek Kecukupan Pakan',

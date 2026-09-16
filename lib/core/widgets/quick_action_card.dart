@@ -50,25 +50,25 @@ class QuickActionCard extends StatelessWidget {
             mainAxisSize: MainAxisSize.max,
             children: [
               Container(
-                padding: const EdgeInsets.all(10), // Reduced from 12
+                padding: const EdgeInsets.all(9),
                 decoration: BoxDecoration(
                   color: baseColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(13),
                 ),
                 child: svgAsset != null
                     ? SvgPicture.asset(
                         svgAsset!,
-                        width: 24, // Reduced from 26
-                        height: 24, // Reduced from 26
+                        width: 24,
+                        height: 24,
                         colorFilter: ColorFilter.mode(baseColor, BlendMode.srcIn),
                       )
                     : Icon(
                         icon,
                         color: baseColor,
-                        size: 24, // Reduced from 26
+                        size: 24,
                       ),
               ),
-              const SizedBox(height: 10), // Reduced from 16
+              const SizedBox(height: 8),
               Text(
                 title,
                 maxLines: 2,

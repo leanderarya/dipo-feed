@@ -23,13 +23,22 @@ class AppBottomNav extends StatelessWidget {
           margin: const EdgeInsets.fromLTRB(24, 0, 24, 30),
           height: 75,
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.85),
+            color: Colors.white.withValues(alpha: 0.90),
             borderRadius: BorderRadius.circular(30),
+            border: Border.all(
+              color: Colors.white,
+              width: 1.5,
+            ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
+              ),
+              BoxShadow(
+                color: AppColors.primaryBlue.withValues(alpha: 0.05),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
               ),
             ],
           ),
