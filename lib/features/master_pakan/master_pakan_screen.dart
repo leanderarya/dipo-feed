@@ -66,7 +66,7 @@ class MasterPakanScreen extends StatefulWidget {
 
 class _MasterPakanScreenState extends State<MasterPakanScreen> {
   static const _safeShareFallback = Rect.fromLTWH(0, 0, 1, 1);
-  static const _pageSize = 20;
+  static const _pageSize = 10;
 
   final _exportButtonKey = GlobalKey();
 
@@ -77,7 +77,31 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
   bool _isLoading = true;
   bool _isProcessing = false;
   String? _errorMessage;
-  int _visibleCount = 20;
+  int _currentPage = 1;
+
+  int _hitungTotalHalaman(int totalItems) {
+    if (totalItems <= 0) return 1;
+    return (totalItems / _pageSize).ceil();
+  }
+
+  void _keHalaman(int page, int totalHalaman) {
+    final target = page.clamp(1, totalHalaman);
+    if (target != _currentPage) {
+      setState(() => _currentPage = target);
+    }
+  }
+
+  void _halamanSebelumnya(int totalHalaman) {
+    if (_currentPage > 1) {
+      _keHalaman(_currentPage - 1, totalHalaman);
+    }
+  }
+
+  void _halamanBerikutnya(int totalHalaman) {
+    if (_currentPage < totalHalaman) {
+      _keHalaman(_currentPage + 1, totalHalaman);
+    }
+  }
 
   @override
   void initState() {
@@ -99,7 +123,7 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
       if (!mounted) return;
       setState(() {
         _isLoading = false;
-        _visibleCount = _pageSize;
+        _currentPage = 1;
       });
     } catch (e) {
       if (!mounted) return;
@@ -167,7 +191,7 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
 
       final hasil = await _repository.replaceFromCsv(csv);
       if (!mounted) return;
-      setState(() => _visibleCount = _pageSize);
+      setState(() => _currentPage = 1);
       _tampilkanPesanImpor(hasil);
     } catch (error) {
       if (!mounted) return;
@@ -237,7 +261,7 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
         AppToast.showSuccess(context, 'Perubahan bahan pakan berhasil disimpan.');
       }
 
-      if (mounted) setState(() => _visibleCount = _pageSize);
+      if (mounted) setState(() {});
     } catch (error) {
       if (!mounted) return;
       AppToast.showError(context, 'Gagal menyimpan bahan pakan: $error');
@@ -331,7 +355,7 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
       await _repository.resetKeDataAwal();
       if (!mounted) return;
 
-      setState(() => _visibleCount = _pageSize);
+      setState(() => _currentPage = 1);
       AppToast.showInfo(context, 'Master pakan dikembalikan ke data awal.');
     } catch (error) {
       if (!mounted) return;
@@ -345,6 +369,10 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
   Widget build(BuildContext context) {
     final semuaData = _repository.semuaData;
     final totalAktif = semuaData.where((item) => item.isActive).length;
+    final totalHalaman = _hitungTotalHalaman(semuaData.length);
+    final currentPageClamped = _currentPage.clamp(1, totalHalaman);
+    final startIndex = (currentPageClamped - 1) * _pageSize;
+    final pakanHalaman = semuaData.skip(startIndex).take(_pageSize).toList();
 
     return Scaffold(
       backgroundColor: AppColors.backgroundCream,
@@ -494,10 +522,10 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
                   if (semuaData.isEmpty)
                     _buildEmptyState()
                   else ...[
-                    ...semuaData.take(_visibleCount).map(_buildBahanCard),
-                    if (_visibleCount < semuaData.length) ...[
+                    ...pakanHalaman.map(_buildBahanCard),
+                    if (totalHalaman > 1) ...[
                       const SizedBox(height: 8),
-                      _buildMuatLagi(semuaData.length),
+                      _buildPaginationBar(totalHalaman, semuaData.length),
                     ],
                   ],
                 ]),
@@ -590,18 +618,44 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
     );
   }
 
-  Widget _buildMuatLagi(int total) {
-    return Center(
-      child: TextButton(
-        onPressed: () => setState(() => _visibleCount += _pageSize),
-        child: Text(
-          'Muat lagi (${_visibleCount - _pageSize}-$_visibleCount dari $total)',
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
+  Widget _buildPaginationBar(int totalHalaman, int totalData) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.chevron_left_rounded),
+            tooltip: 'Halaman Sebelumnya',
             color: AppColors.primaryBlue,
+            disabledColor: Colors.grey.shade300,
+            onPressed: _currentPage > 1
+                ? () => _halamanSebelumnya(totalHalaman)
+                : null,
           ),
-        ),
+          Text(
+            'Halaman $_currentPage dari $totalHalaman',
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textDark,
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.chevron_right_rounded),
+            tooltip: 'Halaman Selanjutnya',
+            color: AppColors.primaryBlue,
+            disabledColor: Colors.grey.shade300,
+            onPressed: _currentPage < totalHalaman
+                ? () => _halamanBerikutnya(totalHalaman)
+                : null,
+          ),
+        ],
       ),
     );
   }
