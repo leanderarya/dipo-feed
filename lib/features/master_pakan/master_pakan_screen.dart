@@ -548,6 +548,8 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
                   const SizedBox(height: 16),
                   if (semuaData.isEmpty)
                     _buildEmptyState()
+                  else if (dataTerfilter.isEmpty)
+                    _buildSearchEmptyState()
                   else ...[
                     ...pakanHalaman.map(_buildBahanCard),
                     if (totalHalaman > 1) ...[
@@ -688,6 +690,59 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
             'Belum ada data bahan pakan yang tersimpan.',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 12),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchEmptyState() {
+    return AppCard(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 36),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.primaryBlue.withValues(alpha: 0.08),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.search_off_rounded,
+              size: 40,
+              color: AppColors.primaryBlue,
+            ),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Bahan Pakan Tidak Ditemukan',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textDark,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Tidak ada bahan pakan dengan kata kunci "$_searchQuery".',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 13,
+              color: Colors.grey.shade600,
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextButton.icon(
+            onPressed: () {
+              _searchController.clear();
+            },
+            icon: const Icon(Icons.refresh_rounded, size: 18),
+            label: const Text('Reset Pencarian'),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.primaryBlue,
+              textStyle: const TextStyle(fontWeight: FontWeight.w700),
+            ),
           ),
         ],
       ),
