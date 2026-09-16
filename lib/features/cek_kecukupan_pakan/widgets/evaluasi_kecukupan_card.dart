@@ -8,11 +8,13 @@ import '../logic/evaluasi_kecukupan_nutrien.dart';
 class EvaluasiKecukupanCard extends StatefulWidget {
   final HasilEvaluasiKecukupanNutrien hasil;
   final bool initialExpanded;
+  final bool initialKesimpulanExpanded;
 
   const EvaluasiKecukupanCard({
     super.key,
     required this.hasil,
     this.initialExpanded = false,
+    this.initialKesimpulanExpanded = false,
   });
 
   @override
@@ -21,11 +23,19 @@ class EvaluasiKecukupanCard extends StatefulWidget {
 
 class _EvaluasiKecukupanCardState extends State<EvaluasiKecukupanCard> {
   late bool _isExpanded;
+  late bool _isKesimpulanExpanded;
 
   @override
   void initState() {
     super.initState();
     _isExpanded = widget.initialExpanded;
+    _isKesimpulanExpanded = widget.initialKesimpulanExpanded;
+  }
+
+  void _toggleKesimpulan() {
+    setState(() {
+      _isKesimpulanExpanded = !_isKesimpulanExpanded;
+    });
   }
 
   String _format(double val) =>
@@ -280,8 +290,8 @@ class _EvaluasiKecukupanCardState extends State<EvaluasiKecukupanCard> {
         ),
         const SizedBox(height: 16),
 
-        // Kesimpulan Umum Card
-        _buildKesimpulanCard(),
+        // Kesimpulan Umum Section (Opsional / Collapsible)
+        _buildKesimpulanSection(),
       ],
     );
   }
@@ -432,6 +442,61 @@ class _EvaluasiKecukupanCardState extends State<EvaluasiKecukupanCard> {
         color: color,
         fontWeight: FontWeight.w700,
       ),
+    );
+  }
+
+  Widget _buildKesimpulanSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: _toggleKesimpulan,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: AppColors.expertPurple.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: AppColors.expertPurple.withValues(alpha: 0.2),
+                width: 1.2,
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.info_outline_rounded,
+                  size: 20,
+                  color: AppColors.expertPurple,
+                ),
+                const SizedBox(width: 10),
+                const Expanded(
+                  child: Text(
+                    'Kesimpulan Umum',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.expertPurple,
+                    ),
+                  ),
+                ),
+                Icon(
+                  _isKesimpulanExpanded
+                      ? Icons.keyboard_arrow_up_rounded
+                      : Icons.keyboard_arrow_down_rounded,
+                  color: AppColors.expertPurple,
+                  size: 24,
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (_isKesimpulanExpanded) ...[
+          const SizedBox(height: 10),
+          _buildKesimpulanCard(),
+        ],
+      ],
     );
   }
 
