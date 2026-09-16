@@ -121,7 +121,8 @@ void main() {
         final dipoLogoFinder = find.byWidgetPredicate((widget) =>
             widget is Image &&
             widget.image is AssetImage &&
-            (widget.image as AssetImage).assetName == 'assets/images/DIPOFeed.png');
+            (widget.image as AssetImage).assetName ==
+                'assets/images/DIPOFeed_2line.png');
         expect(dipoLogoFinder, findsOneWidget);
 
         // Verify left capsule is positioned before right capsule

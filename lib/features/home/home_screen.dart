@@ -385,7 +385,7 @@ class _HomeScreenState extends State<HomeScreen> {
         Container(
           height: 40,
           alignment: Alignment.center,
-          padding: const EdgeInsets.only(left: 10, right: 11),
+          padding: const EdgeInsets.symmetric(horizontal: 11),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),
@@ -405,23 +405,17 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: Image.asset(
-                  'assets/images/logo_dipofeed.jpeg',
-                  height: 24,
-                  width: 24,
-                  fit: BoxFit.cover,
-                ),
+              Image.asset(
+                'assets/images/logo_dipofeed_circle.png',
+                height: 24,
+                width: 24,
+                fit: BoxFit.contain,
               ),
-              const SizedBox(width: 7),
-              Transform.translate(
-                offset: const Offset(0, -0.5),
-                child: Image.asset(
-                  'assets/images/DIPOFeed.png',
-                  height: 15,
-                  fit: BoxFit.contain,
-                ),
+              const SizedBox(width: 6),
+              Image.asset(
+                'assets/images/DIPOFeed_2line.png',
+                height: 20,
+                fit: BoxFit.contain,
               ),
             ],
           ),
