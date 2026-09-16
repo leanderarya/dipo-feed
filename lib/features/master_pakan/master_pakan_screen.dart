@@ -696,37 +696,71 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
 
   Widget _buildPaginationBar(int totalHalaman, int totalData) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+      margin: const EdgeInsets.only(top: 8, bottom: 16),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
         border: Border.all(color: Colors.grey.shade200),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          IconButton(
-            icon: const Icon(Icons.chevron_left_rounded),
+          IconButton.filledTonal(
+            icon: const Icon(Icons.chevron_left_rounded, size: 22),
             tooltip: 'Halaman Sebelumnya',
-            color: AppColors.primaryBlue,
-            disabledColor: Colors.grey.shade300,
+            style: IconButton.styleFrom(
+              backgroundColor: _currentPage > 1
+                  ? AppColors.primaryBlue.withValues(alpha: 0.1)
+                  : Colors.grey.shade100,
+              foregroundColor: _currentPage > 1
+                  ? AppColors.primaryBlue
+                  : Colors.grey.shade400,
+            ),
             onPressed: _currentPage > 1
                 ? () => _halamanSebelumnya(totalHalaman)
                 : null,
           ),
-          Text(
-            'Halaman $_currentPage dari $totalHalaman',
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textDark,
-            ),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Halaman $_currentPage dari $totalHalaman',
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textDark,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                'Total $totalData bahan pakan',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ],
           ),
-          IconButton(
-            icon: const Icon(Icons.chevron_right_rounded),
+          IconButton.filledTonal(
+            icon: const Icon(Icons.chevron_right_rounded, size: 22),
             tooltip: 'Halaman Selanjutnya',
-            color: AppColors.primaryBlue,
-            disabledColor: Colors.grey.shade300,
+            style: IconButton.styleFrom(
+              backgroundColor: _currentPage < totalHalaman
+                  ? AppColors.primaryBlue.withValues(alpha: 0.1)
+                  : Colors.grey.shade100,
+              foregroundColor: _currentPage < totalHalaman
+                  ? AppColors.primaryBlue
+                  : Colors.grey.shade400,
+            ),
             onPressed: _currentPage < totalHalaman
                 ? () => _halamanBerikutnya(totalHalaman)
                 : null,
