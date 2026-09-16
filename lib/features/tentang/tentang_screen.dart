@@ -306,7 +306,7 @@ class TentangScreen extends StatelessWidget {
           final v = info.version.isNotEmpty ? info.version : '1.4.0';
           final b = info.buildNumber.isNotEmpty ? info.buildNumber : '7';
           versionText = 'v$v (Build $b)';
-          isBeta = v.contains('beta') || v.contains('dev');
+          isBeta = v.contains('beta') || v.contains('dev') || v.contains('b');
         }
 
         final badgeColor =
