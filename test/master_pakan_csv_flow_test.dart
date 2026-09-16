@@ -7,6 +7,7 @@ import 'package:dipo_feed/data/csv/bahan_pakan_csv_codec.dart';
 import 'package:dipo_feed/data/models/bahan_pakan.dart';
 import 'package:dipo_feed/data/sources/bahan_pakan_local_source.dart';
 import 'package:dipo_feed/data/sources/bahan_pakan_repository.dart';
+import 'package:dipo_feed/features/cek_kandungan_nutrisi/widgets/searchable_bahan_pakan_dialog.dart';
 import 'package:dipo_feed/features/master_pakan/master_pakan_screen.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
@@ -673,4 +674,150 @@ void main() {
     expect(sharedCsv, isNot(contains('Feed Inactive')));
     expect(sharePositionOrigin, isNotNull);
   });
+
+  testWidgets(
+    'MasterPakanScreen navigates between pages with 10 items per page limit',
+    (tester) async {
+      final fifteenFeeds = List.generate(
+        15,
+        (i) => _activeFeed.copyWith(id: i + 1, nama: 'Bahan ${i + 1}'),
+      );
+      final repository = BahanPakanRepository.forTesting(
+        _MemorySource(fifteenFeeds),
+      );
+
+      await _pumpMaster(
+        tester,
+        repository: repository,
+        pickCsv: () async => null,
+        shareCsv: (_, _) async => ShareResult('', ShareResultStatus.dismissed),
+      );
+
+      expect(find.text('Bahan 1'), findsOneWidget);
+      expect(find.text('Bahan 11'), findsNothing);
+
+      // Scroll down to reveal pagination controls
+      await tester.drag(find.byType(CustomScrollView), const Offset(0, -1200));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Halaman 1 dari 2'), findsOneWidget);
+
+      // Previous button should be disabled on page 1
+      final prevBtn = tester.widget<IconButton>(
+        find.widgetWithIcon(IconButton, Icons.chevron_left_rounded),
+      );
+      expect(prevBtn.onPressed, isNull);
+
+      // Next button should be enabled on page 1
+      final nextBtnFinder = find.widgetWithIcon(
+        IconButton,
+        Icons.chevron_right_rounded,
+      );
+      expect(tester.widget<IconButton>(nextBtnFinder).onPressed, isNotNull);
+
+      // Tap next to go to page 2
+      await tester.tap(nextBtnFinder);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Halaman 2 dari 2'), findsOneWidget);
+      expect(find.text('Bahan 11'), findsOneWidget);
+      expect(find.text('Bahan 15'), findsOneWidget);
+      expect(find.text('Bahan 1'), findsNothing);
+
+      // Next button should be disabled on page 2
+      expect(tester.widget<IconButton>(nextBtnFinder).onPressed, isNull);
+    },
+  );
+
+  testWidgets(
+    'MasterPakanScreen filters items by search query and shows empty state when not found',
+    (tester) async {
+      final feeds = [
+        _activeFeed.copyWith(id: 1, nama: 'Rumput Gajah'),
+        _activeFeed.copyWith(id: 2, nama: 'Konsentrat Sapi'),
+      ];
+      final repository = BahanPakanRepository.forTesting(_MemorySource(feeds));
+
+      await _pumpMaster(
+        tester,
+        repository: repository,
+        pickCsv: () async => null,
+        shareCsv: (_, _) async => ShareResult('', ShareResultStatus.dismissed),
+      );
+
+      expect(find.text('Cari nama pakan'), findsOneWidget);
+      expect(find.text('Rumput Gajah'), findsOneWidget);
+      expect(find.text('Konsentrat Sapi'), findsOneWidget);
+
+      // Search for 'Konsentrat'
+      final searchField = find.widgetWithText(TextField, 'Cari nama pakan');
+      await tester.enterText(searchField, 'Konsentrat');
+      await tester.pumpAndSettle();
+
+      expect(find.text('Konsentrat Sapi'), findsOneWidget);
+      expect(find.text('Rumput Gajah'), findsNothing);
+      expect(find.text('Halaman 1 dari 1'), findsNothing);
+
+      // Search non-existent
+      await tester.enterText(searchField, 'TidakAda');
+      await tester.pumpAndSettle();
+
+      expect(find.text('Bahan Pakan Tidak Ditemukan'), findsOneWidget);
+      expect(
+        find.textContaining('Tidak ada bahan pakan dengan kata kunci'),
+        findsOneWidget,
+      );
+
+      // Reset search via button
+      await tester.tap(find.text('Reset Pencarian'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Rumput Gajah'), findsOneWidget);
+      expect(find.text('Konsentrat Sapi'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'SearchableBahanPakanDialog renders standard Cari nama pakan placeholder and filters correctly',
+    (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.light,
+          home: Scaffold(
+            body: Builder(
+              builder: (context) {
+                return ElevatedButton(
+                  onPressed: () {
+                    SearchableBahanPakanDialog.show(
+                      context: context,
+                      semuaBahan: [
+                        _activeFeed.copyWith(id: 1, nama: 'Rumput Gajah'),
+                        _activeFeed.copyWith(id: 2, nama: 'Dedak Padi'),
+                      ],
+                      bahanTerpilihIds: const {},
+                    );
+                  },
+                  child: const Text('Buka Dialog'),
+                );
+              },
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Buka Dialog'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Cari nama pakan'), findsOneWidget);
+      expect(find.text('Rumput Gajah'), findsOneWidget);
+      expect(find.text('Dedak Padi'), findsOneWidget);
+
+      final searchField = find.widgetWithText(TextField, 'Cari nama pakan');
+      await tester.enterText(searchField, 'Dedak');
+      await tester.pumpAndSettle();
+
+      expect(find.text('Dedak Padi'), findsOneWidget);
+      expect(find.text('Rumput Gajah'), findsNothing);
+    },
+  );
 }
