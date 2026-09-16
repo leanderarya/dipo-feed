@@ -544,6 +544,8 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
                     totalAktif: totalAktif,
                   ),
                   const SizedBox(height: 16),
+                  _buildSearchBar(),
+                  const SizedBox(height: 16),
                   if (semuaData.isEmpty)
                     _buildEmptyState()
                   else ...[
@@ -557,6 +559,55 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: TextField(
+        controller: _searchController,
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        decoration: InputDecoration(
+          hintText: 'Cari nama pakan',
+          hintStyle: TextStyle(
+            fontSize: 14,
+            color: Colors.grey.shade400,
+            fontWeight: FontWeight.normal,
+          ),
+          prefixIcon: const Icon(
+            Icons.search_rounded,
+            color: AppColors.primaryBlue,
+            size: 22,
+          ),
+          suffixIcon: _searchController.text.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.clear_rounded, size: 20),
+                  color: Colors.grey.shade500,
+                  tooltip: 'Hapus pencarian',
+                  onPressed: () {
+                    _searchController.clear();
+                  },
+                )
+              : null,
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
+        ),
       ),
     );
   }
