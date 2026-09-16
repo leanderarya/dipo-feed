@@ -165,10 +165,10 @@ class PartnershipInfoDialog extends StatelessWidget {
                       _buildPartnerCard(
                         assetPath: PartnershipConstants.aciarStackedLogo,
                         fallbackLabel: PartnershipConstants.aciarTitle,
-                        brandColor: const Color(0xFF006644),
+                        brandColor: const Color(0xFF658D1B),
                         title: PartnershipConstants.aciarTitle,
                         subtitle: PartnershipConstants.aciarDescription,
-                        logoPadding: 4,
+                        logoPadding: 2,
                       ),
                       const SizedBox(height: 10),
 
