@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dipo_feed/core/constants/partnership_constants.dart';
 import 'package:dipo_feed/core/widgets/partnership_branding_widget.dart';
 import 'package:dipo_feed/core/widgets/partnership_info_dialog.dart';
+import 'package:dipo_feed/features/home/home_screen.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -96,5 +97,46 @@ void main() {
       // Verify Dialog is dismissed
       expect(find.text('Kerja Sama Kemitraan'), findsNothing);
     });
+  });
+
+  group('HomeScreen Header Capsule Tests', () {
+    testWidgets(
+      'renders partnership capsule on left and opens dialog on tap',
+      (tester) async {
+        await tester.pumpWidget(
+          const MaterialApp(
+            home: HomeScreen(),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Verify left partnership capsule logo is present
+        final aciarLogoFinder = find.byWidgetPredicate((widget) =>
+            widget is Image &&
+            widget.image is AssetImage &&
+            (widget.image as AssetImage).assetName == 'assets/images/logo_aciar.png');
+        expect(aciarLogoFinder, findsOneWidget);
+
+        // Verify right DipoFeed brand logo is present
+        final dipoLogoFinder = find.byWidgetPredicate((widget) =>
+            widget is Image &&
+            widget.image is AssetImage &&
+            (widget.image as AssetImage).assetName == 'assets/images/DIPOFeed.png');
+        expect(dipoLogoFinder, findsOneWidget);
+
+        // Verify left capsule is positioned before right capsule
+        final aciarOffset = tester.getTopLeft(aciarLogoFinder);
+        final dipoOffset = tester.getTopLeft(dipoLogoFinder);
+        expect(aciarOffset.dx, lessThan(dipoOffset.dx));
+
+        // Tap left partnership capsule
+        await tester.tap(aciarLogoFinder);
+        await tester.pumpAndSettle();
+
+        // Verify partnership info dialog opens
+        expect(find.text('Kerja Sama Kemitraan'), findsOneWidget);
+        expect(find.text('UNDIP & ACIAR Australia'), findsOneWidget);
+      },
+    );
   });
 }
