@@ -79,6 +79,9 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
   String? _errorMessage;
   int _currentPage = 1;
 
+  final _searchController = TextEditingController();
+  String _searchQuery = '';
+
   int _hitungTotalHalaman(int totalItems) {
     if (totalItems <= 0) return 1;
     return (totalItems / _pageSize).ceil();
@@ -109,7 +112,24 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
     _repository = widget.repository ?? BahanPakanRepository();
     _pickCsv = widget.pickCsv ?? _pickCsvDefault;
     _shareCsv = widget.shareCsv ?? _shareCsvDefault;
+    _searchController.addListener(_onSearchChanged);
     _muatData();
+  }
+
+  void _onSearchChanged() {
+    final query = _searchController.text.trim();
+    if (query != _searchQuery) {
+      setState(() {
+        _searchQuery = query;
+        _currentPage = 1;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _muatData() async {
@@ -369,10 +389,15 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
   Widget build(BuildContext context) {
     final semuaData = _repository.semuaData;
     final totalAktif = semuaData.where((item) => item.isActive).length;
-    final totalHalaman = _hitungTotalHalaman(semuaData.length);
+    final dataTerfilter = _searchQuery.isEmpty
+        ? semuaData
+        : semuaData.where((item) {
+            return item.nama.toLowerCase().contains(_searchQuery.toLowerCase());
+          }).toList();
+    final totalHalaman = _hitungTotalHalaman(dataTerfilter.length);
     final currentPageClamped = _currentPage.clamp(1, totalHalaman);
     final startIndex = (currentPageClamped - 1) * _pageSize;
-    final pakanHalaman = semuaData.skip(startIndex).take(_pageSize).toList();
+    final pakanHalaman = dataTerfilter.skip(startIndex).take(_pageSize).toList();
 
     return Scaffold(
       backgroundColor: AppColors.backgroundCream,
@@ -525,7 +550,7 @@ class _MasterPakanScreenState extends State<MasterPakanScreen> {
                     ...pakanHalaman.map(_buildBahanCard),
                     if (totalHalaman > 1) ...[
                       const SizedBox(height: 8),
-                      _buildPaginationBar(totalHalaman, semuaData.length),
+                      _buildPaginationBar(totalHalaman, dataTerfilter.length),
                     ],
                   ],
                 ]),
