@@ -246,7 +246,7 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 // Floating Capsules Header
                 _buildFloatingHeaderRow(),
-                const SizedBox(height: 36),
+                const SizedBox(height: 30),
                 // Badge Kapsul RESEARCH-BASED
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -331,18 +331,18 @@ class _HomeScreenState extends State<HomeScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // Kapsul Kiri: Kemitraan (Interactive White Capsule)
+        // Kapsul Kiri: Kemitraan (Interactive White Capsule - 48dp Touch Target)
         Material(
           color: Colors.transparent,
           child: InkWell(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(24),
             onTap: () => PartnershipInfoDialog.show(context),
             child: Container(
-              height: 40,
-              padding: const EdgeInsets.symmetric(horizontal: 11),
+              height: 48,
+              padding: const EdgeInsets.symmetric(horizontal: 13),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(24),
                 border: Border.all(
                   color: Colors.white.withValues(alpha: 0.9),
                   width: 1,
@@ -361,18 +361,18 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Image.asset(
                     'assets/images/logo_aciar.png',
-                    height: 23,
+                    height: 24,
                     fit: BoxFit.contain,
                   ),
                   Container(
-                    height: 12,
+                    height: 18,
                     width: 1,
-                    margin: const EdgeInsets.symmetric(horizontal: 8),
-                    color: Colors.black.withValues(alpha: 0.12),
+                    margin: const EdgeInsets.symmetric(horizontal: 9),
+                    color: Colors.black.withValues(alpha: 0.14),
                   ),
                   Image.asset(
                     'assets/images/logo_undip.png',
-                    height: 23,
+                    height: 32,
                     fit: BoxFit.contain,
                   ),
                 ],
@@ -381,14 +381,14 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
 
-        // Kapsul Kanan: DipoFeed (Compact White Capsule - Optical Center)
+        // Kapsul Kanan: DipoFeed (Prominent Brand Capsule)
         Container(
-          height: 40,
+          height: 48,
           alignment: Alignment.center,
-          padding: const EdgeInsets.symmetric(horizontal: 11),
+          padding: const EdgeInsets.symmetric(horizontal: 13),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(24),
             border: Border.all(
               color: Colors.white.withValues(alpha: 0.9),
               width: 1,
@@ -407,14 +407,14 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Image.asset(
                 'assets/images/logo_dipofeed_circle.png',
-                height: 24,
-                width: 24,
+                height: 32,
+                width: 32,
                 fit: BoxFit.contain,
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: 8),
               Image.asset(
                 'assets/images/DIPOFeed_2line.png',
-                height: 20,
+                height: 28,
                 fit: BoxFit.contain,
               ),
             ],
