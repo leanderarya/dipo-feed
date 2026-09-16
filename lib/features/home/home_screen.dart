@@ -330,7 +330,50 @@ class _HomeScreenState extends State<HomeScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // Kapsul Kiri: DipoFeed (Compact White Capsule - Optical Center)
+        // Kapsul Kiri: Kemitraan (Compact White Capsule)
+        Container(
+          height: 40,
+          padding: const EdgeInsets.symmetric(horizontal: 11),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.9),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.16),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Image.asset(
+                'assets/images/logo_aciar.png',
+                height: 23,
+                fit: BoxFit.contain,
+              ),
+              Container(
+                height: 12,
+                width: 1,
+                margin: const EdgeInsets.symmetric(horizontal: 8),
+                color: Colors.black.withValues(alpha: 0.12),
+              ),
+              Image.asset(
+                'assets/images/logo_undip.png',
+                height: 23,
+                fit: BoxFit.contain,
+              ),
+            ],
+          ),
+        ),
+
+        // Kapsul Kanan: DipoFeed (Compact White Capsule - Optical Center)
         Container(
           height: 40,
           alignment: Alignment.center,
@@ -371,49 +414,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   height: 15,
                   fit: BoxFit.contain,
                 ),
-              ),
-            ],
-          ),
-        ),
-
-        // Kapsul Kanan: Kemitraan (Compact White Capsule)
-        Container(
-          height: 40,
-          padding: const EdgeInsets.symmetric(horizontal: 11),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.9),
-              width: 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.16),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Image.asset(
-                'assets/images/logo_aciar.png',
-                height: 23,
-                fit: BoxFit.contain,
-              ),
-              Container(
-                height: 12,
-                width: 1,
-                margin: const EdgeInsets.symmetric(horizontal: 8),
-                color: Colors.black.withValues(alpha: 0.12),
-              ),
-              Image.asset(
-                'assets/images/logo_undip.png',
-                height: 23,
-                fit: BoxFit.contain,
               ),
             ],
           ),
