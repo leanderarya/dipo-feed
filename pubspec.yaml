@@ -92,9 +92,6 @@ flutter:
     - assets/data/bahan_pakan.json
     - assets/data/bahan_pakan.csv
     - assets/images/
-    - assets/design/logo_undip.png
-    - assets/design/logo_undip_splash.png
-    - assets/design/hero-bg.jpg
     - assets/icons/
   #  - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
