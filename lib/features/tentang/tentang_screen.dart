@@ -35,7 +35,7 @@ class TentangScreen extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                'Inovasi formulasi ransum pakan sapi perah presisi',
+                'Aplikasi perhitungan pakan ternak secara praktis',
                 style: GoogleFonts.inter(
                   fontSize: 13,
                   color: AppColors.textSecondary,
