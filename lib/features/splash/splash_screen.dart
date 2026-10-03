@@ -50,7 +50,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   children: [
                     // DipoFeed Logo
                     Image.asset(
-                      'assets/images/logo_dipofeed_circle.png',
+                      'assets/images/logo_dipofeed.png',
                       height: 140,
                       fit: BoxFit.contain,
                     ),

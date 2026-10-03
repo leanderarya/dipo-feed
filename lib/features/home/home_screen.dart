@@ -406,7 +406,7 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Image.asset(
-                'assets/images/logo_dipofeed_circle.png',
+                'assets/images/logo_dipofeed.png',
                 height: 32,
                 width: 32,
                 fit: BoxFit.contain,

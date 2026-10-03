@@ -25,5 +25,5 @@ class PartnershipConstants {
   static const String dipoFeedTitle = 'DipoFeed';
   static const String dipoFeedDescription =
       'DipoFeed merupakan inovasi digital yang dikembangkan untuk membantu pengguna mengelola pakan ternak secara praktis berdasarkan kebutuhan nutrisi dan ketersediaan bahan pakan, dengan mengacu pada standar ilmiah yang relevan bagi peternak di Indonesia.';
-  static const String dipoFeedLogo = 'assets/images/logo_dipofeed.jpeg';
+  static const String dipoFeedLogo = 'assets/images/logo_dipofeed.png';
 }

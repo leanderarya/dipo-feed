@@ -47,7 +47,7 @@ class PartnershipBrandingWidget extends StatelessWidget {
 
         // 3. Logo DipoFeed (Inovasi Produk / Output)
         _buildLogoItem(
-          assetPath: 'assets/images/logo_dipofeed.jpeg',
+          assetPath: 'assets/images/logo_dipofeed.png',
           fallbackLabel: 'DipoFeed',
           fallbackColor: AppColors.secondaryGreen,
           height: height,
