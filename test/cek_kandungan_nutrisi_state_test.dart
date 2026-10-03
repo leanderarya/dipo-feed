@@ -215,7 +215,7 @@ void main() {
 
     await tapText(tester, 'Hitung Kandungan Nutrisi');
 
-    expect(find.text('Tahap 2 dari 2: Hasil Analisis & Evaluasi Nutrien'), findsOneWidget);
+    expect(find.text('Tahap 2 dari 2: Evaluasi Nutrien'), findsOneWidget);
     expect(find.text('Kandungan Campuran Pakan'), findsOneWidget);
   });
 
@@ -273,7 +273,7 @@ void main() {
 
     await tapText(tester, 'Hitung Kandungan Nutrisi');
 
-    expect(find.text('Tahap 2 dari 2: Hasil Analisis & Evaluasi Nutrien'), findsOneWidget);
+    expect(find.text('Tahap 2 dari 2: Evaluasi Nutrien'), findsOneWidget);
     expect(find.text('Kandungan Campuran Pakan'), findsOneWidget);
   });
 
@@ -307,7 +307,7 @@ void main() {
     await addFeedAndSetWeight(tester, '10');
     await tapText(tester, 'Hitung Kandungan Nutrisi');
 
-    expect(find.text('Tahap 2 dari 2: Hasil Analisis & Evaluasi Nutrien'), findsOneWidget);
+    expect(find.text('Tahap 2 dari 2: Evaluasi Nutrien'), findsOneWidget);
     await tester.pump(const Duration(seconds: 4));
     await tapText(tester, 'Kembali');
     await tester.pumpAndSettle();
@@ -329,7 +329,7 @@ void main() {
     await addFeedAndSetWeight(tester, '10');
     await tapText(tester, 'Hitung Kandungan Nutrisi');
 
-    expect(find.text('Tahap 2 dari 2: Hasil Analisis & Evaluasi Nutrien'), findsOneWidget);
+    expect(find.text('Tahap 2 dari 2: Evaluasi Nutrien'), findsOneWidget);
     await tapText(tester, 'Kembali');
     await tester.pumpAndSettle();
     final closeButton = find.byIcon(Icons.close).first;
@@ -352,7 +352,7 @@ void main() {
     await addFeedAndSetWeight(tester, '10');
     await tapText(tester, 'Hitung Kandungan Nutrisi');
 
-    expect(find.text('Tahap 2 dari 2: Hasil Analisis & Evaluasi Nutrien'), findsOneWidget);
+    expect(find.text('Tahap 2 dari 2: Evaluasi Nutrien'), findsOneWidget);
     await tapText(tester, 'Kembali');
     await tester.pumpAndSettle();
     final cardHeader = find.text('Rumput Gajah').first;
@@ -375,7 +375,7 @@ void main() {
     await addFeedAndSetWeight(tester, '10');
     await tapText(tester, 'Hitung Kandungan Nutrisi');
 
-    expect(find.text('Tahap 2 dari 2: Hasil Analisis & Evaluasi Nutrien'), findsOneWidget);
+    expect(find.text('Tahap 2 dari 2: Evaluasi Nutrien'), findsOneWidget);
     await tapText(tester, 'Kembali');
     await tester.pumpAndSettle();
     await enterDraftValue(tester, 1, '600');
@@ -403,7 +403,7 @@ void main() {
     await addFeedAndSetWeight(tester, '10');
     await tapText(tester, 'Hitung Kandungan Nutrisi');
 
-    expect(find.text('Tahap 2 dari 2: Hasil Analisis & Evaluasi Nutrien'), findsOneWidget);
+    expect(find.text('Tahap 2 dari 2: Evaluasi Nutrien'), findsOneWidget);
     await tapText(tester, 'Kembali');
     await tester.pumpAndSettle();
     await enterDraftValue(tester, 0, '5');
@@ -420,7 +420,7 @@ void main() {
     await addFeedAndSetWeight(tester, '10');
     await tapText(tester, 'Hitung Kandungan Nutrisi');
 
-    expect(find.text('Tahap 2 dari 2: Hasil Analisis & Evaluasi Nutrien'), findsOneWidget);
+    expect(find.text('Tahap 2 dari 2: Evaluasi Nutrien'), findsOneWidget);
     await tapText(tester, 'Kembali');
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextFormField).first, '5');
@@ -451,6 +451,13 @@ void main() {
   });
 
   testWidgets('master screen accepts injected repository', (tester) async {
+    tester.view.physicalSize = const Size(1080, 1920);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
     final repository = createRepository();
     await tester.pumpWidget(
       MaterialApp(
