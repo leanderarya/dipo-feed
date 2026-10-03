@@ -50,7 +50,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   children: [
                     // DipoFeed Logo
                     Image.asset(
-                      'assets/images/logo_dipofeed.png',
+                      'assets/images/logo_dipofeed.webp',
                       height: 140,
                       fit: BoxFit.contain,
                     ),
@@ -106,7 +106,7 @@ class _SplashScreenState extends State<SplashScreen> {
                     children: [
                       Flexible(
                         child: Image.asset(
-                          'assets/images/logo_aciar_cube.png',
+                          'assets/images/logo_aciar_cube.webp',
                           height: 28,
                           fit: BoxFit.contain,
                           errorBuilder: (context, error, stackTrace) =>
@@ -116,7 +116,7 @@ class _SplashScreenState extends State<SplashScreen> {
                       const SizedBox(width: 14),
                       Flexible(
                         child: Image.asset(
-                          'assets/images/logo_australian_aid.png',
+                          'assets/images/logo_australian_aid.webp',
                           height: 28,
                           fit: BoxFit.contain,
                           errorBuilder: (context, error, stackTrace) =>
@@ -126,7 +126,7 @@ class _SplashScreenState extends State<SplashScreen> {
                       const SizedBox(width: 14),
                       Flexible(
                         child: Image.asset(
-                          'assets/images/logo_undip.png',
+                          'assets/images/logo_undip.webp',
                           height: 36,
                           fit: BoxFit.contain,
                           errorBuilder: (context, error, stackTrace) =>

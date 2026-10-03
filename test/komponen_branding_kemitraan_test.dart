@@ -114,7 +114,7 @@ void main() {
         final aciarLogoFinder = find.byWidgetPredicate((widget) =>
             widget is Image &&
             widget.image is AssetImage &&
-            (widget.image as AssetImage).assetName == 'assets/images/logo_aciar.png');
+            (widget.image as AssetImage).assetName == 'assets/images/logo_aciar.webp');
         expect(aciarLogoFinder, findsOneWidget);
 
         // Verify right DipoFeed brand logo is present
@@ -122,7 +122,7 @@ void main() {
             widget is Image &&
             widget.image is AssetImage &&
             (widget.image as AssetImage).assetName ==
-                'assets/images/DIPOFeed_2line.png');
+                'assets/images/DIPOFeed_2line.webp');
         expect(dipoLogoFinder, findsOneWidget);
 
         // Verify left capsule is positioned before right capsule

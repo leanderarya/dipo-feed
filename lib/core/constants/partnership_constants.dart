@@ -12,18 +12,18 @@ class PartnershipConstants {
   static const String aciarTitle = 'ACIAR';
   static const String aciarDescription =
       'Australian Centre for International Agricultural Research (ACIAR) berkontribusi melalui keahlian dan kolaborasi penelitian pertanian internasional untuk berbagi pengetahuan, menghasilkan inovasi, dan mendukung solusi bagi berbagai tantangan di sektor pertanian.';
-  static const String aciarStackedLogo = 'assets/images/logo_aciar_stacked.png';
-  static const String aciarCrestLogo = 'assets/images/logo_aciar.png';
+  static const String aciarStackedLogo = 'assets/images/logo_aciar_stacked.webp';
+  static const String aciarCrestLogo = 'assets/images/logo_aciar.webp';
 
   /// Teks pilar UNDIP
   static const String undipTitle = 'UNDIP';
   static const String undipDescription =
       'FPP UNDIP berkontribusi melalui keahlian, penelitian, dan inovasi di bidang peternakan dan pertanian untuk menghasilkan solusi yang relevan dengan kebutuhan masyarakat dan mendukung pengembangan sektor pertanian yang berkelanjutan.';
-  static const String undipLogo = 'assets/images/logo_undip.png';
+  static const String undipLogo = 'assets/images/logo_undip.webp';
 
   /// Teks pilar DipoFeed
   static const String dipoFeedTitle = 'DipoFeed';
   static const String dipoFeedDescription =
       'DipoFeed merupakan inovasi digital yang dikembangkan untuk membantu pengguna mengelola pakan ternak secara praktis berdasarkan kebutuhan nutrisi dan ketersediaan bahan pakan, dengan mengacu pada standar ilmiah yang relevan bagi peternak di Indonesia.';
-  static const String dipoFeedLogo = 'assets/images/logo_dipofeed.png';
+  static const String dipoFeedLogo = 'assets/images/logo_dipofeed.webp';
 }

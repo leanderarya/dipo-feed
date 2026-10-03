@@ -27,7 +27,7 @@ class PartnershipBrandingWidget extends StatelessWidget {
       children: [
         // 1. Logo ACIAR Australia (Pemberi Dana / Mitra Tertinggi)
         _buildLogoItem(
-          assetPath: 'assets/images/logo_aciar.png',
+          assetPath: 'assets/images/logo_aciar.webp',
           fallbackLabel: 'ACIAR',
           fallbackColor: const Color(0xFF006644),
           height: height * 0.92, // Scale proportionally to match UNDIP crest height
@@ -37,7 +37,7 @@ class PartnershipBrandingWidget extends StatelessWidget {
 
         // 2. Logo UNDIP (Institusi Riset & Pelaksana)
         _buildLogoItem(
-          assetPath: 'assets/images/logo_undip.png',
+          assetPath: 'assets/images/logo_undip.webp',
           fallbackLabel: 'UNDIP',
           fallbackColor: AppColors.primaryBlue,
           height: height,
@@ -47,7 +47,7 @@ class PartnershipBrandingWidget extends StatelessWidget {
 
         // 3. Logo DipoFeed (Inovasi Produk / Output)
         _buildLogoItem(
-          assetPath: 'assets/images/logo_dipofeed.png',
+          assetPath: 'assets/images/logo_dipofeed.webp',
           fallbackLabel: 'DipoFeed',
           fallbackColor: AppColors.secondaryGreen,
           height: height,

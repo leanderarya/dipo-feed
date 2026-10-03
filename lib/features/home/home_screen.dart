@@ -217,7 +217,7 @@ class _HomeScreenState extends State<HomeScreen> {
           // Background Hero Image
           Positioned.fill(
             child: Image.asset(
-              'assets/images/hero_banner_sapi.jpg',
+              'assets/images/hero_banner_sapi.webp',
               fit: BoxFit.cover,
             ),
           ),
@@ -360,7 +360,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Image.asset(
-                    'assets/images/logo_aciar.png',
+                    'assets/images/logo_aciar.webp',
                     height: 24,
                     fit: BoxFit.contain,
                   ),
@@ -371,7 +371,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: Colors.black.withValues(alpha: 0.14),
                   ),
                   Image.asset(
-                    'assets/images/logo_undip.png',
+                    'assets/images/logo_undip.webp',
                     height: 32,
                     fit: BoxFit.contain,
                   ),
@@ -406,14 +406,14 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Image.asset(
-                'assets/images/logo_dipofeed.png',
+                'assets/images/logo_dipofeed.webp',
                 height: 32,
                 width: 32,
                 fit: BoxFit.contain,
               ),
               const SizedBox(width: 8),
               Image.asset(
-                'assets/images/DIPOFeed_2line.png',
+                'assets/images/DIPOFeed_2line.webp',
                 height: 28,
                 fit: BoxFit.contain,
               ),
